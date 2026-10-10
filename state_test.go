@@ -147,3 +147,17 @@ func TestInvalidSettingsAndSaveFailureDoNotMutateState(t *testing.T) {
 		t.Fatal("failed save started the timer")
 	}
 }
+
+func TestEveryAdvertisedSoundIsAccepted(t *testing.T) {
+	p := Preferences{FocusMinutes: 25, BreakMinutes: 5, Volume: .5}
+	for _, kind := range []string{"waves", "rain", "bubbles", "wind", "fire", "stream", "pink", "clock", "boil", "knock", "thunder", "cafe", "musicbox", "morning", "summer", "night", "forest", "deepsea", "desert", "traffic"} {
+		p.Sound = kind
+		if err := validatePreferences(p); err != nil {
+			t.Errorf("sound %q rejected: %v", kind, err)
+		}
+	}
+	p.Sound = "volcano"
+	if err := validatePreferences(p); err == nil {
+		t.Error("unknown sound accepted")
+	}
+}

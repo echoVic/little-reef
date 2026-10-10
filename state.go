@@ -120,8 +120,8 @@ func validatePreferences(p Preferences) error {
 	if p.FocusMinutes < 1 || p.FocusMinutes > 120 || p.BreakMinutes < 1 || p.BreakMinutes > 30 {
 		return errors.New("专注时长须为 1–120 分钟，休息时长须为 1–30 分钟")
 	}
-	if !slices.Contains([]string{"waves", "rain", "bubbles"}, p.Sound) {
-		return errors.New("请选择海浪、雨声或水下气泡")
+	if !slices.Contains([]string{"waves", "rain", "bubbles", "wind", "fire", "stream", "pink", "clock", "boil", "knock", "thunder", "cafe", "musicbox", "morning", "summer", "night", "forest", "deepsea", "desert", "traffic"}, p.Sound) {
+		return errors.New("请先选择一种背景音")
 	}
 	if math.IsNaN(p.Volume) || math.IsInf(p.Volume, 0) || p.Volume < 0 || p.Volume > 1 {
 		return errors.New("音量须在 0–100% 之间")

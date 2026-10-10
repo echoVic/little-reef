@@ -3,18 +3,17 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"embed"
 	"flag"
-	"image"
-	"image/color"
-	"image/png"
 	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
 	"runtime"
+	"sync"
+	"sync/atomic"
+	"time"
 
 	"github.com/egoist/mygo"
 )
@@ -58,36 +57,60 @@ func (d *Desktop) SetCompact(ctx context.Context, compact bool) {
 // Quit closes the desktop app and saves the current session.
 func (*Desktop) Quit() { mygo.App.Quit() }
 
-func icon() []byte {
-	img := image.NewNRGBA(image.Rect(0, 0, 32, 32))
-	ink := color.NRGBA{R: 106, G: 216, B: 194, A: 255}
-	if runtime.GOOS == "darwin" {
-		ink = color.NRGBA{A: 255}
-	}
-	for y := 6; y < 26; y++ {
-		for x := 3; x < 29; x++ {
-			dx, dy := float64(x-18)/11, float64(y-16)/8
-			if dx*dx+dy*dy < 1 || (x < 10 && abs(y-16) < 10-x) {
-				img.SetNRGBA(x, y, ink)
+// startTraySwim drifts the menu bar fish while a focus session runs, and
+// settles it again otherwise. Frames are applied on the main thread, after
+// the quit flag is checked, so nothing touches the tray once quitting
+// starts; the returned function stops the loop without waiting, since a
+// blocked main-thread dispatch must stay able to run.
+func startTraySwim(tray *mygo.Tray, a *Aquarium, quitting *atomic.Bool) func() {
+	template := runtime.GOOS == "darwin"
+	stop := make(chan struct{})
+	go func() {
+		frames := trayFrames()
+		ticker := time.NewTicker(90 * time.Millisecond)
+		defer ticker.Stop()
+		frame, swimming := 0, false
+		for {
+			select {
+			case <-stop:
+				return
+			case <-ticker.C:
+				session := a.Get().Session
+				running := session.Status == "running" && session.Kind == "focus"
+				if !running && !swimming {
+					continue
+				}
+				if running {
+					frame = (frame + 1) % len(frames)
+				} else {
+					frame = 0
+				}
+				png := frames[frame]
+				mygo.RunOnMain(func() {
+					if quitting.Load() {
+						return
+					}
+					_ = tray.SetIcon(png, template)
+				})
+				swimming = running
 			}
 		}
-	}
-	var b bytes.Buffer
-	_ = png.Encode(&b, img)
-	return b.Bytes()
-}
-
-func abs(n int) int {
-	if n < 0 {
-		return -n
-	}
-	return n
+	}()
+	var once sync.Once
+	return func() { once.Do(func() { close(stop) }) }
 }
 
 func main() {
 	webAddr := flag.String("web", "", "仅在回环地址提供浏览器版，例如 127.0.0.1:4173")
 	dataDir := flag.String("data-dir", "", "指定独立存档目录")
+	exportIcons := flag.Bool("export-icons", false, "重新生成 assets/icon.png 与网页图标后退出")
 	flag.Parse()
+	if *exportIcons {
+		if err := exportIconAssets(); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
 	mygo.App.SetName("小海底")
 	mygo.App.SetVersion("0.1.0")
 	web, err := fs.Sub(frontend, "web")
@@ -136,7 +159,8 @@ func main() {
 	}
 	mygo.SetFrontend(web)
 	var win *mygo.Window
-	quitting := false
+	var quitting atomic.Bool
+	var stopSwim func()
 	a.onChange = func(s Snapshot) { _ = Changed.Broadcast(s) }
 	a.onDone = func(s Snapshot) {
 		go func() {
@@ -152,27 +176,33 @@ func main() {
 		})
 		win.SetMenu(mygo.NewMenu(nil))
 		win.OnClose(func(e *mygo.CloseEvent) {
-			if !quitting && desktop.tray != nil {
+			if !quitting.Load() && desktop.tray != nil {
 				e.PreventDefault()
 				win.Hide()
 			}
 		})
 		show := func() { win.Show(); win.Focus() }
 		mygo.App.OnActivate(func(bool) { show() })
-		tray, trayErr := mygo.NewTray(mygo.TrayOptions{Icon: icon(), IconIsTemplate: runtime.GOOS == "darwin", ToolTip: "小海底 · 专注养出一片海",
+		tray, trayErr := mygo.NewTray(mygo.TrayOptions{Icon: trayIcon(), IconIsTemplate: runtime.GOOS == "darwin", ToolTip: "小海底 · 专注养出一片海",
 			Menu: mygo.NewMenu([]*mygo.MenuItem{{Label: "打开小海底", Click: func(*mygo.MenuItem, *mygo.Window) { show() }}, mygo.Separator(), {Label: "退出小海底", Click: func(*mygo.MenuItem, *mygo.Window) { mygo.App.Quit() }}}),
 		})
 		if trayErr == nil {
 			desktop.tray = tray
+			stopSwim = startTraySwim(tray, a, &quitting)
 		} else {
 			log.Print("托盘不可用，将保留普通窗口：", trayErr)
 		}
 		_ = mygo.GlobalShortcut.Register("CmdOrCtrl+Shift+A", show)
+		// The Dock icon matches the packaging icon, rendered off the main thread.
+		go func() { _ = mygo.App.Dock.SetIcon(markBadgePNG(512)) }()
 		mygo.Power.OnSuspend(func() { go func() { _, _ = a.Pause() }() })
 		go a.run()
 	})
-	mygo.App.OnBeforeQuit(func(*mygo.QuitEvent) { quitting = true })
+	mygo.App.OnBeforeQuit(func(*mygo.QuitEvent) { quitting.Store(true) })
 	mygo.App.OnWillQuit(func(*mygo.QuitEvent) {
+		if stopSwim != nil {
+			stopSwim()
+		}
 		if err := a.shutdown(); err != nil {
 			log.Print("存档失败：", err)
 		}

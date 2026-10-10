@@ -13,6 +13,7 @@
 - 开始与继续专注时按声音开关播放，暂停、结束和完成时停止；休息默认静音，可主动开启。
 - 完成提示音单独控制。静音时仍有完成文字反馈与系统通知。
 - 桌面挂件模式、托盘收起和全局快捷键 `CmdOrCtrl+Shift+A`。
+- 专注进行时，菜单栏的小鱼会轻轻游动；暂停或休息时安静停住。
 
 ## 运行与打包
 
@@ -29,6 +30,8 @@ CGO_ENABLED=0 GOMAXPROCS=2 GOMEMLIMIT=4GiB GOFLAGS=-p=2 go tool mygo build .
 ```
 
 桌面版使用系统 WebView：macOS 的 WKWebView、Windows 的 WebView2、Linux 的 GTK 3 与 WebKitGTK 4.1（或 4.0）。Linux 托盘需要 Ayatana AppIndicator，缺失时降级为普通窗口，收起操作改为最小化。Wayland 下窗口定位由合成器决定。
+
+品牌图标（计时圆环中的小鱼）在 `icon.go` 中绘制：菜单栏使用单色模板图，Dock 与打包产物使用圆角底版。修改绘制代码后运行 `go run . -export-icons` 重新生成 `assets/icon.png`、`web/favicon.png` 与 `web/mark.png`，其中 `assets/icon.png` 由 `mygo build` 转为各平台安装产物使用的图标。
 
 ### Mac 下载包
 

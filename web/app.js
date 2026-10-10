@@ -12,6 +12,7 @@ let connectionHealthy = false;
 let soundSession = null;
 let soundPlaying = false;
 let lastAudioKey = "";
+let adjustingVolume = false;
 let toastTimer;
 const reef = new Reef($("ocean"));
 const sound = new Soundscape((message, error) => {
@@ -128,8 +129,10 @@ function render(previous) {
   $("notice").hidden = !state.notice;
   $("notice").textContent = state.notice;
   document.querySelectorAll("[data-sound]").forEach(button => { const selected = button.dataset.sound === p.sound; button.classList.toggle("selected", selected); button.setAttribute("aria-pressed", String(selected)); button.disabled = busy; });
-  if (document.activeElement !== $("volume")) $("volume").value = String(Math.round(p.volume * 100));
-  $("volume-value").textContent = `${Math.round(p.volume * 100)}%`;
+  if (!adjustingVolume && document.activeElement !== $("volume")) {
+    $("volume").value = String(Math.round(p.volume * 100));
+    $("volume-value").textContent = `${Math.round(p.volume * 100)}%`;
+  }
   if (!previous || JSON.stringify(previous.visitors) !== JSON.stringify(state.visitors)) renderVisitors();
   if (!previous || JSON.stringify(previous.records) !== JSON.stringify(state.records)) renderRecords();
   reef.update(state);
@@ -193,11 +196,19 @@ document.querySelectorAll("[data-sound]").forEach(button => button.onclick = () 
   if (soundPlaying) void sound.unlock().catch(() => {});
   return action(() => call("Aquarium.SetPreferences", { ...state.preferences, sound: button.dataset.sound }));
 });
+// A range input never takes focus on mousedown in WKWebView, so the active
+// element alone cannot tell that the user is adjusting: track the pointer.
+$("volume").onpointerdown = () => { adjustingVolume = true; };
 $("volume").oninput = () => {
+  adjustingVolume = true;
   $("volume-value").textContent = `${$("volume").value}%`;
   if (soundPlaying) void sound.set(true, state.preferences.sound, Number($("volume").value) / 100);
 };
-$("volume").onchange = () => action(() => call("Aquarium.SetPreferences", { ...state.preferences, volume: Number($("volume").value) / 100 }));
+$("volume").onchange = () => {
+  // Read the chosen value before action() re-renders with the stored one.
+  const volume = Number($("volume").value) / 100;
+  return action(() => call("Aquarium.SetPreferences", { ...state.preferences, volume })).finally(() => { adjustingVolume = false; });
+};
 async function toggleSound() {
   if (busy || !state) return;
   const wanted = !soundPlaying;

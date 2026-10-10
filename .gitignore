@@ -1,0 +1,12 @@
+/build/
+/dist/
+/.mygo/
+/node_modules/
+.DS_Store
+/aquarium.json
+/*.log
+*.p12
+*.pfx
+*.key
+.env
+.env.*

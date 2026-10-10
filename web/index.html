@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0c1820">
+  <title>小海底 · 桌面水族馆</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="titlebar">
+      <div class="brand"><span class="brand-icon" aria-hidden="true">◌</span><span>小海底 <small>专注，让一片海慢慢长大</small></span></div>
+      <div class="window-actions">
+        <button id="compact" class="icon-button" title="切换桌面挂件" aria-label="切换桌面挂件">◱</button>
+        <button id="hide" class="icon-button desktop-only" title="收起到托盘" aria-label="收起到托盘">—</button>
+        <button id="quit" class="icon-button desktop-only" title="退出并保存" aria-label="退出并保存">×</button>
+      </div>
+    </header>
+    <main>
+      <div class="intro"><div><p class="eyebrow">属于你的安静角落</p><h1>你在专注，<span>海底在生长。</span></h1></div><span class="online-state"><i></i><span id="connection">正在连接</span></span></div>
+      <div class="main-grid">
+        <section class="reef-panel" aria-label="你的水族馆">
+          <div class="reef-top"><span class="reef-name">第一片小海底</span><span id="growth-label" class="reef-level">初生 · 0 轮专注</span></div>
+          <div id="reef" class="reef-stage">
+            <canvas id="ocean" aria-label="鱼儿在水草之间缓慢游动"></canvas>
+            <div class="light-ray ray-one"></div><div class="light-ray ray-two"></div>
+            <div id="reef-caption" class="reef-caption"><span class="small-dot"></span><span>一条鱼，一片海，等你慢慢来。</span></div>
+          </div>
+          <div class="reef-bottom"><div><span class="tiny-label">下一次成长</span><p id="next-growth">完成一轮，长出第一株水草</p></div><button id="feed" class="subtle-button" disabled>撒一点鱼食</button></div>
+        </section>
+        <section class="timer-panel" aria-label="专注计时">
+          <div class="mode-tabs" aria-label="计时模式"><button id="focus-tab" class="active" aria-pressed="true">专注</button><button id="break-tab" aria-pressed="false">休息</button></div>
+          <div class="timer-ring"><svg viewBox="0 0 200 200" aria-hidden="true"><circle class="ring-track" cx="100" cy="100" r="89"/><circle id="ring-progress" cx="100" cy="100" r="89"/></svg><div class="timer-face"><span id="timer" role="timer" aria-label="剩余时间">25:00</span><span id="timer-status">准备好，就开始</span></div></div>
+          <label class="task-label" for="task">这一轮，想做什么？<span>可选</span></label>
+          <input id="task" type="text" maxlength="80" placeholder="比如读几页书，写一小段代码" autocomplete="off">
+          <div class="timer-actions"><button id="primary" class="primary-button" disabled><span id="primary-icon" aria-hidden="true">▶</span><span id="primary-label">开始专注</span></button><button id="end" class="subtle-button" hidden>结束本轮</button></div>
+          <p id="timer-footnote" class="timer-footnote">不着急，每一点专注都会留下痕迹。</p>
+        </section>
+      </div>
+      <section class="sound-panel" aria-label="背景音">
+        <div class="sound-heading"><span class="sound-icon" aria-hidden="true">≋</span><div><h2>海底的声音</h2><p id="sound-status">选一段声音，安静陪着你</p></div></div>
+        <div class="sound-options" role="group" aria-label="选择背景音"><button data-sound="waves" class="sound-choice selected" aria-pressed="true"><span aria-hidden="true">≋</span>海浪</button><button data-sound="rain" class="sound-choice" aria-pressed="false"><span aria-hidden="true">☂</span>雨声</button><button data-sound="bubbles" class="sound-choice" aria-pressed="false"><span aria-hidden="true">◌</span>水下气泡</button></div>
+        <div class="volume-control"><label for="volume" id="volume-label">音量</label><input id="volume" type="range" min="0" max="100" value="35"><span id="volume-value">35%</span></div>
+        <button id="sound-toggle" class="sound-toggle" aria-pressed="false" disabled>开启声音</button>
+      </section>
+      <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+      <div class="bottom-grid">
+        <section class="stats-panel" aria-label="专注积累"><h2>今天的小积累</h2><div class="stats"><div><strong id="today-minutes">0<span> 分钟</span></strong><p>认真投入的时间</p></div><div><strong id="today-rounds">0<span> 轮</span></strong><p>海底的成长</p></div><div><strong id="visitor-count">0<span> 位</span></strong><p>认识的新朋友</p></div></div><p id="total-time" class="stats-foot">你的海底，正在等待第一个故事。</p></section>
+        <section class="visitors-panel" aria-label="访客图鉴"><div class="section-heading"><h2>来过的朋友</h2><span>偶遇，也值得记住</span></div><div id="visitors" class="visitors"><div class="visitor-empty"><span aria-hidden="true">🐠</span><p>第一轮专注后，会有一位朋友来拜访。</p></div></div></section>
+      </div>
+      <details class="journal"><summary>专注日记 <span id="record-count">0 条记录</span></summary><div id="records" class="records"><p class="empty-text">开始一轮专注，给今天留下一点痕迹。</p></div></details>
+      <footer><span>让专注留下一片海，也记得抬头看看窗外。</span><button id="settings-open" class="text-button">计时设置</button></footer>
+    </main>
+    <div class="compact-controls"><span id="compact-time">25:00</span><button id="compact-primary" aria-label="开始或暂停">▶</button><button id="compact-sound" aria-label="开启或关闭声音">♫</button><button id="expand" aria-label="展开水族馆">↗</button></div>
+  </div>
+  <dialog id="settings-dialog"><form id="settings-form"><div class="dialog-heading"><h2>按自己的节奏来</h2><button id="settings-close" class="icon-button" type="button" aria-label="关闭设置">×</button></div><p class="dialog-description">时长调整从下一轮开始，本轮计时保持不变。</p><label for="focus-minutes">专注时长 <span>1–120 分钟</span></label><input id="focus-minutes" type="number" min="1" max="120" required><label for="break-minutes">休息时长 <span>1–30 分钟</span></label><input id="break-minutes" type="number" min="1" max="30" required><label class="check-row"><input id="chime" type="checkbox">完成时播放轻柔提示音</label><p class="dialog-description">电脑休眠和应用退出会暂停计时。回来时保持静音，准备好再继续。</p><button class="primary-button" type="submit">保存设置</button></form></dialog>
+  <dialog id="end-dialog"><h2>这一段时间，也算数。</h2><p class="dialog-description">结束后会保留实际专注时间。已有的鱼儿和水草不变，本轮不结算新的成长。</p><div class="dialog-actions"><button id="end-cancel" class="subtle-button">继续这轮</button><button id="end-confirm" class="primary-button">结束并记录</button></div></dialog>
+  <div id="toast" class="toast" role="alert" hidden></div>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "name": "小海底",
+  "identifier": "dev.mygo.examples.aquarium",
+  "version": "0.1.0",
+  "frontendDist": "web",
+  "out": "build",
+  "bindings": "bindings.ts"
+}

@@ -1,6 +1,6 @@
 # 小海底桌面水族馆
 
-用专注时间养出一片小海底。Go 后端管理计时和存档，网页界面绘制水族馆，三种背景音由 Web Audio 离线合成。前端已随 Go 程序嵌入，不需要 Bun、前端构建或音频下载。
+用专注时间养出一片小海底。Go 后端管理计时和存档，网页界面绘制水族馆，背景音是随程序打包的公共领域实地录音。前端和录音都已嵌入 Go 程序，不需要 Bun 或前端构建，播放时也不联网。
 
 ## 功能
 
@@ -29,7 +29,7 @@ CGO_ENABLED=0 GOMAXPROCS=2 GOMEMLIMIT=4GiB GOFLAGS=-p=2 go run . -web 127.0.0.1:
 CGO_ENABLED=0 GOMAXPROCS=2 GOMEMLIMIT=4GiB GOFLAGS=-p=2 go tool mygo build .
 ```
 
-桌面版使用系统 WebView：macOS 的 WKWebView、Windows 的 WebView2、Linux 的 GTK 3 与 WebKitGTK 4.1（或 4.0）。Linux 托盘需要 Ayatana AppIndicator，缺失时降级为普通窗口，收起操作改为最小化。Wayland 下窗口定位由合成器决定。
+桌面版使用系统 WebView：macOS 的 WKWebView、Windows 的 WebView2、Linux 的 GTK 3 与 WebKitGTK 4.1（或 4.0）。Linux 播放背景音还需要 GStreamer 的 MP3 解码插件（gst-plugins-good 1.18 或更高版本）。Linux 托盘需要 Ayatana AppIndicator，缺失时降级为普通窗口，收起操作改为最小化。Wayland 下窗口定位由合成器决定。
 
 品牌图标（计时圆环中的小鱼）在 `icon.go` 中绘制：菜单栏使用单色模板图，Dock 与打包产物使用圆角底版。修改绘制代码后运行 `go run . -export-icons` 重新生成 `assets/icon.png`、`web/favicon.png` 与 `web/mark.png`，其中 `assets/icon.png` 由 `mygo build` 转为各平台安装产物使用的图标。
 
@@ -55,7 +55,9 @@ bash package-macos.sh \
 
 ## 背景音说明
 
-背景音是本地生成的自然氛围合成音，不是实录音频。每种声轨通过固定种子噪声、滤波与相应的调制生成：潮汐、雨与雷声、水流与气泡、沸腾、深海的压力感、阵风与细沙、噼啪声、蝉鸣与虫鸣、林间的叶响与鸟鸣、时钟与木鱼的节拍、杯碟声与车流、音乐盒的短旋律，以及粉红滤波；循环接缝交叉淡化。首次不自动播放；保存声音类型、音量与专注播放开关，重启不会自动出声。系统不支持 Web Audio 或播放受限时提示用户，计时继续工作。
+除粉噪外，19 种背景音都是 Freesound 上以 CC0（公共领域）发布的实地录音，出处见 [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt)。`build-sounds.sh` 从高码率试听版截取 30 到 90 秒的片段，把响度对齐到原先合成声音的水平（需要压限太多时宁可轻一些），在 4 倍过采样下限幅，再编码为 MP3 写入 `web/sounds`，合计约 27 MB。木鱼由一次真实敲击排成稳定的节奏。更换录音时，修改脚本里的表格后重新运行即可，需要 ffmpeg 和网络；平时构建和运行都不需要它。
+
+播放时先解码录音，在内存里把首尾交叉淡化，再交给 Web Audio 原生循环，窗口收进托盘也不会断。时钟和木鱼的接缝落在两次敲击之间；音乐盒在曲尾衔接，并从曲头开始播放；其余声音每次从随机位置开始。最近用过的两种声音会留在内存里。粉噪仍由固定种子实时合成。首次不自动播放；保存声音类型、音量与专注播放开关，重启不会自动出声。系统不支持 Web Audio、播放受限或录音无法解码时提示用户，计时继续工作。
 
 ## 验证
 
@@ -63,7 +65,7 @@ bash package-macos.sh \
 CGO_ENABLED=0 GOMAXPROCS=2 GOMEMLIMIT=4GiB GOFLAGS=-p=2 go test -p 2 -parallel 2 ./...
 ```
 
-测试覆盖暂停恢复的实际时间、提前结束、完成仅结算一次、访客存档、休眠暂停、恢复设置、休息不奖励成长和保存失败回滚。
+测试覆盖暂停恢复的实际时间、提前结束、完成仅结算一次、访客存档、休眠暂停、恢复设置、休息不奖励成长、保存失败回滚，以及每种录音都已打包且合计不超过 30 MB。
 
 ## 项目来源
 

@@ -1,5 +1,6 @@
-// Ambience from the CC0 field recordings embedded in sounds/, looped seamlessly
-// in memory; pink noise is synthesized. Nothing is downloaded from the internet.
+// Ambience from the public-domain recordings embedded in sounds/, looped
+// seamlessly in memory; pink noise is synthesized. Nothing is downloaded from
+// the internet.
 
 // Seams that must fall between beats or after a piece ends: start and loop are
 // seconds into the decoded file, fade is the crossfade length.
@@ -81,8 +82,9 @@ export class Soundscape {
     if (this.context.state !== "running") throw new Error("声音未能启动，请再次点击开启声音。");
   }
 
-  // Keeps the two most recent sounds decoded (20–35 MB each); a failed load is
-  // forgotten so the next attempt fetches again.
+  // Keeps the two most recent sounds decoded (20–35 MB each, about 90 MB for
+  // the full Canon); a failed load is forgotten so the next attempt fetches
+  // again.
   load(kind) {
     let loop = this.loops.get(kind);
     if (loop) this.loops.delete(kind);
@@ -152,7 +154,7 @@ export class Soundscape {
         this.fadeOut(this.current);
         this.current = { source, gain, kind: sound };
       }
-      this.onStatus({ waves: "海浪正轻轻陪着你", rain: "窗外仿佛下着细雨", bubbles: "像在安静的水族箱旁", wind: "风从远处轻轻吹来", fire: "篝火噼啪，安静又暖", stream: "溪水在不远处流过", pink: "平稳的底噪替你盖住杂音", clock: "滴答之间，时间在走", boil: "水在咕嘟，慢慢开着", knock: "一声一声，稳稳地", thunder: "远处有雷，雨声更重了", cafe: "像坐在安静的咖啡馆角落", musicbox: "一段很慢的小旋律", morning: "清晨的风和鸟鸣", summer: "蝉鸣阵阵，夏天正盛", night: "夏夜虫鸣，风也安静", forest: "林子里，风穿过树叶", deepsea: "很深很深的海底", desert: "风卷细沙，安静辽阔", traffic: "远处有车流经过" }[sound]);
+      this.onStatus({ waves: "海浪正轻轻陪着你", rain: "窗外仿佛下着细雨", bubbles: "像在安静的水族箱旁", wind: "风从远处轻轻吹来", fire: "篝火噼啪，安静又暖", stream: "溪水在不远处流过", pink: "平稳的底噪替你盖住杂音", clock: "滴答之间，时间在走", boil: "水在咕嘟，慢慢开着", knock: "一声一声，稳稳地", thunder: "远处有雷，雨声更重了", cafe: "像坐在安静的咖啡馆角落", musicbox: "一首卡农，慢慢流淌", morning: "清晨的风和鸟鸣", summer: "蝉鸣阵阵，夏天正盛", night: "夏夜虫鸣，风也安静", forest: "林子里，风穿过树叶", deepsea: "很深很深的海底", desert: "风卷细沙，安静辽阔", traffic: "远处有车流经过" }[sound]);
     } catch (error) {
       if (seq !== this.sequence) return;
       // Stop the previous sound too: it no longer matches the selection.

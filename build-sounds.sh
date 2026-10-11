@@ -143,6 +143,6 @@ done <<<"$sounds_table"
 total=$(cat "$sounds_dir"/*.mp3 | wc -c)
 printf '共 %s 个文件，%s MB。\n' "$(ls "$sounds_dir"/*.mp3 | wc -l | tr -d ' ')" "$(awk -v b="$total" 'BEGIN { printf "%.1f", b / 1048576 }')"
 if (( total > 30 * 1048576 )); then
-  printf '超出 30 MB 预算：缩短事件型片段，或改用 -q:a 3。\n' >&2
+  printf '超出 30 MB 预算：缩短事件型片段，或在表格末列给较大的文件设更低的编码质量（如 4）。\n' >&2
   exit 1
 fi

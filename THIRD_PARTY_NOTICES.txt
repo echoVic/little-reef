@@ -72,5 +72,6 @@ Canon (the musicbox sound) — Wikimedia Commons
 
 "Canon (2004)" by the Strolling Strings of the United States Air Force
 Band; composition by Johann Pachelbel, arrangement by Frank Hudson. A work
-of the U.S. federal government, in the public domain.
+of the U.S. federal government, in the public domain. web/sounds/musicbox.mp3
+is the full performance, loudness-matched and re-encoded by build-sounds.sh.
 https://commons.wikimedia.org/wiki/File:Canon_(2004)_-_Strolling_Strings_-_United_States_Air_Force_Band.mp3

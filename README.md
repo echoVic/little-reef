@@ -25,8 +25,11 @@ CGO_ENABLED=0 GOMAXPROCS=2 GOMEMLIMIT=4GiB GOFLAGS=-p=2 go run .
 # 使用同一 Go 后端在浏览器中运行（仅回环地址）。
 CGO_ENABLED=0 GOMAXPROCS=2 GOMEMLIMIT=4GiB GOFLAGS=-p=2 go run . -web 127.0.0.1:4173
 
-# 生成各平台安装产物，写入 build。
+# 生成 macOS 发布产物（Developer ID 签名并公证的 .app 与 dmg），写入 build。
 CGO_ENABLED=0 GOMAXPROCS=2 GOMEMLIMIT=4GiB GOFLAGS=-p=2 go tool mygo build .
+
+# 没有签名证书或公证凭据时，生成临时签名的本机版本。
+CGO_ENABLED=0 GOMAXPROCS=2 GOMEMLIMIT=4GiB GOFLAGS=-p=2 go tool mygo build -sign=- -skip-notarize .
 ```
 
 桌面版使用系统 WebView：macOS 的 WKWebView、Windows 的 WebView2、Linux 的 GTK 3 与 WebKitGTK 4.1（或 4.0）。Linux 播放背景音还需要 GStreamer 的 MP3 解码插件（gst-plugins-good 1.18 或更高版本）。Linux 托盘需要 Ayatana AppIndicator，缺失时降级为普通窗口，收起操作改为最小化。Wayland 下窗口定位由合成器决定。
@@ -35,7 +38,9 @@ CGO_ENABLED=0 GOMAXPROCS=2 GOMEMLIMIT=4GiB GOFLAGS=-p=2 go tool mygo build .
 
 ### Mac 下载包
 
-跨平台 `mygo build` 生成的 `.app` 只有可执行文件的链接器签名，不能直接作为完整签名的 Mac 分发包。使用 `package-macos.sh` 对整个 bundle 签名后再封装；macOS 使用系统 `codesign`，其他构建主机需安装 `rcodesign`。
+正式版用 `mygo.json` 里 `macos` 的配置构建：以 Developer ID 证书签名（开启 Hardened Runtime），dmg 提交 Apple 公证后把公证结果钉进 dmg 和 `.app`。这需要登录钥匙串里有该证书，以及 `xcrun notarytool store-credentials notary` 存下的公证凭据。产出的 `build/darwin-arm64/小海底 <版本>.dmg` 可直接分发，用户打开后把应用拖进“应用程序”即可，无需启动脚本。
+
+没有证书时，用上面的 `-sign=- -skip-notarize` 构建，再用 `package-macos.sh` 对整个 bundle 临时签名后封装；macOS 使用系统 `codesign`，其他构建主机需安装 `rcodesign`。
 
 ```sh
 bash package-macos.sh \
@@ -43,7 +48,7 @@ bash package-macos.sh \
   /tmp/小海底-Mac修正版.zip
 ```
 
-该脚本产出临时签名演示包，包含 `启动小海底.command` 和打开说明。首次使用启动文件会在用户 Mac 上对同目录的小海底重新签名、校验，并移除仅该应用的下载隔离属性，然后打开应用。不会关闭 Gatekeeper 或请求管理员密码。完整 Developer ID 签名与 Apple 公证需要在正式分发流程中配置，临时签名不能替代它们。
+该脚本产出临时签名演示包，包含 `启动小海底.command` 和打开说明。首次使用启动文件会在用户 Mac 上对同目录的小海底重新签名、校验，并移除仅该应用的下载隔离属性，然后打开应用。不会关闭 Gatekeeper 或请求管理员密码。临时签名不能替代 Developer ID 签名与 Apple 公证，只适合演示。
 
 ## 存档与时间规则
 

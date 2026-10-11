@@ -5,5 +5,9 @@
   "icon": "assets/icon.png",
   "frontendDist": "web",
   "out": "build",
-  "bindings": "bindings.ts"
+  "bindings": "bindings.ts",
+  "macos": {
+    "signingIdentity": "Developer ID Application: Zijie Hu (8LH7PFQJ89)",
+    "notarize": { "keychainProfile": "notary" }
+  }
 }

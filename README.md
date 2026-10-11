@@ -2,6 +2,8 @@
 
 用专注时间养出一片小海底。Go 后端管理计时和存档，网页界面绘制水族馆，除粉噪外的背景音都是随程序打包的公共领域录音。前端和录音都已嵌入 Go 程序，不需要 Bun 或前端构建，播放时也不联网。
 
+macOS（M 系列芯片）安装包见 [Releases](https://github.com/echoVic/little-reef/releases)，已用 Developer ID 签名并通过 Apple 公证。
+
 ## 功能
 
 - 默认 25 分钟专注、5 分钟休息，可在设置中调整；新时长从下一轮开始。
@@ -75,3 +77,7 @@ CGO_ENABLED=0 GOMAXPROCS=2 GOMEMLIMIT=4GiB GOFLAGS=-p=2 go test -p 2 -parallel 2
 ## 项目来源
 
 基于 [MyGo](https://github.com/egoist/mygo) 桌面框架构建。框架版本固定到开发时使用的提交，通过 Go Modules 下载；应用源码独立维护。上游 MIT 许可声明见 [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt)。
+
+## 许可证
+
+源代码以 [MIT 许可证](LICENSE) 开源。`web/sounds` 中的录音不属于本项目的作品：它们来自公共领域（Freesound 上的 CC0 录音和美国政府作品），各自的出处见 [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt)。

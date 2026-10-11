@@ -21,3 +21,51 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+Ambient recordings — Freesound (https://freesound.org)
+
+Each recording below was dedicated to the public domain by its author
+under CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/).
+Attribution is not required; the sources are listed for reference.
+web/sounds holds trimmed, loudness-matched, re-encoded excerpts made by
+build-sounds.sh; the wooden fish track arranges one recorded strike into
+a steady rhythm.
+
+waves     "Big waves hit land.wav" by straget
+          https://freesound.org/s/412308/
+rain      "Rain_06.wav" by Q.K.
+          https://freesound.org/s/56311/
+thunder   "Rain and thunder in Thailand" by felix.blume
+          https://freesound.org/s/447510/
+stream    "Gentle Stream Natural Stream Sound" by BurghRecords
+          https://freesound.org/s/446019/
+bubbles   "aquarium filter bubbling close.flac" by kyles
+          https://freesound.org/s/635477/
+boil      "pot metal on hot stove water simmering1.flac" by kyles
+          https://freesound.org/s/635619/
+deepsea   "Underwater Ambience" by Kinoton
+          https://freesound.org/s/393819/
+wind      "Wind is blowing in the grass of a patagonian plain…" by felix.blume
+          https://freesound.org/s/139337/
+fire      "campfire in a forest at night.wav" by Duophonic
+          https://freesound.org/s/248303/
+forest    "wind in the trees" by deleted_user_229898
+          https://freesound.org/s/150174/
+summer    "AkasakaHieJinjaCicadas_4mics.wav" by markystar
+          https://freesound.org/s/79086/
+night     "Night Woods" by widgetstudios
+          https://freesound.org/s/532301/
+desert    "Wind blowing into some cactus spine… desert of Atacama (Chile)." by felix.blume
+          https://freesound.org/s/156414/
+morning   "Dawn Chorus Birdsong" by squashy555
+          https://freesound.org/s/573080/
+clock     "TicTac of a wall clock" by felix.blume
+          https://freesound.org/s/170445/
+knock     "Mokugyo.wav" by jonopodmore
+          https://freesound.org/s/607215/
+cafe      "Coffee Shop.wav" by Trainscough5407
+          https://freesound.org/s/404478/
+musicbox  "Music Box.wav" (Brahms' Lullaby) by Rickbrewin
+          https://freesound.org/s/158206/
+traffic   "Downtown LA, Little Tokyo, late night semi distant traffic.wav" by janbezouska
+          https://freesound.org/s/330427/

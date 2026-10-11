@@ -148,9 +148,12 @@ func TestInvalidSettingsAndSaveFailureDoNotMutateState(t *testing.T) {
 	}
 }
 
+// advertisedSounds pins the sound panel's choices, in the order index.html lists them.
+var advertisedSounds = []string{"waves", "rain", "thunder", "stream", "bubbles", "boil", "deepsea", "wind", "fire", "forest", "summer", "night", "desert", "morning", "clock", "knock", "cafe", "musicbox", "traffic", "pink"}
+
 func TestEveryAdvertisedSoundIsAccepted(t *testing.T) {
 	p := Preferences{FocusMinutes: 25, BreakMinutes: 5, Volume: .5}
-	for _, kind := range []string{"waves", "rain", "bubbles", "wind", "fire", "stream", "pink", "clock", "boil", "knock", "thunder", "cafe", "musicbox", "morning", "summer", "night", "forest", "deepsea", "desert", "traffic"} {
+	for _, kind := range advertisedSounds {
 		p.Sound = kind
 		if err := validatePreferences(p); err != nil {
 			t.Errorf("sound %q rejected: %v", kind, err)

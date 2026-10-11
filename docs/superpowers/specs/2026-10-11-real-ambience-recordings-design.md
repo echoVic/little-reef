@@ -1,7 +1,7 @@
 # 背景音换成真实录音 · 设计
 
 - 日期：2026-10-11
-- 状态：待评审
+- 状态：已批准；实施时的调整见 docs/superpowers/plans/2026-10-11-real-ambience-recordings.md 的“与设计文档的差异”
 - 分支：`feat/real-ambience-recordings`
 
 ## 背景

@@ -101,8 +101,10 @@ export class Soundscape {
       const buffer = await this.context.decodeAudioData(await response.arrayBuffer());
       const hint = seams[kind];
       return { buffer, random: hint?.random ?? true, ...seam(buffer, hint) };
-    } catch {
-      throw new Error("这段声音暂时无法播放，计时不受影响");
+    } catch (error) {
+      // Keep the real cause for the Web Inspector; the page shows only the message.
+      console.warn(`sound "${kind}" failed to load:`, error);
+      throw new Error("这段声音暂时无法播放，计时不受影响", { cause: error });
     }
   }
 

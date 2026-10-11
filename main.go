@@ -112,7 +112,7 @@ func main() {
 		return
 	}
 	mygo.App.SetName("小海底")
-	mygo.App.SetVersion("0.1.0")
+	mygo.App.SetVersion("0.2.0")
 	web, err := fs.Sub(frontend, "web")
 	if err != nil {
 		log.Fatal(err)

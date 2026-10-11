@@ -39,10 +39,10 @@ thunder   "Rain and thunder in Thailand" by felix.blume
           https://freesound.org/s/447510/
 stream    "Gentle Stream Natural Stream Sound" by BurghRecords
           https://freesound.org/s/446019/
-bubbles   "aquarium filter bubbling close.flac" by kyles
-          https://freesound.org/s/635477/
-boil      "pot metal on hot stove water simmering1.flac" by kyles
-          https://freesound.org/s/635619/
+bubbles   "UnderWater.wav" by Sclolex
+          https://freesound.org/s/261002/
+boil      "simmering-sauce.aif" by alienistcog
+          https://freesound.org/s/124584/
 deepsea   "Underwater Ambience" by Kinoton
           https://freesound.org/s/393819/
 wind      "Wind is blowing in the grass of a patagonian plain…" by felix.blume
@@ -55,17 +55,22 @@ summer    "AkasakaHieJinjaCicadas_4mics.wav" by markystar
           https://freesound.org/s/79086/
 night     "Night Woods" by widgetstudios
           https://freesound.org/s/532301/
-desert    "Wind blowing into some cactus spine… desert of Atacama (Chile)." by felix.blume
-          https://freesound.org/s/156414/
+desert    "Looping Gentle Wind Ambience on an Open Desert Plain.wav" by dhallcomposer
+          https://freesound.org/s/697217/
 morning   "Dawn Chorus Birdsong" by squashy555
           https://freesound.org/s/573080/
 clock     "TicTac of a wall clock" by felix.blume
           https://freesound.org/s/170445/
 knock     "Mokugyo.wav" by jonopodmore
           https://freesound.org/s/607215/
-cafe      "Coffee Shop.wav" by Trainscough5407
-          https://freesound.org/s/404478/
-musicbox  "Music Box.wav" (Brahms' Lullaby) by Rickbrewin
-          https://freesound.org/s/158206/
-traffic   "Downtown LA, Little Tokyo, late night semi distant traffic.wav" by janbezouska
-          https://freesound.org/s/330427/
+cafe      "kbh cafe short.wav" by chimerical
+          https://freesound.org/s/104279/
+traffic   "highway, atmo, distant.wav" by monotraum
+          https://freesound.org/s/208502/
+
+Canon (the musicbox sound) — Wikimedia Commons
+
+"Canon (2004)" by the Strolling Strings of the United States Air Force
+Band; composition by Johann Pachelbel, arrangement by Frank Hudson. A work
+of the U.S. federal government, in the public domain.
+https://commons.wikimedia.org/wiki/File:Canon_(2004)_-_Strolling_Strings_-_United_States_Air_Force_Band.mp3

@@ -1,12 +1,13 @@
 // Ambience from the CC0 field recordings embedded in sounds/, looped seamlessly
 // in memory; pink noise is synthesized. Nothing is downloaded from the internet.
 
-// Seams that must fall between beats or where a tune ends: start and loop are
+// Seams that must fall between beats or after a piece ends: start and loop are
 // seconds into the decoded file, fade is the crossfade length.
 const seams = {
   clock: { start: .25, loop: 30.001, fade: .15 },
   knock: { start: .25, loop: 29.7, fade: .15 },
-  musicbox: { start: 15.5, loop: 16.94, fade: .5, random: false },
+  // The whole Canon, then about two seconds of silence before it starts again.
+  musicbox: { start: .1, loop: 226.9, fade: .2, random: false },
 };
 
 // Crossfades the fade seconds after the loop into its first fade seconds, in

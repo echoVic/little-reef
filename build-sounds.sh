@@ -1,18 +1,22 @@
 #!/bin/bash
-# Rebuild web/sounds from public-domain (CC0) Freesound recordings.
-# Needs curl, ffmpeg 5 or later with libmp3lame, and network access; normal
-# builds never run it. Rerun after changing a row in the table below.
+# Rebuild web/sounds from public-domain recordings: CC0 Freesound previews,
+# plus one U.S. government recording from Wikimedia Commons. Needs curl,
+# ffmpeg 5 or later with libmp3lame, and network access; normal builds never
+# run it. Rerun after changing a row in the table below.
 set -euo pipefail
 
 sounds_dir=$(cd "$(dirname "$0")" && pwd)/web/sounds
 sounds_cache=${TMPDIR:-/tmp}/little-reef-sounds
 mkdir -p "$sounds_dir" "$sounds_cache"
 
-# Sound, Freesound id, excerpt start and length (s), target loudness (LUFS,
-# that of the synthesized track it replaces), the most limiting allowed to
-# reach it (dB), and the high-quality preview. "#" rows are alternatives.
-# clock, knock and musicbox loop on beats or where the tune ends, as set in
-# web/audio.js; a new recording for them needs those values measured again.
+# Sound, source id (the Freesound number, or a name for other sources),
+# excerpt start and length (s), target loudness (LUFS: that of the
+# synthesized track it replaces, 3 lower for boil, desert, cafe and traffic,
+# which sounded harsh at that level), the most limiting allowed to reach it
+# (dB), the source file, and an optional LAME VBR quality (default 2).
+# "#" rows are alternatives. clock, knock and musicbox loop on beats or where
+# the piece ends, as set in web/audio.js; a new recording for them needs
+# those values measured again.
 sounds_table='
 waves    412308 148    90    -15.6 3 https://cdn.freesound.org/previews/412/412308_7707368-hq.ogg
 #        241824 https://cdn.freesound.org/previews/241/241824_4404567-hq.ogg waves_1.wav
@@ -26,12 +30,12 @@ thunder  447510 755    90    -16.5 3 https://cdn.freesound.org/previews/447/4475
 stream   446019 1      60    -15.2 6 https://cdn.freesound.org/previews/446/446019_7241289-hq.ogg
 #        236981 https://cdn.freesound.org/previews/236/236981_2258946-hq.ogg Stream Running Into Pond
 #        415053 https://cdn.freesound.org/previews/415/415053_7707368-hq.ogg Brook 2.wav (mono)
-bubbles  635477 26     60    -24.8 3 https://cdn.freesound.org/previews/635/635477_612689-hq.ogg
-#        870769 https://cdn.freesound.org/previews/870/870769_18412227-hq.ogg Aquarium Pump and Bubbles (mono)
-#        329622 https://cdn.freesound.org/previews/329/329622_5735740-hq.ogg Aquarium 1.wav (mono)
-boil     635619 0      60    -16.0 3 https://cdn.freesound.org/previews/635/635619_612689-hq.ogg
-#        420228 https://cdn.freesound.org/previews/420/420228_8375530-hq.ogg 37 - 17 Boiling water.wav
-#        380828 https://cdn.freesound.org/previews/380/380828_5763832-hq.ogg Pot of Water Boiling
+bubbles  261002 464    60    -24.8 3 https://cdn.freesound.org/previews/261/261002_985466-hq.ogg
+#        406623 https://cdn.freesound.org/previews/406/406623_3531538-hq.ogg Underwater Ambiance
+#        635477 https://cdn.freesound.org/previews/635/635477_612689-hq.ogg aquarium filter bubbling close (too hissy)
+boil     124584 25     60    -19.0 6 https://cdn.freesound.org/previews/124/124584_296888-hq.ogg
+#        380828 https://cdn.freesound.org/previews/380/380828_5763832-hq.ogg Pot of Water Boiling (first 33 s)
+#        635619 https://cdn.freesound.org/previews/635/635619_612689-hq.ogg pot on a hot stove (stove roar)
 deepsea  393819 26     60    -17.3 3 https://cdn.freesound.org/previews/393/393819_2247456-hq.ogg
 #        366159 https://cdn.freesound.org/previews/366/366159_6725579-hq.ogg Underwater [Loop] AMB.wav
 #        482167 https://cdn.freesound.org/previews/482/482167_4838691-hq.ogg Underwater Ambience.wav
@@ -50,9 +54,9 @@ summer   79086  44     60    -21.0 3 https://cdn.freesound.org/previews/79/79086
 night    532301 62     90    -25.9 3 https://cdn.freesound.org/previews/532/532301_2669618-hq.ogg
 #        333221 https://cdn.freesound.org/previews/333/333221_2098408-hq.ogg Night Crickets Back Porch.aiff
 #        328293 https://cdn.freesound.org/previews/328/328293_1661766-hq.ogg Forest at night in Sian Kaan
-desert   156414 24     60    -17.7 3 https://cdn.freesound.org/previews/156/156414_1661766-hq.ogg
+desert   697217 0      38    -20.7 3 https://cdn.freesound.org/previews/697/697217_7678208-hq.ogg
+#        653951 https://cdn.freesound.org/previews/653/653951_3287894-hq.ogg Soft Neutral Wind
 #        146436 https://cdn.freesound.org/previews/146/146436_1661766-hq.ogg Dry grass rustling in the wind, desert of Chile
-#        457159 https://cdn.freesound.org/previews/457/457159_806506-hq.ogg Desert binaural Wind.WAV
 morning  573080 388    90    -22.7 3 https://cdn.freesound.org/previews/573/573080_1149179-hq.ogg
 #        270370 https://cdn.freesound.org/previews/270/270370_1992775-hq.ogg Various Birds singing in the Morning
 #        165516 https://cdn.freesound.org/previews/165/165516_2022935-hq.ogg Dawn Chorus.mp3
@@ -61,15 +65,15 @@ clock    170445 0.059  31.5  -28.7 3 https://cdn.freesound.org/previews/170/1704
 #        171043 https://cdn.freesound.org/previews/171/171043_2449563-hq.ogg Mechanical alarm clock is ticking (5 ticks/s)
 knock    607215 0      31.3  -30.3 3 https://cdn.freesound.org/previews/607/607215_541139-hq.ogg
 #        863784 https://cdn.freesound.org/previews/863/863784_17110092-hq.ogg Temple Blocks (5pcs), one strike per block
-cafe     404478 5      55    -18.7 3 https://cdn.freesound.org/previews/404/404478_5200244-hq.ogg
-#        370973 https://cdn.freesound.org/previews/370/370973_5835751-hq.ogg coffee shop ambience (mono)
-#        125247 https://cdn.freesound.org/previews/125/125247_1812576-hq.ogg CoffeeShopChatter.wav
-musicbox 158206 0      33.8  -22.4 3 https://cdn.freesound.org/previews/158/158206_94105-hq.ogg
-#        210799 https://cdn.freesound.org/previews/210/210799_770707-hq.ogg gentle music box (check the tune is public domain)
-#        381973 https://cdn.freesound.org/previews/381/381973_926978-hq.ogg Music box lullaby (check the tune is public domain)
-traffic  330427 68     90    -15.6 3 https://cdn.freesound.org/previews/330/330427_3287894-hq.ogg
-#        135097 https://cdn.freesound.org/previews/135/135097_658546-hq.ogg Room Tone Office Quiet Distant Traffic.wav
-#        208502 https://cdn.freesound.org/previews/208/208502_1756543-hq.ogg highway, atmo, distant.wav
+cafe     104279 1      50    -21.7 6 https://cdn.freesound.org/previews/104/104279_420640-hq.ogg
+#        437461 https://cdn.freesound.org/previews/437/437461_2010973-hq.ogg quiet cafe chatter (first 40 s, before the milk frother)
+#        46310  https://cdn.freesound.org/previews/46/46310_43834-hq.ogg 0105coffeehouse.wav (mono)
+musicbox usaf-canon 0  228   -22.4 3 https://upload.wikimedia.org/wikipedia/commons/1/12/Canon_%282004%29_-_Strolling_Strings_-_United_States_Air_Force_Band.mp3 3
+#        381973 https://cdn.freesound.org/previews/381/381973_926978-hq.ogg Music box lullaby (Brahms)
+#        158206 https://cdn.freesound.org/previews/158/158206_94105-hq.ogg Music Box.wav (Brahms, old box)
+traffic  208502 5      80    -18.6 3 https://cdn.freesound.org/previews/208/208502_1756543-hq.ogg
+#        149428 https://cdn.freesound.org/previews/149/149428_221578-hq.ogg AMB_Int_RoomTone_Traffic_001.wav (mono, through a window)
+#        330427 https://cdn.freesound.org/previews/330/330427_3287894-hq.ogg Downtown LA late night traffic (hissy at +28 dB)
 '
 
 # Prints integrated loudness (LUFS) and true peak (dBTP) of the given input.
@@ -102,18 +106,18 @@ compose_knock() {
 
 # Levels one excerpt toward its target, allowing at most $6 dB of limiting
 # above -2.5 dBFS (at 4x oversampling, so intersample peaks count too),
-# encodes it, and checks the MP3 itself.
+# encodes it at VBR quality $7, and checks the MP3 itself.
 build() {
-  local id=$1 source=$2 start=$3 length=$4 target=$5 cap=$6 out=$sounds_dir/$1.mp3
+  local id=$1 source=$2 start=$3 length=$4 target=$5 cap=$6 quality=$7 out=$sounds_dir/$1.mp3
   local rate loud peak gain
   rate=$(ffprobe -v error -select_streams a:0 -show_entries stream=sample_rate -of csv=p=0 "$source")
   rate=$(( rate > 48000 ? 48000 : rate ))
   read -r loud peak < <(measure -ss "$start" -t "$length" -i "$source")
   gain=$(awk -v t="$target" -v i="$loud" -v p="$peak" -v c="$cap" 'BEGIN {
     g = t - i; over = p + g + 2.5; if (over > c) g -= over - c; printf "%.2f", g }')
-  ffmpeg -nostdin -hide_banner -loglevel error -y -ss "$start" -t "$length" -i "$source" -map_metadata -1 \
+  ffmpeg -nostdin -hide_banner -loglevel error -y -ss "$start" -t "$length" -i "$source" -map_metadata -1 -vn \
     -af "aresample=$((rate * 4)),volume=${gain}dB,alimiter=limit=0.75:level=false:latency=true,aresample=$rate" \
-    -c:a libmp3lame -q:a 2 -id3v2_version 0 "$out"
+    -c:a libmp3lame -q:a "$quality" -id3v2_version 0 "$out"
   read -r loud peak < <(measure -i "$out")
   printf '%-9s %5s s  %6s LUFS (目标 %s)  峰值 %5s dBTP  增益 %6s dB\n' "$id" "$length" "$loud" "$target" "$peak" "$gain"
   if ! awk -v p="$peak" 'BEGIN { exit !(p <= -1) }'; then
@@ -122,18 +126,18 @@ build() {
   fi
 }
 
-while read -r id sid start length target cap url; do
+while read -r id sid start length target cap url quality; do
   [[ -z $id || $id == \#* ]] && continue
-  source=$sounds_cache/$sid.ogg
+  source=$sounds_cache/$sid.${url##*.}
   if [[ ! -s $source ]]; then
-    curl -fsSL --retry 3 -C - -o "$source.part" "$url"
+    curl -fsSL --retry 3 -C - -A 'little-reef build-sounds.sh' -o "$source.part" "$url"
     mv "$source.part" "$source"
   fi
   if [[ $id == knock ]]; then
     compose_knock "$source" "$sounds_cache/knock.wav"
     source=$sounds_cache/knock.wav
   fi
-  build "$id" "$source" "$start" "$length" "$target" "$cap"
+  build "$id" "$source" "$start" "$length" "$target" "$cap" "${quality:-2}"
 done <<<"$sounds_table"
 
 total=$(cat "$sounds_dir"/*.mp3 | wc -c)

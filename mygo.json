@@ -1,13 +1,15 @@
 {
   "name": "小海底",
   "identifier": "dev.mygo.examples.aquarium",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "icon": "assets/icon.png",
   "frontendDist": "web",
   "out": "build",
   "bindings": "bindings.ts",
   "macos": {
     "signingIdentity": "Developer ID Application: Zijie Hu (8LH7PFQJ89)",
-    "notarize": { "keychainProfile": "notary" }
+    "notarize": {
+      "keychainProfile": "clipnest-notary"
+    }
   }
 }

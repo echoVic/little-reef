@@ -184,7 +184,7 @@ func main() {
 		show := func() { win.Show(); win.Focus() }
 		mygo.App.OnActivate(func(bool) { show() })
 		tray, trayErr := mygo.NewTray(mygo.TrayOptions{Icon: trayIcon(), IconIsTemplate: runtime.GOOS == "darwin", ToolTip: "小海底 · 专注养出一片海",
-			Menu: mygo.NewMenu([]*mygo.MenuItem{{Label: "打开小海底", Click: func(*mygo.MenuItem, *mygo.Window) { show() }}, mygo.Separator(), {Label: "退出小海底", Click: func(*mygo.MenuItem, *mygo.Window) { mygo.App.Quit() }}}),
+			Menu: mygo.NewMenu([]*mygo.MenuItem{{Label: "打开小海底", Click: func(*mygo.MenuItem, *mygo.Window) { show() }}, {Label: "问题反馈…", Click: func(*mygo.MenuItem, *mygo.Window) { _ = mygo.Shell.OpenExternal("https://github.com/echoVic/little-reef/issues/new") }}, mygo.Separator(), {Label: "退出小海底", Click: func(*mygo.MenuItem, *mygo.Window) { mygo.App.Quit() }}}),
 		})
 		if trayErr == nil {
 			desktop.tray = tray

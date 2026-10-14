@@ -10,3 +10,6 @@ dialog{width:min(430px,calc(100vw - 36px));background:var(--panel);color:var(--t
 @media(max-width:950px){main{padding:24px}.sound-panel{flex-wrap:wrap;gap:14px}.sound-heading{min-width:150px}.sound-options{flex:initial}.volume-control{margin-left:auto}}
 @media(max-width:700px){main{padding:18px}.brand small{display:none}h1{font-size:23px}.main-grid,.bottom-grid{grid-template-columns:1fr}.reef-stage{min-height:280px}.timer-panel{padding:20px}.timer-ring{width:180px;height:180px}.sound-panel{padding:16px;gap:15px}.sound-heading{width:100%}.sound-options{width:100%}.sound-choice{flex:1}.volume-control{margin-left:0;flex:1}.volume-control input{width:120px}.titlebar{padding:0 18px}.intro{align-items:start}.online-state{padding-top:5px}.stats strong{font-size:26px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}.light-ray{display:none}}
+.dialog-feedback{font-size:11px;color:var(--muted);margin:18px 0 0}
+.dialog-feedback a{color:var(--accent);text-decoration:none}
+.dialog-feedback a:hover{text-decoration:underline}

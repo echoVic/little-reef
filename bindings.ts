@@ -95,6 +95,13 @@ export const Aquarium = {
 
 /** Desktop controls the current aquarium window. */
 export const Desktop = {
+  /**
+   * CheckForUpdates opens the update window, which says when the app is up to
+   * date or offers the new version.
+   */
+  checkForUpdates(): Promise<void> {
+    return call("Desktop.CheckForUpdates");
+  },
   /** Hide keeps the page and sound alive in the tray, or minimizes without a tray. */
   hide(): Promise<void> {
     return call("Desktop.Hide");

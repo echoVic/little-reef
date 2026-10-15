@@ -235,6 +235,8 @@ $("settings-open").onclick = () => {
   $("settings-dialog").showModal();
 };
 $("settings-close").onclick = () => $("settings-dialog").close();
+// 更新窗口自己会说明结果：已是最新、发现新版本或检查失败。
+$("check-update").onclick = () => { if (desktop) void call("Desktop.CheckForUpdates").catch(() => {}); };
 $("settings-form").onsubmit = (event) => {
   event.preventDefault();
   if (!$("settings-form").reportValidity()) return;

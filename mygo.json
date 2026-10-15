@@ -1,7 +1,7 @@
 {
   "name": "小海底",
   "identifier": "dev.mygo.examples.aquarium",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "icon": "assets/icon.png",
   "frontendDist": "web",
   "out": "build",
@@ -11,5 +11,10 @@
     "notarize": {
       "keychainProfile": "clipnest-notary"
     }
+  },
+  "updates": {
+    "publicKey": "0ZE+ktIAa8WWCN9qm3Gyg+4q1He4iPKclVBRfi7lEQc=",
+    "github": "echoVic/little-reef",
+    "privateKey": "~/Library/Application Support/mygo/update-keys/mygo-update.key"
   }
 }

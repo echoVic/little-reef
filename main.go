@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/egoist/mygo"
+	"github.com/egoist/mygo/plugins/updater"
 )
 
 //go:embed web
@@ -53,6 +54,10 @@ func (d *Desktop) SetCompact(ctx context.Context, compact bool) {
 		}
 	}
 }
+
+// CheckForUpdates opens the update window, which says when the app is up to
+// date or offers the new version.
+func (d *Desktop) CheckForUpdates() { updater.CheckForUpdates() }
 
 // Quit closes the desktop app and saves the current session.
 func (*Desktop) Quit() { mygo.App.Quit() }
@@ -112,7 +117,6 @@ func main() {
 		return
 	}
 	mygo.App.SetName("小海底")
-	mygo.App.SetVersion("0.2.1")
 	web, err := fs.Sub(frontend, "web")
 	if err != nil {
 		log.Fatal(err)
@@ -157,6 +161,7 @@ func main() {
 	if !mygo.App.RequestSingleInstanceLock() {
 		return
 	}
+	mygo.Use(updater.Plugin)
 	mygo.SetFrontend(web)
 	var win *mygo.Window
 	var quitting atomic.Bool
@@ -184,7 +189,7 @@ func main() {
 		show := func() { win.Show(); win.Focus() }
 		mygo.App.OnActivate(func(bool) { show() })
 		tray, trayErr := mygo.NewTray(mygo.TrayOptions{Icon: trayIcon(), IconIsTemplate: runtime.GOOS == "darwin", ToolTip: "小海底 · 专注养出一片海",
-			Menu: mygo.NewMenu([]*mygo.MenuItem{{Label: "打开小海底", Click: func(*mygo.MenuItem, *mygo.Window) { show() }}, {Label: "问题反馈…", Click: func(*mygo.MenuItem, *mygo.Window) { _ = mygo.Shell.OpenExternal("https://github.com/echoVic/little-reef/issues/new") }}, mygo.Separator(), {Label: "退出小海底", Click: func(*mygo.MenuItem, *mygo.Window) { mygo.App.Quit() }}}),
+			Menu: mygo.NewMenu([]*mygo.MenuItem{{Label: "打开小海底", Click: func(*mygo.MenuItem, *mygo.Window) { show() }}, updater.MenuItem(), {Label: "问题反馈…", Click: func(*mygo.MenuItem, *mygo.Window) { _ = mygo.Shell.OpenExternal("https://github.com/echoVic/little-reef/issues/new") }}, mygo.Separator(), {Label: "退出小海底", Click: func(*mygo.MenuItem, *mygo.Window) { mygo.App.Quit() }}}),
 		})
 		if trayErr == nil {
 			desktop.tray = tray

@@ -1,7 +1,7 @@
 {
   "name": "小海底",
   "identifier": "dev.mygo.examples.aquarium",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "icon": "assets/icon.png",
   "frontendDist": "web",
   "out": "build",

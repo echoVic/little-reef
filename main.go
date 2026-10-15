@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/egoist/mygo"
+	_ "github.com/egoist/mygo/locales/zh-Hans"
 	"github.com/egoist/mygo/plugins/updater"
 )
 
@@ -41,16 +42,17 @@ func (d *Desktop) Hide(ctx context.Context) {
 // SetCompact turns the window into a small always-on-top desktop aquarium.
 func (d *Desktop) SetCompact(ctx context.Context, compact bool) {
 	if win := mygo.CallerWindow(ctx); win != nil {
+		area := mygo.Screen.DisplayMatching(win.Bounds()).WorkArea
 		win.SetAlwaysOnTop(compact)
 		if compact {
 			win.SetMinimumSize(360, 260)
 			win.SetSize(400, 350)
-			area := mygo.Screen.PrimaryDisplay().WorkArea
 			win.SetPosition(area.X+max(0, area.Width-420), area.Y+max(0, area.Height-370))
 		} else {
 			win.SetMinimumSize(760, 680)
 			win.SetSize(1100, 800)
-			win.Center()
+			width, height := win.Size()
+			win.SetPosition(area.X+max(0, (area.Width-width)/2), area.Y+max(0, (area.Height-height)/2))
 		}
 	}
 }
@@ -69,6 +71,10 @@ func (*Desktop) Quit() { mygo.App.Quit() }
 // blocked main-thread dispatch must stay able to run.
 func startTraySwim(tray *mygo.Tray, a *Aquarium, quitting *atomic.Bool) func() {
 	template := runtime.GOOS == "darwin"
+	var reduceMotion atomic.Bool
+	updateMotion := func() { reduceMotion.Store(mygo.Theme.Preferences().ReduceMotion) }
+	updateMotion()
+	offMotion := mygo.Theme.OnUpdated(updateMotion)
 	stop := make(chan struct{})
 	go func() {
 		frames := trayFrames()
@@ -81,7 +87,7 @@ func startTraySwim(tray *mygo.Tray, a *Aquarium, quitting *atomic.Bool) func() {
 				return
 			case <-ticker.C:
 				session := a.Get().Session
-				running := session.Status == "running" && session.Kind == "focus"
+				running := !reduceMotion.Load() && session.Status == "running" && session.Kind == "focus"
 				if !running && !swimming {
 					continue
 				}
@@ -102,7 +108,7 @@ func startTraySwim(tray *mygo.Tray, a *Aquarium, quitting *atomic.Bool) func() {
 		}
 	}()
 	var once sync.Once
-	return func() { once.Do(func() { close(stop) }) }
+	return func() { once.Do(func() { offMotion(); close(stop) }) }
 }
 
 func main() {
@@ -117,6 +123,7 @@ func main() {
 		return
 	}
 	mygo.App.SetName("小海底")
+	mygo.App.SetLanguages("zh-Hans")
 	web, err := fs.Sub(frontend, "web")
 	if err != nil {
 		log.Fatal(err)
@@ -190,7 +197,9 @@ func main() {
 		show := func() { win.Show(); win.Focus() }
 		mygo.App.OnActivate(func(bool) { show() })
 		tray, trayErr := mygo.NewTray(mygo.TrayOptions{Icon: trayIcon(), IconIsTemplate: runtime.GOOS == "darwin", ToolTip: "小海底 · 专注养出一片海",
-			Menu: mygo.NewMenu([]*mygo.MenuItem{{Label: "打开小海底", Click: func(*mygo.MenuItem, *mygo.Window) { show() }}, updater.MenuItem(), {Label: "问题反馈…", Click: func(*mygo.MenuItem, *mygo.Window) { _ = mygo.Shell.OpenExternal("https://github.com/echoVic/little-reef/issues/new") }}, mygo.Separator(), {Label: "退出小海底", Click: func(*mygo.MenuItem, *mygo.Window) { mygo.App.Quit() }}}),
+			Menu: mygo.NewMenu([]*mygo.MenuItem{{Label: "打开小海底", Click: func(*mygo.MenuItem, *mygo.Window) { show() }}, updater.MenuItem(), {Label: "问题反馈…", Click: func(*mygo.MenuItem, *mygo.Window) {
+				_ = mygo.Shell.OpenExternal("https://github.com/echoVic/little-reef/issues/new")
+			}}, mygo.Separator(), {Label: "退出小海底", Click: func(*mygo.MenuItem, *mygo.Window) { mygo.App.Quit() }}}),
 		})
 		if trayErr == nil {
 			desktop.tray = tray

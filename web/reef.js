@@ -17,6 +17,11 @@ export class Reef {
     this.foodUntil = 0;
     this.fish = Array.from({ length: 5 }, (_, i) => ({ x: .15 + i * .16, y: .25 + (i % 3) * .14, speed: .016 + i * .002, dir: i % 2 ? -1 : 1, phase: i * 2.1 }));
     this.motion = matchMedia("(prefers-reduced-motion: reduce)");
+    this.nativeReduceMotion = !!globalThis.mygo?.preferences?.reduceMotion;
+    globalThis.mygo?.on("mygo:preferences", preferences => {
+      this.nativeReduceMotion = preferences.reduceMotion;
+      this.schedule();
+    });
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(canvas);
     document.addEventListener("visibilitychange", () => this.schedule());
@@ -39,14 +44,17 @@ export class Reef {
   update(state) {
     const oldFed = this.state?.fedSession;
     this.state = state;
-    if (oldFed !== undefined && state.fedSession !== oldFed && state.fedSession) this.foodUntil = this.time + 5;
+    if (oldFed !== undefined && state.fedSession !== oldFed && state.fedSession && !this.reducedMotion) this.foodUntil = this.time + 5;
     this.draw();
   }
+
+  get reducedMotion() { return this.motion.matches || this.nativeReduceMotion; }
 
   schedule() {
     if (this.frame !== null) cancelAnimationFrame(this.frame);
     this.frame = null;
-    if (document.hidden || this.motion.matches) { this.draw(); return; }
+    if (this.reducedMotion) this.foodUntil = 0;
+    if (document.hidden || this.reducedMotion) { this.draw(); return; }
     this.last = 0;
     const animate = (now) => {
       this.frame = requestAnimationFrame(animate);

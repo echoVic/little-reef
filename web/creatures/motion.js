@@ -54,7 +54,8 @@ export function knee(hx, hy, fx, fy, upper, lower, up = true) {
 
 // Gait keeps each foot planted until the body has moved past it, then
 // swings it ahead. Legs belong to two groups that never swing at the same
-// time; when both groups are due, the group that did not step last goes first.
+// time; a waiting group stops the airborne group from restarting steps.
+// When both groups are due, the group that did not step last goes first.
 // Rest offsets are in body lengths; sx scales them to pixels and mirrors
 // them with the facing.
 export class Gait {
@@ -83,9 +84,12 @@ export class Gait {
       } else leg.y = ground(leg.x, leg);
     }
     const due = leg => leg.t >= 1 && Math.abs(leg.x - (x + leg.dx * sx)) >= stride * (walking ? .5 : .15);
-    const next = this.legs.find(leg => leg.t < 1) || this.legs.find(leg => leg.group !== this.last && due(leg)) || this.legs.find(due);
+    const air = this.legs.find(leg => leg.t < 1);
+    let group;
+    if (air) group = this.legs.some(leg => leg.group !== air.group && due(leg)) ? undefined : air.group;
+    else group = (this.legs.find(leg => leg.group !== this.last && due(leg)) || this.legs.find(due))?.group;
     for (const leg of this.legs) {
-      if (leg.group !== next?.group || !due(leg)) continue;
+      if (leg.group !== group || !due(leg)) continue;
       const rest = x + leg.dx * sx;
       leg.fromX = leg.x; leg.fromY = leg.y;
       leg.toX = rest + (walking ? Math.sign(vx) * stride * .45 : 0);

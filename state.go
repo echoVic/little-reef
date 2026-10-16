@@ -76,6 +76,7 @@ type Aquarium struct {
 	segment  time.Time
 	lastTick time.Time
 	now      func() time.Time
+	roll     func(n int) int // random number in [0, n); tests replace it
 	onChange func(Snapshot)
 	onDone   func(Snapshot)
 	stop     chan struct{}
@@ -83,7 +84,7 @@ type Aquarium struct {
 }
 
 func newAquarium(path string) (*Aquarium, error) {
-	a := &Aquarium{path: path, now: time.Now, stop: make(chan struct{}), done: make(chan struct{})}
+	a := &Aquarium{path: path, now: time.Now, roll: rand.IntN, stop: make(chan struct{}), done: make(chan struct{})}
 	a.state = Snapshot{
 		Preferences: Preferences{FocusMinutes: 25, BreakMinutes: 5, Sound: "waves", Volume: .35, ChimeEnabled: true},
 		Session:     Session{Kind: "focus", Status: "idle", DurationMS: 25 * 60 * 1000},
@@ -346,11 +347,42 @@ func (a *Aquarium) Feed() (Snapshot, error) {
 	})
 }
 
+// species lists every visitor, fish first, then shrimp and crabs. The ids
+// are saved in the visitor book and drawn by web/creatures/species.js.
 var species = []Visitor{
 	{Species: "clown", Name: "小丑鱼"},
 	{Species: "tang", Name: "蓝吊鱼"},
 	{Species: "angel", Name: "神仙鱼"},
 	{Species: "puffer", Name: "小河豚"},
+	{Species: "cleaner", Name: "清洁虾"},
+	{Species: "fire", Name: "火焰虾"},
+	{Species: "harlequin", Name: "油彩蜡膜虾"},
+	{Species: "pistol", Name: "枪虾"},
+	{Species: "mantis", Name: "皮皮虾"},
+	{Species: "slipper", Name: "琵琶虾"},
+	{Species: "hermit", Name: "寄居蟹"},
+	{Species: "emerald", Name: "翡翠蟹"},
+	{Species: "porcelain", Name: "瓷蟹"},
+	{Species: "arrow", Name: "箭蟹"},
+	{Species: "swimmer", Name: "梭子蟹"},
+}
+
+// nextVisitorLocked picks who comes: the clownfish after the first round,
+// then someone not met yet, and once everyone has come, any old friend.
+func (a *Aquarium) nextVisitorLocked() Visitor {
+	if a.state.Completed == 1 {
+		return species[0]
+	}
+	var unmet []Visitor
+	for _, s := range species {
+		if !slices.ContainsFunc(a.state.Visitors, func(v Visitor) bool { return v.Species == s.Species }) {
+			unmet = append(unmet, s)
+		}
+	}
+	if len(unmet) == 0 {
+		unmet = species
+	}
+	return unmet[a.roll(len(unmet))]
 }
 
 func (a *Aquarium) completeLocked() {
@@ -365,8 +397,8 @@ func (a *Aquarium) completeLocked() {
 	a.state.Notice = "专注完成，水草又长大了一点。"
 	a.state.LastVisitor = ""
 	// The first encounter is guaranteed; later rounds leave occasional surprises.
-	if a.state.Completed == 1 || rand.IntN(3) == 0 {
-		v := species[(a.state.Completed-1)%len(species)]
+	if a.state.Completed == 1 || a.roll(3) == 0 {
+		v := a.nextVisitorLocked()
 		v.Date, v.Visits = a.now().Format(time.RFC3339), 1
 		i := slices.IndexFunc(a.state.Visitors, func(old Visitor) bool { return old.Species == v.Species })
 		if i >= 0 {

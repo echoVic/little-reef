@@ -1,5 +1,6 @@
 import { Soundscape } from "./audio.js";
 import { Reef } from "./reef.js";
+import { drawPortrait } from "./creatures/species.js";
 
 const $ = (id) => document.getElementById(id);
 const desktop = !!window.mygo;
@@ -142,14 +143,16 @@ function render(previous) {
 function unit(text) { const span = document.createElement("span"); span.textContent = text; return span; }
 function renderVisitors() {
   if (!state.visitors.length) return;
-  const icons = { clown: "🐠", tang: "🐟", angel: "🐠", puffer: "🐡" };
+  const portraits = [];
   $("visitors").replaceChildren(...state.visitors.map(v => {
     const el = document.createElement("div"); el.className = "visitor";
-    const icon = document.createElement("span"); icon.textContent = icons[v.species] || "🐟"; icon.setAttribute("aria-hidden", "true");
+    const portrait = document.createElement("canvas"); portrait.className = "portrait"; portrait.setAttribute("aria-hidden", "true");
     const info = document.createElement("div"), title = document.createElement("p"), date = document.createElement("small");
     title.textContent = v.name; date.textContent = `${new Date(v.date).toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" })} · 来过 ${v.visits} 次`;
-    info.append(title, date); el.append(icon, info); return el;
+    info.append(title, date); el.append(portrait, info); portraits.push([portrait, v.species]); return el;
   }));
+  // Portraits size themselves from their box, so paint them once they are on the page.
+  for (const [portrait, species] of portraits) drawPortrait(portrait, species);
 }
 function renderRecords() {
   $("record-count").textContent = `${state.records.length} 条记录`;

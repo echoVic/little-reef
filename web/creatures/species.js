@@ -47,7 +47,9 @@ export function create(id, world, options) {
 // drawPortrait paints a still picture of a species into a canvas for the
 // visitor book; unknown species get a plain silhouette.
 export function drawPortrait(canvas, id) {
-  const ratio = Math.min(devicePixelRatio || 1, 2), w = canvas.clientWidth || canvas.width, h = canvas.clientHeight || canvas.height;
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  if (!w || !h) return;
+  const ratio = Math.min(devicePixelRatio || 1, 2);
   canvas.width = Math.ceil(w * ratio); canvas.height = Math.ceil(h * ratio);
   const c = canvas.getContext("2d");
   c.setTransform(ratio, 0, 0, ratio, 0, 0);

@@ -15,6 +15,11 @@ let soundPlaying = false;
 let lastAudioKey = "";
 let adjustingVolume = false;
 let toastTimer;
+const portraitObserver = new ResizeObserver(entries => {
+  for (const entry of entries) {
+    if (entry.contentRect.width && entry.contentRect.height) drawPortrait(entry.target, entry.target.dataset.species);
+  }
+});
 const reef = new Reef($("ocean"));
 const sound = new Soundscape((message, error) => {
   $("sound-status").textContent = message;
@@ -143,16 +148,18 @@ function render(previous) {
 function unit(text) { const span = document.createElement("span"); span.textContent = text; return span; }
 function renderVisitors() {
   if (!state.visitors.length) return;
+  portraitObserver.disconnect();
   const portraits = [];
   $("visitors").replaceChildren(...state.visitors.map(v => {
     const el = document.createElement("div"); el.className = "visitor";
     const portrait = document.createElement("canvas"); portrait.className = "portrait"; portrait.setAttribute("aria-hidden", "true");
+    portrait.dataset.species = v.species;
     const info = document.createElement("div"), title = document.createElement("p"), date = document.createElement("small");
     title.textContent = v.name; date.textContent = `${new Date(v.date).toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" })} · 来过 ${v.visits} 次`;
-    info.append(title, date); el.append(portrait, info); portraits.push([portrait, v.species]); return el;
+    info.append(title, date); el.append(portrait, info); portraits.push(portrait); return el;
   }));
-  // Portraits size themselves from their box, so paint them once they are on the page.
-  for (const [portrait, species] of portraits) drawPortrait(portrait, species);
+  // Paint portraits once they have a size and repaint whenever their box changes size.
+  for (const portrait of portraits) portraitObserver.observe(portrait);
 }
 function renderRecords() {
   $("record-count").textContent = `${state.records.length} 条记录`;

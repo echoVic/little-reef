@@ -252,6 +252,7 @@ export class Fish {
     this.z = .15 + r() * .55;
     this.facing = r() < .5 ? -1 : 1;
     this.x = world.width * (.15 + r() * .7);
+    this.homeX = this.x;
     this.y = world.height * lerp(spec.zone[0], spec.zone[1], .3 + r() * .4);
     if (enter) { this.x = this.facing > 0 ? -world.width * .08 : world.width * 1.08; }
     this.vx = 0; this.vy = 0; this.pitch = 0; this.turn = 0; this.turnTo = this.turnFrom = this.facing;
@@ -268,11 +269,12 @@ export class Fish {
   pick(world, L) {
     const s = this.spec, W = world.width, H = world.height;
     if (s.home) {
-      const h = world.home(), r = Math.max(L * 2.2, W * .1);
+      const h = world.home(this.homeX), r = Math.max(L * 2.2, W * .1);
       const x = clamp(h.x + (this.rand() * 2 - 1) * r, L, W - L);
       return [x, clamp(h.y + (this.rand() * 2 - 1) * r * .5, H * .12, world.ground(x, this.z) - L * .45)];
     }
-    const x = L + this.rand() * (W - 2 * L);
+    const rock = s.rocky ? world.rocks[Math.floor(this.rand() * world.rocks.length)] : null;
+    const x = rock ? clamp(rock.x + (this.rand() * 2 - 1) * W * .15, L, W - L) : L + this.rand() * (W - 2 * L);
     return [x, Math.min(H * lerp(s.zone[0], s.zone[1], this.rand()), world.ground(x, this.z) - L * .45)];
   }
 
@@ -284,7 +286,7 @@ export class Fish {
     let best = null, bd = Infinity;
     for (const p of world.pellets) {
       if (p.landed || p.eaten) continue;
-      const d = Math.hypot(p.x - this.x, p.y - this.y);
+      const d = Math.hypot(p.x - (this.x + this.facing * L * .5), p.y - this.y);
       if (d < bd) { bd = d; best = p; }
     }
     if (best && Math.hypot(this.x + this.facing * L * .5 - best.x, this.y - best.y) < L * .18) { world.eat(best); this.gape = 1; this.appetite--; }
@@ -345,7 +347,7 @@ export class Fish {
     if (Math.abs(this.vx) > L * .25) want = Math.sign(this.vx);
     else if (this.mode === "hover" && !food) {
       if (s.upstream) want = -1;
-      else if (s.curious && noise(this.seed + 9, t * .12) > .45) want = -this.facing;
+      else if (s.curious) want = noise(this.seed + 9, t * .12) > .1 ? 1 : -1;
     }
     if (!this.turn && want !== this.facing) { this.turn = 1e-3; this.turnTo = want; this.turnFrom = this.facing; }
     if (this.turn) { this.turn += dt / .5; if (this.turn >= .5) this.facing = this.turnTo; if (this.turn >= 1) this.turn = 0; }

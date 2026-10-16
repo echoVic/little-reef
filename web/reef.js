@@ -26,7 +26,7 @@ export class Reef {
       width: 1, height: 1, px: 5, time: 0, still: false, fish: [], pellets: this.pellets, meal: 0, rocks: this.rocks, burrows: {},
       ground: (x, z) => this.ground(x, z),
       surface: (x, z) => this.surface(x, z),
-      home: () => this.home(),
+      home: x => this.home(x),
       eat: pellet => { pellet.eaten = true; },
     };
     this.motion = matchMedia("(prefers-reduced-motion: reduce)");
@@ -110,11 +110,13 @@ export class Reef {
     }
   }
 
-  // home is where the clownfish lives: the plant nearest the middle, or the big rock.
-  home() {
+  // home is where the clownfish lives: the nearest plant, or a spot beside the nearest rock.
+  home(x) {
     let best = null;
-    for (const p of this.plants) if (!best || Math.abs(p.x - this.width * .5) < Math.abs(best.x - this.width * .5)) best = p;
-    return best ? { x: best.x, y: this.height - 25 - best.height * .55 } : { x: this.rocks[0].x - 20, y: this.height - 70 };
+    for (const p of this.plants) if (!best || Math.abs(p.x - x) < Math.abs(best.x - x)) best = p;
+    if (best) return { x: best.x, y: this.height - 25 - best.height * .55 };
+    for (const r of this.rocks) if (!best || Math.abs(r.x - x) < Math.abs(best.x - x)) best = r;
+    return { x: best.x - 20, y: this.height - 70 };
   }
 
   update(state) {

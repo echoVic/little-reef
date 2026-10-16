@@ -1,11 +1,11 @@
 import { Fish } from "./fish.js";
 
-// Every creature's model and habits. Lengths are in centimeters: the fish
-// keep their true proportions, the bigger ones sized as young fish so
-// nobody fills the tank; shrimp and crabs are drawn about half again their
-// size so they stay readable on the sand. Colors are
-// the species' own, a little muted to suit the quiet page. The ids match
-// the visitor list in state.go.
+// Every creature's model and habits. Lengths are in centimeters. Fish follow
+// the spec's reference lengths, with the bigger ones sized as young fish:
+// angel and tang are a little smaller so nobody fills the tank. Shrimp and
+// crabs are drawn about half again their size so they stay readable on the
+// sand. Colors are the species' own, a little muted to suit the quiet page.
+// The ids match the visitor list in state.go.
 const MODELS = { fish: Fish };
 
 export const SPECIES = {
@@ -16,7 +16,7 @@ export const SPECIES = {
     colors: { back: "#dc6624", flank: "#ee8538", belly: "#f6a255", fin: "#ee8a3c", iris: "#f0a54a" } },
   tang: { id: "tang", model: "fish", length: 9.5, zone: [.12, .72], speed: 1, hover: .2, propulsion: "pectoral",
     colors: { back: "#1e4ead", flank: "#3367c6", belly: "#6c95d6", fin: "#2c5ab6", iris: "#22283a" } },
-  angel: { id: "angel", model: "fish", length: 10, zone: [.38, .8], speed: .65, hover: .45, propulsion: "tail",
+  angel: { id: "angel", model: "fish", length: 10, zone: [.38, .8], speed: .65, hover: .45, rocky: true, propulsion: "tail",
     colors: { back: "#2b6d80", flank: "#4f9a8e", belly: "#a7c77d", fin: "#3a8fa3", iris: "#d8b450" } },
   puffer: { id: "puffer", model: "fish", length: 6.5, zone: [.48, .88], speed: .5, hover: .6, curious: true, propulsion: "fins",
     colors: { back: "#e8d8be", flank: "#f2eadb", belly: "#fbf7ef", fin: "#f1dfab", iris: "#7dc6b4" } },

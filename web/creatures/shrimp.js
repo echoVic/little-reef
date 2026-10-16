@@ -233,7 +233,7 @@ export class Shrimp extends Crawler {
   startle(world) {
     // Burrowers and the shy fire shrimp hide for a while; the others flip away.
     if (this.spec.burrow || this.spec.id === "fire") { this.hideAway(8 + this.rand() * 10); return; }
-    this.dart = 1; this.goal = null; this.until = world.time + 3;
+    this.dart = 1; this.busy = true; this.turn = 0; this.goal = null; this.until = world.time + 3;
     this.vx = -this.facing * this.size(world) * 7;
   }
 

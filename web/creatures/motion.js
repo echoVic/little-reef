@@ -190,6 +190,7 @@ export class Crawler {
 
   // localFeet maps the feet into body units for drawing, with the body raised by lift pixels.
   localFeet(L, lift = 0) {
+    if (!this.legs.placed) return this.legs.legs.map(leg => [leg.dx, lift / L - (leg.dz || 0) * 1.5]);
     const sx = this.spec.sideways ? L : this.flipX * L;
     return this.legs.legs.map(leg => [(leg.x - this.x) / sx, (leg.y - this.y + lift) / L]);
   }
@@ -237,7 +238,7 @@ export class Crawler {
       } else this.vx = follow(this.vx, 0, 6, dt);
     } else if (!this.busy) this.vx = follow(this.vx, 0, 6, dt);
     this.x += this.vx * dt;
-    if (!this.spec.sideways && !this.turn && Math.abs(this.vx) > L * .08 && Math.sign(this.vx) !== this.facing) this.turn = 1e-3;
+    if (!this.busy && !this.spec.sideways && !this.turn && Math.abs(this.vx) > L * .08 && Math.sign(this.vx) !== this.facing) this.turn = 1e-3;
     if (this.turn) { this.turn += dt / .35; if (this.turn >= .5) this.facing = Math.sign(this.vx) || this.facing; if (this.turn >= 1) this.turn = 0; }
     this.shown = follow(this.shown, this.state === "in" && this.hides ? 0 : 1, 3, dt);
     this.y = world.surface(this.x, this.z);

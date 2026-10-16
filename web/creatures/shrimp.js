@@ -231,9 +231,8 @@ export class Shrimp extends Crawler {
   get resting() { return this.state === "in" && !this.hides; }
 
   startle(world) {
-    // Burrowers and the shy fire shrimp go home for a while; the others flip away.
+    // Burrowers and the shy fire shrimp hide for a while; the others flip away.
     if (this.spec.burrow || this.spec.id === "fire") { this.hideAway(8 + this.rand() * 10); return; }
-    if (this.spec.id === "harlequin") { super.startle(world); return; }
     this.dart = 1; this.goal = null; this.until = world.time + 3;
     this.vx = -this.facing * this.size(world) * 7;
   }
@@ -243,6 +242,7 @@ export class Shrimp extends Crawler {
     if (this.dart > 0) {
       // Escape flip: the tail snaps under and the body darts backward.
       this.dart = Math.max(0, this.dart - dt * 2.2); this.busy = this.dart > 0;
+      if (!this.busy) this.vx = 0;
       this.curl = Math.sin(Math.PI * Math.min(1, (1 - this.dart) * 1.6));
       this.hop = Math.sin(Math.PI * (1 - this.dart)) * L * .35;
       this.vx = follow(this.vx, 0, 3, dt);

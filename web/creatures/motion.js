@@ -54,13 +54,14 @@ export function knee(hx, hy, fx, fy, upper, lower, up = true) {
 
 // Gait keeps each foot planted until the body has moved past it, then
 // swings it ahead. Legs belong to two groups that never swing at the same
-// time, so the walk alternates the way a real one does. Rest offsets are in
-// body lengths; sx scales them to pixels and mirrors them with the facing.
+// time; when both groups are due, the group that did not step last goes first.
+// Rest offsets are in body lengths; sx scales them to pixels and mirrors
+// them with the facing.
 export class Gait {
   constructor(legs, { stride = .3, lift = .08, duration = .2 } = {}) {
     this.legs = legs.map(leg => ({ group: 0, ...leg, x: 0, y: 0, fromX: 0, fromY: 0, toX: 0, t: 1 }));
     this.stride = stride; this.lift = lift; this.duration = duration;
-    this.placed = false;
+    this.placed = false; this.last = 1;
   }
 
   // place puts every foot straight under its rest position.
@@ -81,14 +82,14 @@ export class Gait {
         leg.y = lerp(leg.fromY, ground(leg.x, leg), e) - Math.sin(Math.PI * leg.t) * this.lift * L;
       } else leg.y = ground(leg.x, leg);
     }
+    const due = leg => leg.t >= 1 && Math.abs(leg.x - (x + leg.dx * sx)) >= stride * (walking ? .5 : .15);
+    const next = this.legs.find(leg => leg.t < 1) || this.legs.find(leg => leg.group !== this.last && due(leg)) || this.legs.find(due);
     for (const leg of this.legs) {
-      if (leg.t < 1) continue;
+      if (leg.group !== next?.group || !due(leg)) continue;
       const rest = x + leg.dx * sx;
-      if (Math.abs(leg.x - rest) < stride * (walking ? .5 : .15)) continue;
-      if (this.legs.some(o => o.t < 1 && o.group !== leg.group)) continue;
       leg.fromX = leg.x; leg.fromY = leg.y;
       leg.toX = rest + (walking ? Math.sign(vx) * stride * .45 : 0);
-      leg.t = 0;
+      leg.t = 0; this.last = leg.group;
     }
   }
 
@@ -173,6 +174,7 @@ export class Crawler {
 
   resize(sx, sy, world) {
     this.settle(world);
+    this.drop();
     this.x *= sx; this.goal = null;
     if (this.state !== "out") { this.state = this.active ? "out" : "in"; this.x = this.active ? this.home.x : this.den.x; this.z = this.active ? this.home.z : this.den.z; }
     this.y = world.surface(this.x, this.z);
@@ -257,7 +259,7 @@ export class Crawler {
   watch(world, L) {
     for (const f of world.fish) {
       if (Math.abs(f.z - this.z) > .3) continue;
-      if (Math.hypot(f.x - this.x, f.y - this.y) < L + f.size(world) * .4) { this.calm = world.time + 8; this.startle(world, f); return; }
+      if (Math.hypot(f.x - this.x, f.y - this.y) < L + f.size(world) * .4) { this.calm = world.time + 8; this.drop(); this.startle(world); return; }
     }
   }
 

@@ -73,15 +73,21 @@ export class Hermit extends Crawler {
     this.out = this.state === "in" ? 0 : 1; this.whip = -.6; this.work = 0; this.shy = 0;
   }
 
+  setActive(on, world, instant = false) {
+    super.setActive(on, world, instant);
+    if (instant) this.out = on ? 1 : 0;
+  }
+
   startle(world) { this.shy = 3 + this.rand() * 3; this.goal = null; }
 
   step(dt, world) {
-    if (this.shy > 0) { this.shy -= dt; this.busy = true; } else this.busy = false;
+    const L = this.size(world);
+    if (this.shy > 0) { this.shy -= dt; this.busy = true; this.vx = follow(this.vx, 0, 8, dt); } else this.busy = false;
     this.routine(dt, world);
     this.legs.update(dt, this.x, this.legScale(world), this.footing(world), this.vx);
     const inside = this.shy > 0 || this.state === "in";
     this.out = follow(this.out, inside ? 0 : 1, inside ? 9 : 2.5, dt);
-    this.whip = follow(this.whip, -.55 + noise(this.seed, this.clock * .7) * .25, 5, dt);
+    this.whip = follow(this.whip, -.55 + noise(this.seed, this.clock * .7) * .25 - clamp(this.vx * this.facing / L, -1, 1) * .25, 5, dt);
     this.work = this.eating > 0 ? .5 + Math.sin(this.clock * 8) * .5 : follow(this.work, 0, 4, dt);
   }
 

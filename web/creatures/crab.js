@@ -146,7 +146,7 @@ function paintArrow(c, pose, haze, L) {
   // Slender claws reach forward and down; they pick at the bottom while eating.
   const reach = pose.work;
   for (const [dy, light] of [[0, -.3], [.01, 0]]) {
-    const tip = [.36 - reach * .06, -.18 + dy + reach * .14];
+    const tip = [.36 - reach * .06 + pose.alarm * .05, -.18 + dy + reach * .14 - pose.alarm * .2];
     limb(c, [[.08, -.37 + dy], [.22, -.33 + dy], tip], Math.max(.018, hair), Math.max(.014, hair * .9), col("#c9a46d", 1, light));
     c.fillStyle = col("#7d5fb8", .95, light); oval(c, tip[0] + .03, tip[1] + .01, .035, .012, .5);
   }
@@ -208,7 +208,7 @@ export class Crab extends Crawler {
     if (this.arrow) {
       c.scale(this.flipX * L, L);
       const feet = this.localFeet(L, lift);
-      paintArrow(c, { near: feet.slice(0, 4), far: feet.slice(4), work: this.eating > 0 ? .5 + Math.sin(this.clock * 8) * .5 : 0 }, haze, L);
+      paintArrow(c, { near: feet.slice(0, 4), far: feet.slice(4), work: this.eating > 0 ? .5 + Math.sin(this.clock * 8) * .5 : 0, alarm: this.alarm }, haze, L);
     } else {
       c.scale(L, L);
       const feet = this.localFeet(L, lift - sink);
@@ -223,7 +223,7 @@ export class Crab extends Crawler {
       const L = Math.min(w * .9 / 1.15, h * .9 / .6);
       c.save(); c.translate(w / 2 - L * .08, h * .92); c.scale(L, L);
       const near = [.42, .22, -.08, -.32].map(x => [x, 0]);
-      paintArrow(c, { near, far: near.map(([x]) => [x + .05, -.02]), work: 0 }, 0, L);
+      paintArrow(c, { near, far: near.map(([x]) => [x + .05, -.02]), work: 0, alarm: 0 }, 0, L);
       c.restore(); return;
     }
     const look = LOOKS[spec.id], L = Math.min(w * .9 / 1.9, h * .88 / .85);

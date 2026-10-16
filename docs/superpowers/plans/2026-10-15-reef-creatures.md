@@ -184,10 +184,10 @@ CGO_ENABLED=0 go run . -web 127.0.0.1:4193 -data-dir /tmp/reef-saves/all
 **Interfaces:**
 - Consumes: 无。
 - Produces:
-  - `paint.js`：`rgb(hex) → [r,g,b]`；`tone(hex, haze = 0, alpha = 1, light = 0) → "rgba(…)"`（`light` 取 −1…1，`haze` 取 0…1，向水色雾化）；`curve(path, points, closed = false, move = true)` 在 Path2D 或 context 上画平滑曲线；`limb(c, points, base, tip, color)`；`shadow(c, x, y, rx, ry, alpha)`；`dot(c, x, y, r)`；`oval(c, x, y, rx, ry, rotation = 0)`；`wind(points)` 统一成顺时针；`hole(c, x, y, r)` / `lip(c, x, y, r)` 画洞口和洞口前沿。
+  - `paint.js`：`rgb(hex) → [r,g,b]`；`tone(hex, haze = 0, alpha = 1, light = 0) → "rgba(…)"`（`light` 取 −1…1，`haze` 取 0…1，向水色雾化）；`shade(haze) → (hex, alpha = 1, light = 0) => tone(…)`，每个画图函数用它取当前深度的颜色；`curve(path, points, closed = false, move = true)` 在 Path2D 或 context 上画平滑曲线；`limb(c, points, base, tip, color)`；`shadow(c, x, y, rx, ry, alpha)`；`dot(c, x, y, r)`；`oval(c, x, y, rx, ry, rotation = 0)`；`wind(points)` 统一成顺时针；`hole(c, x, y, r)` / `lip(c, x, y, r)` 画洞口和洞口前沿。
   - `motion.js`：`TAU`、`clamp`、`lerp`、`smooth`、`hash(text)`、`random(seed) → () => [0,1)`、`noise(seed, t) → −1…1`、`follow(value, target, rate, dt)`、`knee(hx, hy, fx, fy, upper, lower, up = true) → [x, y]`。
   - `class Gait(legs, { stride, lift, duration })`：`legs` 每项为 `{ dx, group, dz? }`，`dx` 以体长为单位。方法有 `place(x, sx, ground)`、`update(dt, x, sx, ground, vx)` 和 getter `airborne`；`legs[i].x/.y` 是脚在画布上的位置。
-  - `class Crawler(spec, world, { enter })`：字段有 `crawler`、`active`、`state`（`"in" | "out" | "leaving"`）、`home`、`den`、`depths`、`hides`、`x`、`y`、`z`、`facing`、`vx`、`goal`、`eating`、`meal`、`shown`、`clock`、`turn`、`retreat`、`busy`；方法有 `size(world)`、`settle(world)`、getter `hidden`、`setActive(on, world, instant)`、`resize(sx, sy, world)`、`legScale(world)`、`footing(world)`、`wander(world)`、`routine(dt, world)`、`forage(world)`、`reach(L)`、`watch(world, L)`、`startle(world)`、`hideAway(seconds)`、`drop()`。
+  - `class Crawler(spec, world, { enter })`：字段有 `crawler`、`active`、`state`（`"in" | "out" | "leaving"`）、`home`、`den`、`depths`、`hides`、`x`、`y`、`z`、`facing`、`vx`、`goal`、`eating`、`meal`、`shown`、`clock`、`turn`、`retreat`、`busy`；方法有 `size(world)`、`settle(world)`、getter `hidden`、getter `flipX`（画图用的横向缩放：朝向乘以转身时的压缩）、`localFeet(L, lift = 0)`（把脚的位置换算成体长单位）、`setActive(on, world, instant)`、`resize(sx, sy, world)`、`legScale(world)`、`footing(world)`、`wander(world)`、`routine(dt, world)`、`forage(world)`、`reach(L)`、`watch(world, L)`、`startle(world)`、`hideAway(seconds)`、`drop()`。
   - 场景提供给模型的 `world`：`width`、`height`、`px`（每厘米多少像素）、`time`、`still`、`fish`（鱼的数组）、`pellets`、`meal`（第几次喂食）、`rocks`、`burrows`，以及方法 `ground(x, z)`、`surface(x, z)`、`home()`、`eat(pellet)`。
 
 - [ ] **Step 1: 写 `web/creatures/paint.js`**
@@ -216,6 +216,9 @@ export function tone(hex, haze = 0, alpha = 1, light = 0) {
   r += (WATER[0] - r) * haze; g += (WATER[1] - g) * haze; b += (WATER[2] - b) * haze;
   return `rgba(${r | 0},${g | 0},${b | 0},${alpha})`;
 }
+
+// shade returns tone() bound to one creature's haze, so painters can write col(hex, alpha, light).
+export function shade(haze) { return (hex, alpha = 1, light = 0) => tone(hex, haze, alpha, light); }
 
 // curve adds a smooth line through points (Catmull-Rom as cubic Béziers) to a
 // path or a context; closed curves wrap around to the first point.
@@ -458,6 +461,15 @@ export class Crawler {
     this.legs?.place(this.x, this.legScale(world), this.footing(world));
   }
 
+  // flipX is the horizontal scale for drawing: the facing, squashed while it turns around.
+  get flipX() { return this.turn ? this.facing * Math.max(.2, Math.abs(Math.cos(Math.PI * this.turn))) : this.facing; }
+
+  // localFeet maps the feet into body units for drawing, with the body raised by lift pixels.
+  localFeet(L, lift = 0) {
+    const sx = this.spec.sideways ? L : this.flipX * L;
+    return this.legs.legs.map(leg => [(leg.x - this.x) / sx, (leg.y - this.y + lift) / L]);
+  }
+
   // legScale mirrors leg offsets with the facing; front-on crabs don't.
   legScale(world) { return this.size(world) * (this.spec.sideways ? 1 : this.facing); }
 
@@ -589,7 +601,7 @@ Expected：`["TypeError: Cannot read properties of undefined (reading 'y')", …
 - [ ] **Step 3: 写 `web/creatures/fish.js`**
 
 ```js
-import { curve, dot, oval, tone } from "./paint.js";
+import { curve, dot, oval, shade } from "./paint.js";
 import { TAU, clamp, follow, hash, lerp, noise, random } from "./motion.js";
 
 // Looks are drawn facing right in units of body length: the snout is at
@@ -776,8 +788,7 @@ function paint(c, fin, color, col, alpha, hair) {
 
 // draw paints a fish in unit space for the given pose.
 function draw(c, look, s, pose, haze, L) {
-  const col = (hex, a = 1, light = 0) => tone(hex, haze, a, light);
-  const C = pose.colors, hair = 1 / L;
+  const col = shade(haze), C = pose.colors, hair = 1 / L;
   // The tail sweeps toward and away from us, so seen from the side it
   // narrows and twists rather than swinging up and down.
   const sweep = 1 - .55 * pose.beat * Math.sin(pose.tail) ** 2;
@@ -1391,7 +1402,7 @@ git commit -m "feat(aquarium): draw lifelike fish in a depth-sorted reef"
 - [ ] **Step 1: 写 `web/creatures/shrimp.js`**
 
 ```js
-import { curve, dot, hole, limb, lip, oval, shadow, tone, wind } from "./paint.js";
+import { curve, dot, hole, limb, lip, oval, shade, shadow, tone, wind } from "./paint.js";
 import { Crawler, Gait, TAU, clamp, follow, knee, lerp, noise } from "./motion.js";
 
 // Shrimp are drawn facing right in units of body length, standing on the
@@ -1458,8 +1469,7 @@ function chain(shape, curl) {
 // paintShrimp draws a shrimp in unit space. pose has the feet in unit
 // coordinates, the curl, antenna angles and the claws' work.
 function paintShrimp(c, id, pose, haze, L) {
-  const look = LOOKS[id], shape = SHAPES[look.shape], C = look.colors, hair = 1 / L;
-  const col = (hex, a = 1, light = 0) => tone(hex, haze, a, light);
+  const look = LOOKS[id], shape = SHAPES[look.shape], C = look.colors, hair = 1 / L, col = shade(haze);
   if (id === "slipper") { paintSlipper(c, pose, col, C, hair); return; }
   const segs = chain(shape, pose.curl);
   const tail = segs[segs.length - 1];
@@ -1675,7 +1685,6 @@ export class Shrimp extends Crawler {
   draw(c, world) {
     if (this.hidden && !this.burrow) return;
     const L = this.size(world), haze = this.z * .5;
-    const flipX = this.turn ? this.facing * Math.max(.2, Math.abs(Math.cos(Math.PI * this.turn))) : this.facing;
     const lift = this.hop + this.legs.airborne * L * .015;
     let sink = 0;
     if (this.burrow) {
@@ -1690,9 +1699,8 @@ export class Shrimp extends Crawler {
     c.globalAlpha = this.shown;
     c.translate(this.x, this.y - lift + sink * L * .32);
     if (sink > 0) { c.beginPath(); c.rect(-L * 3, -L * 3, L * 6, L * 3 - sink * L * .32 + 1); c.clip(); }
-    c.scale(flipX * L, L);
-    const toLocal = ([x, y]) => [(x - this.x) / (flipX * L), (y - this.y + lift) / L];
-    const feet = this.legs.legs.map(leg => toLocal([leg.x, leg.y]));
+    c.scale(this.flipX * L, L);
+    const feet = this.localFeet(L, lift);
     if (this.eating > 0 || this.work > .05) { const m = SHAPES[LOOKS[this.spec.id].shape].mouth; feet[0] = [lerp(feet[0][0], m[0] + .04, this.work), lerp(feet[0][1], m[1] + .02, this.work)]; }
     paintShrimp(c, this.spec.id, { near: feet.slice(0, 5), far: feet.slice(5), curl: this.curl, whip: this.whip, whip2: this.whip - .12, paddle: this.paddle, work: this.work, open: this.open, haze }, haze, L);
     c.restore();
@@ -1767,7 +1775,7 @@ git commit -m "feat(aquarium): add cleaner, fire, harlequin, pistol and slipper 
 - [ ] **Step 1: 写 `web/creatures/hermit.js`**
 
 ```js
-import { dot, limb, oval, shadow, tone } from "./paint.js";
+import { dot, limb, oval, shade, shadow } from "./paint.js";
 import { Crawler, Gait, clamp, follow, knee, noise } from "./motion.js";
 
 // The hermit crab is drawn facing right in units of its length, standing on
@@ -1781,7 +1789,7 @@ const RESTS = [.42, .27];
 // paintHermit draws the crab for a pose: out is how far it has come out of
 // its shell (0 inside … 1 out), feet are in unit coordinates.
 function paintHermit(c, pose, haze, L) {
-  const col = (hex, a = 1, light = 0) => tone(hex, haze, a, light), hair = 1 / L, out = pose.out;
+  const col = shade(haze), hair = 1 / L, out = pose.out;
   // Far legs behind the shell.
   if (out > .05) for (const [i, [fx, fy]] of pose.far.entries()) {
     const [hx, hy] = HIPS[i], [kx, ky] = knee(hx - .02, hy - .01, fx, fy, .15 * out + .02, .17 * out + .02);
@@ -1856,11 +1864,10 @@ export class Hermit extends Crawler {
 
   draw(c, world) {
     const L = this.size(world), haze = this.z * .5;
-    const flipX = this.turn ? this.facing * Math.max(.2, Math.abs(Math.cos(Math.PI * this.turn))) : this.facing;
     shadow(c, this.x - this.facing * L * .1, this.y + 1, L * .45, L * .1, .32 * (1 - haze));
     const lift = (1 - this.out) * -L * .02 + this.legs.airborne * L * .03;
-    c.save(); c.translate(this.x, this.y - lift); c.scale(flipX * L, L);
-    const feet = this.legs.legs.map(leg => [(leg.x - this.x) / (flipX * L), (leg.y - this.y + lift) / L]);
+    c.save(); c.translate(this.x, this.y - lift); c.scale(this.flipX * L, L);
+    const feet = this.localFeet(L, lift);
     const wobble = Math.sin(this.clock * 7) * .04 * clamp(Math.abs(this.vx) / (L * .3), 0, 1);
     paintHermit(c, { near: feet.slice(0, 2), far: feet.slice(2), out: this.out, whip: this.whip, work: this.work, wobble }, haze, L);
     c.restore();
@@ -1878,7 +1885,7 @@ export class Hermit extends Crawler {
 - [ ] **Step 2: 写 `web/creatures/crab.js`**
 
 ```js
-import { curve, dot, limb, oval, shadow, tone, wind } from "./paint.js";
+import { curve, dot, limb, oval, shade, shadow, tone, wind } from "./paint.js";
 import { Crawler, Gait, TAU, follow, knee, lerp, noise } from "./motion.js";
 
 // Crabs walk sideways, so we see them from the front and a little from
@@ -1916,8 +1923,7 @@ const at = (look, u, w) => [u, -(look.stand + look.face) - (.42 - w) * SQUASH];
 // the claws' work (0…1, alternating sides), raised claws when alarmed, and
 // the paddles' stroke for a swimming crab.
 function paintCrab(c, id, pose, haze, L) {
-  const look = LOOKS[id], C = look.colors, hair = 1 / L;
-  const col = (hex, a = 1, light = 0) => tone(hex, haze, a, light);
+  const look = LOOKS[id], C = look.colors, hair = 1 / L, col = shade(haze);
   const outline = [...look.plan, ...look.plan.slice(1, -1).reverse().map(([u, w]) => [-u, w])];
   // Legs come out from under the shell's rim, back pairs first. Each has a
   // thick upper segment, a bend, and a pointed tip on the sand.
@@ -2004,7 +2010,7 @@ function paintCrab(c, id, pose, haze, L) {
 // triangle of a body slung between long, thin legs, a long pointed rostrum
 // and slender claws with violet tips. Units are leg span.
 function paintArrow(c, pose, haze, L) {
-  const col = (hex, a = 1, light = 0) => tone(hex, haze, a, light), hair = 1 / L;
+  const col = shade(haze), hair = 1 / L;
   const body = [[.12, -.42], [-.12, -.49], [-.17, -.42], [-.12, -.36], [.06, -.35]];
   const hips = [[.06, -.37], [.02, -.37], [-.03, -.38], [-.08, -.39]];
   const leg = (feet, color, width) => feet.forEach(([fx, fy], i) => {
@@ -2087,13 +2093,12 @@ export class Crab extends Crawler {
     c.translate(this.x, this.y - lift + sink);
     if (sink > 0) { c.beginPath(); c.rect(-L * 2, -L * 2, L * 4, L * 2 - sink + 1); c.clip(); }
     if (this.arrow) {
-      const flipX = this.turn ? this.facing * Math.max(.2, Math.abs(Math.cos(Math.PI * this.turn))) : this.facing;
-      c.scale(flipX * L, L);
-      const feet = this.legs.legs.map(leg => [(leg.x - this.x) / (flipX * L), (leg.y - this.y + lift) / L]);
+      c.scale(this.flipX * L, L);
+      const feet = this.localFeet(L, lift);
       paintArrow(c, { near: feet.slice(0, 4), far: feet.slice(4), work: this.eating > 0 ? .5 + Math.sin(this.clock * 8) * .5 : 0 }, haze, L);
     } else {
       c.scale(L, L);
-      const feet = this.legs.legs.map(leg => [(leg.x - this.x) / L, (leg.y - this.y + lift - sink) / L]);
+      const feet = this.localFeet(L, lift - sink);
       paintCrab(c, this.spec.id, { feet, work: this.work, alarm: this.alarm, fan: this.fan, stroke: this.stroke, look: this.look }, haze, L);
     }
     c.restore();
@@ -2164,7 +2169,7 @@ git commit -m "feat(aquarium): add hermit, emerald, porcelain, arrow and swimmin
 - [ ] **Step 1: 写 `web/creatures/mantis.js`**
 
 ```js
-import { curve, dot, hole, limb, lip, oval, shadow, tone } from "./paint.js";
+import { curve, dot, hole, limb, lip, oval, shade, shadow } from "./paint.js";
 import { Crawler, Gait, clamp, follow, knee, noise } from "./motion.js";
 
 // The peacock mantis shrimp is drawn facing right in units of body length,
@@ -2177,7 +2182,7 @@ const RESTS = [.2, .12, .04];
 // paintMantis draws the mantis shrimp for a pose: feet in unit coordinates,
 // the eyes' angles, and strike (0…1) when its club snaps out for food.
 function paintMantis(c, pose, haze, L) {
-  const col = (hex, a = 1, light = 0) => tone(hex, haze, a, light), hair = 1 / L, thin = Math.max(.014, hair * .9);
+  const col = shade(haze), hair = 1 / L, thin = Math.max(.014, hair * .9);
   for (const [fx, fy] of pose.far) limb(c, [[.1, -.05], knee(.1, -.05, fx, fy, .045, .05), [fx, fy]], thin, thin * .7, col(C.leg, .7, -.35));
   // Tail fan: blue blades edged in orange.
   for (const [a, len] of [[-.45, .12], [.45, .12], [-.2, .13], [.2, .13]]) {
@@ -2271,13 +2276,12 @@ export class Mantis extends Crawler {
       return;
     }
     const near = 1 - clamp(Math.abs(this.x - b.x) / (L * .5), 0, 1), sink = this.state === "leaving" ? near : 0;
-    const flipX = this.turn ? this.facing * Math.max(.2, Math.abs(Math.cos(Math.PI * this.turn))) : this.facing;
     shadow(c, this.x, this.y + 1, L * .5, L * .07, .3 * (1 - haze) * (1 - sink));
     c.save();
     if (sink > 0) { c.beginPath(); c.rect(this.x - L, this.y - L, L * 2, L - sink * L * .1); c.clip(); }
-    c.translate(this.x, this.y + sink * L * .12); c.scale(flipX * L, L);
-    pose.near = this.legs.legs.slice(0, 3).map(leg => [(leg.x - this.x) / (flipX * L), (leg.y - this.y) / L]);
-    pose.far = this.legs.legs.slice(3).map(leg => [(leg.x - this.x) / (flipX * L), (leg.y - this.y) / L]);
+    c.translate(this.x, this.y + sink * L * .12); c.scale(this.flipX * L, L);
+    const feet = this.localFeet(L);
+    pose.near = feet.slice(0, 3); pose.far = feet.slice(3);
     paintMantis(c, pose, haze, L);
     c.restore();
     lip(c, b.x, by, r);

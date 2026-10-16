@@ -285,7 +285,7 @@ export class Fish {
     if (this.appetite <= 0) return null;
     let best = null, bd = Infinity;
     for (const p of world.pellets) {
-      if (p.landed || p.eaten) continue;
+      if (p.landed || p.eaten || p.alpha < 1) continue;
       const d = Math.hypot(p.x - (this.x + this.facing * L * .5), p.y - this.y);
       if (d < bd) { bd = d; best = p; }
     }

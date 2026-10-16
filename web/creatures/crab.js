@@ -168,10 +168,11 @@ export class Crab extends Crawler {
       look.hips.forEach(([, w], i) => { for (const side of [-1, 1]) legs.push({ dx: side * look.span[i], group: (i + (side > 0 ? 1 : 0)) % 2, dz: (.2 - w) * .08 }); });
       this.legs = new Gait(legs, { stride: .2, lift: .1, duration: .2 });
     }
-    this.work = 0; this.alarm = 0; this.fan = 0; this.stroke = 0; this.swim = 0; this.rise = 0; this.buried = 0; this.look = 0;
+    this.work = 0; this.alarm = 0; this.fan = 0; this.stroke = 0; this.swim = 0; this.rise = 0; this.buried = this.resting && this.spec.id === "swimmer" ? 1 : 0; this.look = 0;
   }
 
   get resting() { return this.state === "in" && !this.hides; }
+  setActive(on, world, instant = false) { super.setActive(on, world, instant); if (instant) this.buried = this.resting && this.spec.id === "swimmer" ? 1 : 0; }
 
   startle(world) { this.alarm = 1; this.goal = null; this.until = world.time + 3; }
 

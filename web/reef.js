@@ -49,6 +49,7 @@ export class Reef {
     this.ctx.setTransform(scale, 0, 0, scale, 0, 0);
     this.layout();
     for (const creature of this.creatures.values()) creature.resize(this.width / oldWidth, this.height / oldHeight, this.world);
+    for (const p of this.pellets) { p.x *= this.width / oldWidth; p.y *= this.height / oldHeight; if (p.landed) p.y = this.ground(p.x, p.z); }
     if (this.populated) this.arrange(false, this.world.still);
     this.draw();
   }
@@ -182,7 +183,8 @@ export class Reef {
   schedule() {
     if (this.frame !== null) cancelAnimationFrame(this.frame);
     this.frame = null;
-    this.world.still = this.motion.matches;
+    const was = this.world.still; this.world.still = this.motion.matches;
+    if (this.world.still && !was && this.populated) { this.pellets.length = 0; this.creatures.clear(); this.rand = random(20261015); this.populated = false; this.populate(); }
     if (document.hidden || this.motion.matches) { this.draw(); return; }
     this.last = 0;
     const animate = (now) => {

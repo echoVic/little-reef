@@ -218,7 +218,7 @@ export class Shrimp extends Crawler {
     super(spec, world, options);
     const shape = SHAPES[LOOKS[spec.id].shape];
     this.legs = new Gait([...shape.rests.map((dx, i) => ({ dx, group: i % 2 })), ...shape.rests.map((dx, i) => ({ dx: dx - .05, group: 1 - i % 2, dz: .06 }))], { stride: .22, lift: .06, duration: .16 });
-    this.curl = 0; this.dart = 0; this.hop = 0; this.whip = -.75; this.paddle = 0; this.work = 0; this.open = 0; this.snap = 0; this.buried = 0;
+    this.curl = 0; this.dart = 0; this.hop = 0; this.whip = -.75; this.paddle = 0; this.work = 0; this.open = 0; this.snap = 0; this.buried = this.resting ? 1 : 0;
     this.carry = 0; this.piles = [];
   }
 
@@ -229,6 +229,7 @@ export class Shrimp extends Crawler {
 
   // The slipper lobster digs in where it rests instead of hiding.
   get resting() { return this.state === "in" && !this.hides; }
+  setActive(on, world, instant = false) { super.setActive(on, world, instant); if (instant) this.buried = this.resting ? 1 : 0; }
 
   startle(world) {
     // Burrowers and the shy fire shrimp hide for a while; the others flip away.

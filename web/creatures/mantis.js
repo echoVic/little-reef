@@ -68,7 +68,7 @@ export class Mantis extends Crawler {
   constructor(spec, world, options) {
     super(spec, world, options);
     this.legs = new Gait([...RESTS.map((dx, i) => ({ dx, group: i % 2 })), ...RESTS.map((dx, i) => ({ dx: dx - .03, group: 1 - i % 2, dz: .04 }))], { stride: .12, lift: .03, duration: .16 });
-    this.eyes = [0, 0]; this.strike = 0; this.peek = 1; this.sway = 0;
+    this.eyes = [0, 0]; this.strike = 0; this.peek = this.state === "in" ? 1 : 0; this.sway = 0;
     this.rise = this.state === "in" ? 0 : 1;
   }
 
@@ -85,6 +85,7 @@ export class Mantis extends Crawler {
   }
 
   step(dt, world) {
+    // Sink before peeking; tuck the eyes before rising, and wait to walk until mostly out.
     this.busy = this.state === "out" && this.rise < .8;
     if (this.busy) this.vx = 0;
     this.routine(dt, world);

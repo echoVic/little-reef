@@ -122,7 +122,7 @@ export class Crawler {
     this.facing = this.rand() < .5 ? -1 : 1;
     this.vx = 0; this.goal = null; this.until = 0;
     this.meal = null; this.eating = 0; this.calm = 0;
-    this.turn = 0; this.shown = 0; this.clock = this.rand() * 100; this.retreat = 0;
+    this.turn = 0; this.shown = this.hides ? 0 : 1; this.clock = this.rand() * 100; this.retreat = 0;
     if (enter) {
       this.state = "out"; this.active = true; this.shown = 1;
       this.x = this.rand() < .5 ? -world.width * .04 : world.width * 1.04;
@@ -174,6 +174,7 @@ export class Crawler {
       this.state = "leaving"; this.goal = { x: this.den.x, z: this.den.z };
     }
     this.y = world.surface(this.x, this.z);
+    if (instant) this.legs?.place(this.x, this.legScale(world), this.footing(world));
   }
 
   resize(sx, sy, world) {
@@ -212,6 +213,7 @@ export class Crawler {
   routine(dt, world) {
     const t = world.time, L = this.size(world);
     this.clock += dt;
+    if (this.meal?.alpha < 1) { this.meal = null; this.eating = 0; }
     // After a scare it stays home a while, then comes back out.
     if (this.retreat > 0 && (this.retreat -= dt) <= 0 && this.active && this.state === "in") { this.state = "out"; this.goal = { x: this.home.x, z: this.home.z }; }
     if (this.eating > 0) {
@@ -230,7 +232,7 @@ export class Crawler {
         this.vx = follow(this.vx, clamp(dx * 3, -speed, speed), 4, dt);
         this.z = clamp(this.z + clamp(dz * 1.5, -.2, .2) * dt, 0, 1);
         if (Math.abs(dx) < L * .1 && Math.abs(dz) < .03) {
-          if (this.goal.food && !this.goal.food.eaten) { this.meal = this.goal.food; this.eating = 1.8; }
+          if (this.goal.food && !this.goal.food.eaten && this.goal.food.alpha >= 1) { this.meal = this.goal.food; this.eating = 1.8; }
           this.goal = null;
           if (this.state === "leaving") this.state = "in";
           else this.until = t + (2 + this.rand() * 6) * (this.spec.idle || 1);
@@ -246,10 +248,13 @@ export class Crawler {
 
   // forage finds food lying on the sand within reach of home.
   forage(world) {
-    if (this.goal?.food && !this.goal.food.eaten) return this.goal.food;
+    if (this.goal?.food) {
+      if (!this.goal.food.eaten && this.goal.food.alpha >= 1) return this.goal.food;
+      this.drop(); this.goal = null;
+    }
     let best = null, bd = world.width * (this.spec.range || .2) * 1.5;
     for (const p of world.pellets) {
-      if (!p.landed || p.eaten || p.claimed) continue;
+      if (!p.landed || p.eaten || p.claimed || p.alpha < 1) continue;
       const d = Math.abs(p.x - this.x);
       if (d < bd) { bd = d; best = p; }
     }

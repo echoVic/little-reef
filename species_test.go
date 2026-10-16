@@ -78,7 +78,7 @@ func TestVisitorsArriveUnmetFirst(t *testing.T) {
 func TestOldSaveMeetsNewSpecies(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "aquarium.json")
 	old := `{"preferences":{"focusMinutes":1,"breakMinutes":1,"sound":"waves","volume":0.35,"chimeEnabled":true},
-"session":{"id":1,"kind":"focus","status":"idle","durationMs":60000},"completed":4,
+"session":{"id":1,"kind":"focus","status":"idle","durationMs":60000},"completed":11,
 "visitors":[{"species":"clown","name":"小丑鱼","date":"2026-10-10T10:00:00+08:00","visits":2},
 {"species":"tang","name":"蓝吊鱼","date":"2026-10-11T10:00:00+08:00","visits":1},
 {"species":"angel","name":"神仙鱼","date":"2026-10-12T10:00:00+08:00","visits":1},
@@ -96,5 +96,16 @@ func TestOldSaveMeetsNewSpecies(t *testing.T) {
 	s := completeRound(t, a, &now)
 	if len(s.Visitors) != 5 || s.Visitors[4].Species != "cleaner" || s.Visitors[0].Visits != 2 {
 		t.Fatalf("old save after a round: %+v", s.Visitors)
+	}
+}
+
+func TestMissedRollBringsNoVisitorExceptInTheFirstRound(t *testing.T) {
+	a, now := testAquarium(t)
+	a.roll = func(n int) int { return n - 1 } // never 0: the one-in-three roll always misses
+	if s := completeRound(t, a, now); len(s.Visitors) != 1 || s.Visitors[0].Species != "clown" {
+		t.Fatalf("first round must bring the clownfish whatever the roll says: %+v", s.Visitors)
+	}
+	if s := completeRound(t, a, now); len(s.Visitors) != 1 || s.LastVisitor != "" {
+		t.Fatalf("a missed roll must bring no one: %+v", s)
 	}
 }

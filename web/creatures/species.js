@@ -1,4 +1,5 @@
 import { Fish } from "./fish.js";
+import { Shrimp } from "./shrimp.js";
 
 // Every creature's model and habits. Lengths are in centimeters. Fish follow
 // the spec's reference lengths, with the bigger ones sized as young fish:
@@ -6,7 +7,7 @@ import { Fish } from "./fish.js";
 // crabs are drawn about half again their size so they stay readable on the
 // sand. Colors are the species' own, a little muted to suit the quiet page.
 // The ids match the visitor list in state.go.
-const MODELS = { fish: Fish };
+const MODELS = { fish: Fish, shrimp: Shrimp };
 
 export const SPECIES = {
   // Lyretail anthias (sea goldfish), the resident who is always home.

@@ -9,6 +9,7 @@ test('native and browser motion preferences stop and resume the actual animation
     mygo: { preferences: { reduceMotion: true }, on(_event, fn) { nativeChange = fn; } },
     matchMedia: () => media,
     ResizeObserver: class { observe() {} },
+    Path2D: class { moveTo() {} lineTo() {} bezierCurveTo() {} quadraticCurveTo() {} arc() {} closePath() {} },
     document: { hidden: false, addEventListener(_event, fn) { visibilityChange = fn; } },
     devicePixelRatio: 1,
     requestAnimationFrame: fn => { frames.set(++nextFrame, fn); return nextFrame; },
@@ -24,15 +25,15 @@ test('native and browser motion preferences stop and resume the actual animation
     assert.equal(frames.size, 0, 'native preference applies at first paint');
     reef.update({ fedSession: 'before' });
     reef.update({ fedSession: 'after' });
-    assert.equal(reef.foodUntil, 0, 'reduced motion does not leave feeding frozen indefinitely');
+    assert.equal(reef.pellets.length, 0, 'reduced motion does not leave feeding frozen indefinitely');
     assert.ok(draws > 0, 'static aquarium still renders');
     nativeChange({ reduceMotion: false });
     assert.equal(frames.size, 1);
     reef.update({ fedSession: 'next' });
-    assert.ok(reef.foodUntil > 0);
+    assert.ok(reef.pellets.length > 0);
     media.matches = true; mediaChange();
     assert.equal(frames.size, 0);
-    assert.equal(reef.foodUntil, 0);
+    assert.equal(reef.pellets.length, 0);
     nativeChange({ reduceMotion: false });
     assert.equal(frames.size, 0, 'browser preference still takes precedence');
     media.matches = false; mediaChange();

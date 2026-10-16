@@ -30,6 +30,11 @@ export class Reef {
       eat: pellet => { pellet.eaten = true; },
     };
     this.motion = matchMedia("(prefers-reduced-motion: reduce)");
+    this.nativeReduceMotion = !!globalThis.mygo?.preferences?.reduceMotion;
+    globalThis.mygo?.on("mygo:preferences", preferences => {
+      this.nativeReduceMotion = preferences.reduceMotion;
+      this.schedule();
+    });
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(canvas);
     document.addEventListener("visibilitychange", () => this.schedule());
@@ -180,12 +185,14 @@ export class Reef {
     this.world.meal++;
   }
 
+  get reducedMotion() { return this.motion.matches || this.nativeReduceMotion; }
+
   schedule() {
     if (this.frame !== null) cancelAnimationFrame(this.frame);
     this.frame = null;
-    const was = this.world.still; this.world.still = this.motion.matches;
+    const was = this.world.still; this.world.still = this.reducedMotion;
     if (this.world.still && !was && this.populated) { this.pellets.length = 0; this.creatures.clear(); this.rand = random(20261015); this.populated = false; this.populate(); }
-    if (document.hidden || this.motion.matches) { this.draw(); return; }
+    if (document.hidden || this.reducedMotion) { this.draw(); return; }
     this.last = 0;
     const animate = (now) => {
       this.frame = requestAnimationFrame(animate);

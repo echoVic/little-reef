@@ -61,6 +61,8 @@ CGO_ENABLED=0 go test ./...
 node --test --test-concurrency=1 tests/*.test.mjs
 ```
 
+自动更新由 `mygo.json` 的 `updates` 配置（公钥和发布仓库）。签名更新包的私钥不在仓库和配置里，正式发布时通过环境变量传入：`MYGO_UPDATER_PRIVATE_KEY="$(cat <私钥文件>)" CGO_ENABLED=0 go tool mygo build .`。没有私钥时照常构建，只是不生成更新包，已安装的小海底就收不到这一版。
+
 构建其他平台时加上 `-platform`，例如 `-platform windows/amd64,linux/amd64`。Windows 和 Linux 版还没有经过实际测试。
 
 桌面版使用系统自带的 WebView：

@@ -177,7 +177,11 @@ func main() {
 	a.onChange = func(s Snapshot) { _ = Changed.Broadcast(s) }
 	a.onDone = func(s Snapshot) {
 		go func() {
-			n := mygo.NewNotification(mygo.NotificationOptions{Title: "小海底 · " + map[bool]string{true: "专注完成", false: "休息结束"}[s.Session.Kind == "focus"], Body: s.Notice})
+			n := mygo.NewNotification(mygo.NotificationOptions{
+				Title:  "小海底 · " + map[bool]string{true: "专注完成", false: "休息结束"}[s.Session.Kind == "focus"],
+				Body:   s.Notice,
+				Sender: &mygo.NotificationSender{ID: "reef", Name: "小海底", Avatar: markPNG(128, markInk)},
+			})
 			n.OnClick(func() { win.Show(); win.Focus() })
 			_ = n.Show()
 		}()

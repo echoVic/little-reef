@@ -69,3 +69,15 @@ export async function applyTheme(id) {
 export function currentTheme() {
   return globalThis.THEME || null;
 }
+
+// themeColor resolves one token for canvas code, falling back to the shipped
+// literal so the default reef looks exactly like before theming existed.
+export function themeColor(token, fallback) {
+  const v = colorOf(globalThis.THEME?.tokens?.[token]);
+  return v || fallback;
+}
+
+// themeMotion returns a gate multiplier (1.0 for the default theme).
+export function themeMotion(name, fallback = 1) {
+  return globalThis.THEME?.motion?.[name] ?? fallback;
+}

@@ -1,5 +1,6 @@
 import { create } from "./creatures/species.js";
 import { clamp, random } from "./creatures/motion.js";
+import { themeColor, themeMotion } from "./theme.js";
 
 // How far back each planted spot sits, so fish can pass in front of some
 // plants and behind others.
@@ -39,6 +40,8 @@ export class Reef {
     this.resizeObserver.observe(canvas);
     document.addEventListener("visibilitychange", () => this.schedule());
     this.motion.addEventListener("change", () => this.schedule());
+    // A palette swap repaints the whole reef, including the canvas.
+    if (typeof addEventListener === "function") addEventListener("theme:changed", () => { this.layout(); this.draw(); });
     this.resize();
     this.schedule();
   }
@@ -231,14 +234,14 @@ export class Reef {
     c.save(); c.translate(x, h - 25);
     c.lineCap = "round";
     if (coral) {
-      c.strokeStyle = "#bd918c"; c.lineWidth = 4;
+      c.strokeStyle = themeColor("coral", "#bd918c"); c.lineWidth = 4;
       for (let i = 0; i < 5; i++) {
         const side = i % 2 ? 1 : -1, y = -height * (.3 + i * .14);
         c.beginPath(); c.moveTo(0, 2); c.quadraticCurveTo(sway / 3, -height / 2, sway, -height); c.stroke();
         c.beginPath(); c.moveTo(sway * .3, y + 12); c.quadraticCurveTo(side * 15, y, side * 18, y - 18); c.stroke();
       }
     } else {
-      c.strokeStyle = seed % 2 ? "#529a86" : "#70af91"; c.lineWidth = 3;
+      c.strokeStyle = seed % 2 ? themeColor("seaweed", "#529a86") : "#70af91"; c.lineWidth = 3;
       c.beginPath(); c.moveTo(0, 0); c.bezierCurveTo(-8, -height / 3, 10 + sway, -height * .7, sway, -height); c.stroke();
       for (let i = 0; i < 4; i++) {
         const y = -height * (.2 + i * .19), side = i % 2 ? 1 : -1;
@@ -258,18 +261,19 @@ export class Reef {
     if (!this.ctx) return;
     const c = this.ctx, w = this.width, h = this.height, t = this.time;
     c.clearRect(0, 0, w, h);
-    c.fillStyle = "#b4cfb114";
-    for (let i = 0; i < 18; i++) {
+    c.fillStyle = themeColor("bubble", "#b4cfb1") + "14";
+    const bubbleCount = Math.round(18 * themeMotion("bubbleDensity"));
+    for (let i = 0; i < bubbleCount; i++) {
       const y = h - ((t * (7 + i % 3) + i * 27) % (h + 30));
       const x = (i * 43 + 21) % w + Math.sin(t * .2 + i) * 8;
       c.beginPath(); c.arc(x, y, 1 + i % 2, 0, Math.PI * 2); c.fill();
     }
     c.fillStyle = "#53675a"; c.beginPath(); c.moveTo(0, h);
     c.lineTo(0, h - 28); c.bezierCurveTo(w * .25, h - 53, w * .7, h - 7, w, h - 34); c.lineTo(w, h); c.fill();
-    c.fillStyle = "#718371"; c.beginPath(); c.moveTo(0, h); c.lineTo(0, h - 17); c.bezierCurveTo(w * .4, h - 43, w * .62, h - 17, w, h - 25); c.lineTo(w, h); c.fill();
+    c.fillStyle = themeColor("sand", "#718371"); c.beginPath(); c.moveTo(0, h); c.lineTo(0, h - 17); c.bezierCurveTo(w * .4, h - 43, w * .62, h - 17, w, h - 25); c.lineTo(w, h); c.fill();
     for (let i = 0; i < 25; i++) { c.fillStyle = i % 2 ? "#899781" : "#566c5e"; c.beginPath(); c.ellipse((i * 71 + 14) % w, h - 8 - i % 19, 1.5, 1, 0, 0, Math.PI * 2); c.fill(); }
     // Mature reefs keep changing their bed color and gentle lighting.
-    if ((this.state?.completed || 0) >= 24) { c.fillStyle = "#a8deba08"; c.fillRect(0, 0, w, h); }
+    if ((this.state?.completed || 0) >= 24) { c.fillStyle = themeColor("accent", "#a8deba") + "08"; c.fillRect(0, 0, w, h); }
     for (const creature of this.creatures.values()) creature.under?.(c, this.world);
     // Rocks, plants and creatures share one depth order, farthest first.
     const scene = [];
@@ -284,7 +288,7 @@ export class Reef {
     }
     for (const p of this.pellets) {
       const r = 1.7 * (1 - .3 * p.z);
-      c.fillStyle = `rgba(226,194,148,${p.alpha})`; c.beginPath(); c.arc(p.x, p.y - r * .6, r, 0, Math.PI * 2); c.fill();
+      c.fillStyle = `${themeColor("coral", "#e2c294")}${Math.round(p.alpha * 255).toString(16).padStart(2, "0")}`; c.beginPath(); c.arc(p.x, p.y - r * .6, r, 0, Math.PI * 2); c.fill();
       c.fillStyle = `rgba(255,240,214,${.6 * p.alpha})`; c.beginPath(); c.arc(p.x - r * .3, p.y - r, r * .4, 0, Math.PI * 2); c.fill();
     }
   }

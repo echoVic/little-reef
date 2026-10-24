@@ -13,7 +13,7 @@
     "bgGradient": "#102e3a",
     "waterLight": "#194250",
     "sand": "#718371",
-    "coral": { "color": "#e6b48b", "stages": 3 },
+    "coral": { "color": "#bd918c", "stages": 3 },
     "fish": "#a8deba",
     "seaweed": { "color": "#529a86", "stages": 3 },
     "bubble": "#b4cfb1",

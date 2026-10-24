@@ -29,7 +29,8 @@ test('reef-realistic tokens equal the shipped hard-coded colors', () => {
   assert.equal(tokens.textPrimary, '#e3ede9');
   assert.equal(tokens.textSecondary, '#8ca7a7');
   assert.equal(tokens.accent, '#a8deba');
-  assert.equal(tokens.coral.color, '#e6b48b');
+  assert.equal(tokens.coral.color, '#bd918c');
+  assert.equal(tokens.seaweed.color, '#529a86');
 });
 
 test('creature tokens carry growth stages aligned with the coral growth', () => {
@@ -53,4 +54,19 @@ test('meta describes the dark default contract', () => {
   for (const field of ['displayName', 'styleFamily', 'version', 'minAppVersion', 'reduceMotionFallback']) {
     assert.ok(theme.meta[field], `missing meta.${field}`);
   }
+});
+
+test('themeColor falls back to the shipped literal without a loaded theme', async () => {
+  const { themeColor } = await import('../web/theme.js');
+  delete globalThis.THEME;
+  assert.equal(themeColor('bubble', '#b4cfb1'), '#b4cfb1');
+});
+
+test('themeColor reads the live token instead of the constant', async () => {
+  const { themeColor, themeMotion } = await import('../web/theme.js');
+  globalThis.THEME = { tokens: { bubble: '#ffffff', coral: { color: '#ff0000', stages: 3 } }, motion: { bubbleDensity: 0.2 } };
+  assert.equal(themeColor('bubble', '#b4cfb1'), '#ffffff');
+  assert.equal(themeColor('coral', '#bd918c'), '#ff0000');
+  assert.equal(themeMotion('bubbleDensity'), 0.2);
+  delete globalThis.THEME;
 });

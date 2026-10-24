@@ -1,0 +1,50 @@
+name: 反馈
+description: 提交问题或建议
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。小海底是个人维护的开源项目，描述越具体越容易定位问题。
+        除非你明确同意，任何存档内容都不要贴进 issue——只需要描述现象。
+  - type: dropdown
+    id: category
+    attributes:
+      label: 分类
+      options:
+        - bug（功能异常）
+        - sound（背景音）
+        - growth（成长与图鉴）
+        - stats（回顾面板）
+        - backup（存档与备份）
+        - other（其他）
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: 系统信息
+      placeholder: "macOS 版本 / 芯片 / 小海底版本，如 macOS 15 / Apple M2 / v0.4.0"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: 一步步描述你做了什么、发生了什么
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望的行为
+      placeholder: 你原本期待发生什么
+    validations:
+      required: false
+  - type: textarea
+    id: extra
+    attributes:
+      label: 补充信息（可选）
+      placeholder: 截图、控制台输出等
+    validations:
+      required: false

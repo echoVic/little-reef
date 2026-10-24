@@ -5,6 +5,7 @@ package main
 import (
 	"context"
 	"embed"
+	"errors"
 	"flag"
 	"io/fs"
 	"log"
@@ -26,7 +27,54 @@ var frontend embed.FS
 var Changed = mygo.NewEvent[Snapshot]("aquarium:changed")
 
 // Desktop controls the current aquarium window.
-type Desktop struct{ tray *mygo.Tray }
+type Desktop struct {
+	tray *mygo.Tray
+	a    *Aquarium
+}
+
+// ExportArchive asks the user where to save the backup, then writes it.
+// An empty path means the user canceled; callers must stay silent then.
+func (d *Desktop) ExportArchive() (string, error) {
+	text, err := d.a.ExportArchive()
+	if err != nil {
+		return "", err
+	}
+	home, _ := os.UserHomeDir()
+	path, err := mygo.Dialog.Save(mygo.SaveDialogOptions{
+		Title:       "导出存档",
+		DefaultPath: filepath.Join(home, "little-reef-archive.json"),
+	})
+	if err != nil {
+		return "", err
+	}
+	if path == "" {
+		return "", nil
+	}
+	if err := os.WriteFile(path, []byte(text), 0o600); err != nil {
+		return "", err
+	}
+	return path, nil
+}
+
+// ImportArchive asks the user which backup to restore, then validates and
+// replaces the aquarium. A canceled pick means "已取消" and stays quiet.
+func (d *Desktop) ImportArchive() (Snapshot, error) {
+	paths, err := mygo.Dialog.Open(mygo.OpenDialogOptions{
+		Title:   "导入存档",
+		Filters: []mygo.FileFilter{{Name: "小海底存档", Extensions: []string{"json"}}},
+	})
+	if err != nil {
+		return Snapshot{}, err
+	}
+	if len(paths) == 0 {
+		return Snapshot{}, errors.New("已取消")
+	}
+	data, err := os.ReadFile(paths[0])
+	if err != nil {
+		return Snapshot{}, err
+	}
+	return d.a.ImportArchive(string(data))
+}
 
 // Hide keeps the page and sound alive in the tray, or minimizes without a tray.
 func (d *Desktop) Hide(ctx context.Context) {
@@ -157,6 +205,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	desktop.a = a
 	mygo.Bind(a)
 	mygo.Bind(desktop)
 	if *webAddr != "" {

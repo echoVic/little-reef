@@ -55,7 +55,7 @@ func serveBrowser(addr string, web fs.FS, a *Aquarium) error {
 			Method string            `json:"method"`
 			Args   []json.RawMessage `json:"args"`
 		}
-		decoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, 8192))
+		decoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20))
 		if err := decoder.Decode(&req); err != nil {
 			http.Error(w, "无效请求", http.StatusBadRequest)
 			return
@@ -65,10 +65,20 @@ func serveBrowser(addr string, web fs.FS, a *Aquarium) error {
 			return
 		}
 		var result Snapshot
+		var archiveText string
 		var callErr error
 		switch req.Method {
 		case "Aquarium.Get":
 			result = a.Get()
+		case "Aquarium.ExportArchive":
+			archiveText, callErr = a.ExportArchive()
+		case "Aquarium.ImportArchive":
+			var text string
+			if len(req.Args) != 1 || json.Unmarshal(req.Args[0], &text) != nil {
+				callErr = errors.New("无效的存档内容")
+			} else {
+				result, callErr = a.ImportArchive(text)
+			}
 		case "Aquarium.Start":
 			var kind, task string
 			if len(req.Args) != 2 || json.Unmarshal(req.Args[0], &kind) != nil || json.Unmarshal(req.Args[1], &task) != nil {
@@ -99,6 +109,10 @@ func serveBrowser(addr string, web fs.FS, a *Aquarium) error {
 		if callErr != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_ = json.NewEncoder(w).Encode(map[string]string{"error": callErr.Error()})
+			return
+		}
+		if archiveText != "" {
+			_ = json.NewEncoder(w).Encode(archiveText)
 			return
 		}
 		_ = json.NewEncoder(w).Encode(result)

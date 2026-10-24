@@ -109,10 +109,7 @@ func newAquarium(path string) (*Aquarium, error) {
 		if err := validatePreferences(a.state.Preferences); err != nil {
 			return nil, err
 		}
-		if !slices.Contains([]string{"focus", "break"}, a.state.Session.Kind) ||
-			!slices.Contains([]string{"idle", "running", "paused", "complete"}, a.state.Session.Status) ||
-			a.state.Session.DurationMS <= 0 || a.state.Session.DurationMS > 120*60*1000 ||
-			a.state.Session.ElapsedMS < 0 || a.state.Completed < 0 || a.state.TotalSecs < 0 {
+		if err := validateSnapshot(a.state); err != nil {
 			return nil, errors.New("水族馆存档中的计时数据无效")
 		}
 		if a.state.Session.Status == "running" {
@@ -136,6 +133,90 @@ func validatePreferences(p Preferences) error {
 		return errors.New("音量须在 0–100% 之间")
 	}
 	return nil
+}
+
+// validateSnapshot checks the shape of a loaded or imported archive content.
+func validateSnapshot(s Snapshot) error {
+	if !slices.Contains([]string{"focus", "break"}, s.Session.Kind) ||
+		!slices.Contains([]string{"idle", "running", "paused", "complete"}, s.Session.Status) ||
+		s.Session.DurationMS <= 0 || s.Session.DurationMS > 120*60*1000 ||
+		s.Session.ElapsedMS < 0 || s.Completed < 0 || s.TotalSecs < 0 {
+		return errors.New("存档内容有问题，没有导入。你的海底保持原样。")
+	}
+	return nil
+}
+
+// archiveVersion is the number written by this build; newer archives are refused.
+const archiveVersion = 1
+
+type archiveShell struct {
+	Version    int64           `json:"version"`
+	App        string          `json:"app"`
+	ExportedAt string          `json:"exportedAt"`
+	Aquarium   json.RawMessage `json:"aquarium"`
+}
+
+// ExportArchive wraps the current aquarium in the versioned shell for backup.
+func (a *Aquarium) ExportArchive() (string, error) {
+	data, err := json.MarshalIndent(struct {
+		Version    int64           `json:"version"`
+		App        string          `json:"app"`
+		ExportedAt string          `json:"exportedAt"`
+		Aquarium   json.RawMessage `json:"aquarium"`
+	}{
+		Version:    archiveVersion,
+		App:        "little-reef",
+		ExportedAt: a.now().Format(time.RFC3339),
+		Aquarium:   mustMarshal(a.Get()),
+	}, "", "  ")
+	return string(data), err
+}
+
+func mustMarshal(v any) json.RawMessage {
+	data, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	return data
+}
+
+// ImportArchive accepts either the versioned shell or a bare aquarium.json.
+// The current archive is replaced only after every check passes, so a failed
+// import leaves everything untouched.
+func (a *Aquarium) ImportArchive(text string) (Snapshot, error) {
+	var shell archiveShell
+	if err := json.Unmarshal([]byte(text), &shell); err != nil {
+		return Snapshot{}, errors.New("这个文件不是小海底的存档，什么都没有改动。")
+	}
+	content := shell.Aquarium
+	legacy := false
+	if len(content) == 0 {
+		content = []byte(text)
+		legacy = true
+	} else if shell.Version > archiveVersion {
+		return Snapshot{}, errors.New("这是更新版本的存档，先把小海底升级到最新版。")
+	}
+	var next Snapshot
+	if err := json.Unmarshal(content, &next); err != nil {
+		return Snapshot{}, errors.New("这个文件不是小海底的存档，什么都没有改动。")
+	}
+	if err := validateSnapshot(next); err != nil {
+		return Snapshot{}, err
+	}
+	// Transient fields are never trusted; the next snapshot recomputes them.
+	next.TodaySecs, next.TodayRounds, next.NowMS = 0, 0, 0
+	return a.change(func() error {
+		a.state = next
+		if a.state.Session.Status == "running" {
+			a.state.Session.Status = "paused"
+		}
+		if legacy {
+			a.state.Notice = "这是小海底的存档，已安全导入。"
+		} else {
+			a.state.Notice = "海底回来了，一切如初。"
+		}
+		return nil
+	})
 }
 
 func (a *Aquarium) snapshotLocked() Snapshot {

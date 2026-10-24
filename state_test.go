@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -240,5 +242,110 @@ func TestEveryAdvertisedSoundIsAccepted(t *testing.T) {
 	p.Sound = "volcano"
 	if err := validatePreferences(p); err == nil {
 		t.Error("unknown sound accepted")
+	}
+}
+
+const goodPreferences = `{"focusMinutes":25,"breakMinutes":5,"sound":"waves","volume":0.35,"soundEnabled":false,"chimeEnabled":true}`
+const idleSession = `{"kind":"focus","status":"idle","durationMs":1500000,"elapsedMs":0,"startedAt":""}`
+
+func TestExportImportRoundTrip(t *testing.T) {
+	a, _ := testAquarium(t)
+	a.state.Completed = 3
+	a.state.TotalSecs = 1800
+	a.state.Records = []Record{{ID: 1, Task: "read", Seconds: 600, Completed: true, Date: "2026-10-09T09:00:00+08:00"}}
+	a.state.Visitors = []Visitor{{Species: "clown", Name: "小丑鱼", Visits: 1, Date: "2026-10-09T09:00:00+08:00"}}
+	a.state.Session = Session{Kind: "focus", Status: "paused", DurationMS: 1500000, ElapsedMS: 600000}
+	out, err := a.ExportArchive()
+	if err != nil {
+		t.Fatal(err)
+	}
+	var shell struct {
+		Version    int64           `json:"version"`
+		App        string          `json:"app"`
+		ExportedAt string          `json:"exportedAt"`
+		Aquarium   json.RawMessage `json:"aquarium"`
+	}
+	if err := json.Unmarshal([]byte(out), &shell); err != nil {
+		t.Fatal(err)
+	}
+	if shell.Version != 1 || shell.App != "little-reef" || shell.ExportedAt == "" || len(shell.Aquarium) == 0 {
+		t.Fatalf("shell: %+v", shell)
+	}
+	b, _ := testAquarium(t)
+	snap, err := b.ImportArchive(out)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if snap.Completed != 3 || snap.TotalSecs != 1800 || len(snap.Records) != 1 || len(snap.Visitors) != 1 {
+		t.Fatalf("imported: %+v", snap)
+	}
+	// Fixed clock makes the round trip byte-for-byte equal; the import banner
+	// and the change() revision bump are runtime flavor, not archive content.
+	b.state.Notice = ""
+	b.state.Revision = 2
+	out2, err := b.ExportArchive()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if out != out2 {
+		t.Fatalf("round trip mismatch:\n%s\nvs\n%s", out, out2)
+	}
+}
+
+func TestImportIgnoresTransientFields(t *testing.T) {
+	a, _ := testAquarium(t)
+	fake := `{"version":1,"app":"little-reef","exportedAt":"2026-10-09T10:00:00+08:00","aquarium":{"revision":2,"preferences":` + goodPreferences + `,"session":` + idleSession + `,"completed":1,"totalSecs":600,"todaySecs":9999,"todayRounds":7,"records":[{"id":1,"task":"a","seconds":600,"completed":true,"date":"2026-10-09T09:00:00+08:00"}],"visitors":[],"lastVisitor":"","notice":"","fedSession":0}}`
+	snap, err := a.ImportArchive(fake)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if snap.TodaySecs != 600 || snap.TodayRounds != 1 {
+		t.Fatalf("transient fields not recomputed: %+v", snap)
+	}
+}
+
+func TestImportRejectsCorruptFile(t *testing.T) {
+	a, _ := testAquarium(t)
+	for _, broken := range []string{"", "not json", "{oops", "[]", "123"} {
+		if _, err := a.ImportArchive(broken); err == nil || err.Error() != "这个文件不是小海底的存档，什么都没有改动。" {
+			t.Fatalf("broken %q: err=%v", broken, err)
+		}
+	}
+	// Failed imports leave the current archive untouched.
+	if got := a.Get(); got.Completed != 0 || len(got.Records) != 0 {
+		t.Fatalf("state changed after failed import: %+v", got)
+	}
+}
+
+func TestImportRejectsOutOfRangeContent(t *testing.T) {
+	a, _ := testAquarium(t)
+	out := `{"version":1,"app":"little-reef","exportedAt":"x","aquarium":{"revision":1,"preferences":` + goodPreferences + `,"session":` + idleSession + `,"completed":-3}}`
+	_, err := a.ImportArchive(out)
+	if err == nil || !strings.Contains(err.Error(), "存档内容有问题") {
+		t.Fatalf("err=%v", err)
+	}
+}
+
+func TestImportRejectsNewerVersion(t *testing.T) {
+	a, _ := testAquarium(t)
+	out := `{"version":2,"app":"little-reef","exportedAt":"x","aquarium":{}}`
+	_, err := a.ImportArchive(out)
+	if err == nil || err.Error() != "这是更新版本的存档，先把小海底升级到最新版。" {
+		t.Fatalf("err=%v", err)
+	}
+}
+
+func TestImportAcceptsBareAquariumFile(t *testing.T) {
+	a, _ := testAquarium(t)
+	bare := `{"revision":2,"preferences":` + goodPreferences + `,"session":` + idleSession + `,"completed":1,"totalSecs":600,"records":[{"id":1,"task":"a","seconds":600,"completed":true,"date":"2026-10-09T09:00:00+08:00"}],"visitors":[],"lastVisitor":"","notice":"","fedSession":0}`
+	snap, err := a.ImportArchive(bare)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if snap.Completed != 1 {
+		t.Fatalf("completed=%d", snap.Completed)
+	}
+	if !strings.Contains(snap.Notice, "已安全导入") {
+		t.Fatalf("notice=%q", snap.Notice)
 	}
 }

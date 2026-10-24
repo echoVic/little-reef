@@ -75,6 +75,10 @@ export const Aquarium = {
   end(): Promise<Snapshot> {
     return call("Aquarium.End");
   },
+  /** ExportArchive wraps the current aquarium in the versioned shell for backup. */
+  exportArchive(): Promise<string> {
+    return call("Aquarium.ExportArchive");
+  },
   /** Feed is a single optional interaction during each break. */
   feed(): Promise<Snapshot> {
     return call("Aquarium.Feed");
@@ -82,6 +86,14 @@ export const Aquarium = {
   /** Get returns a current, immutable snapshot. */
   get(): Promise<Snapshot> {
     return call("Aquarium.Get");
+  },
+  /**
+   * ImportArchive accepts either the versioned shell or a bare aquarium.json.
+   * The current archive is replaced only after every check passes, so a failed
+   * import leaves everything untouched.
+   */
+  importArchive(text: string): Promise<Snapshot> {
+    return call("Aquarium.ImportArchive", text);
   },
   /** Pause preserves progress and stops the soundscape through the next event. */
   pause(): Promise<Snapshot> {
@@ -110,9 +122,23 @@ export const Desktop = {
   checkForUpdates(): Promise<void> {
     return call("Desktop.CheckForUpdates");
   },
+  /**
+   * ExportArchive asks the user where to save the backup, then writes it.
+   * An empty path means the user canceled; callers must stay silent then.
+   */
+  exportArchive(): Promise<string> {
+    return call("Desktop.ExportArchive");
+  },
   /** Hide keeps the page and sound alive in the tray, or minimizes without a tray. */
   hide(): Promise<void> {
     return call("Desktop.Hide");
+  },
+  /**
+   * ImportArchive asks the user which backup to restore, then validates and
+   * replaces the aquarium. A canceled pick means "已取消" and stays quiet.
+   */
+  importArchive(): Promise<Snapshot> {
+    return call("Desktop.ImportArchive");
   },
   /** Quit closes the desktop app and saves the current session. */
   quit(): Promise<void> {

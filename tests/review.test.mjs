@@ -8,7 +8,7 @@ const base = () => ({
   weekSecs: 900, weekRounds: 2, weekDays: 1,
   monthSecs: 3900, monthRounds: 3,
   totalDays: 4,
-  nextTier: 7,
+  nextTierRounds: 7,
   records: [{ task: 'a', seconds: 600, completed: true, date: '2026-10-26T09:00:00+08:00' }],
   visitors: [
     { species: 'clownfish', name: '小丑鱼', visits: 2, date: '2026-10-26T09:00:00+08:00' },
@@ -74,7 +74,7 @@ test('collecting all fifteen visitors shows the collected line', () => {
 test('maxed growth uses the existing maxed-out copy', () => {
   const state = base();
   state.completed = 24;
-  state.nextTier = 0;
+  state.nextTierRounds = 0;
   const model = reviewModel(state);
   assert.equal(model.growthLine, '当前：小小绿洲');
   assert.equal(model.nextGrowthLine, '继续积累专注，认识更多海底朋友');

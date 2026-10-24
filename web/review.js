@@ -48,7 +48,7 @@ export function reviewModel(state) {
     bookNote: remaining <= 0 ? "15 位朋友都来过了" : `还有 ${remaining} 位朋友没来过，慢慢来`,
     lastVisitorLine: last ? `最近到访：${last.name} · 来过 ${last.visits} 次` : "",
     growthLine: `当前：${tierName(completed)}`,
-    nextGrowthLine: state.nextTier === 0 ? "继续积累专注，认识更多海底朋友" : `再 ${state.nextTier} 轮就是${nextTierName(completed)}`,
+    nextGrowthLine: state.nextTierRounds === 0 ? "继续积累专注，认识更多海底朋友" : `再 ${state.nextTierRounds} 轮就是${nextTierName(completed)}`,
     plantsLine: plants > 0 ? `海底已有 ${plants} 株植物，长满后不再拥挤` : "",
     footnote: "这些数字只保存在你的电脑上。",
   };

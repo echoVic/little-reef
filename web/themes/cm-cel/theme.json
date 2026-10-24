@@ -1,0 +1,31 @@
+{
+  "meta": {
+    "themeId": "cm-cel",
+    "displayName": "赛璐璐",
+    "styleFamily": "cartoon",
+    "version": "1.0.0",
+    "minAppVersion": "0.5.0",
+    "supportsDarkAppearance": false,
+    "reduceMotionFallback": "freeze mid-pose"
+  },
+  "tokens": {
+    "bgBase": "#BDEDE9",
+    "bgGradient": "#6FD0CE",
+    "waterLight": "#FFFFFF",
+    "sand": "#F2E8CF",
+    "coral": { "color": "#FF9AA8", "stages": 3 },
+    "fish": "#FF8C42",
+    "seaweed": { "color": "#67C58F", "stages": 3 },
+    "bubble": "#FFFFFF",
+    "accent": "#FF8C42",
+    "timerActive": "#FF8C42",
+    "timerPause": "#A8B8C0",
+    "controlBg": "#FFFEFB",
+    "controlBorder": "rgba(23,65,77,0.15)",
+    "textPrimary": "#17414D",
+    "textSecondary": "#47707F",
+    "menuIcon": "#FF8C42"
+  },
+  "motion": { "bubbleDensity": 0.45, "driftSpeed": 0.4, "easing": "cubic-bezier(0.45,0,0.25,1)" },
+  "ambientAudio": { "defaultOn": false, "maxVolume": 0.2 }
+}

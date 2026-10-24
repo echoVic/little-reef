@@ -47,6 +47,10 @@ async function loadTheme(id) {
     tokens: { ...base.tokens, ...own.tokens },
     motion: { ...base.motion, ...own.motion },
     ambientAudio: { ...base.ambientAudio, ...own.ambientAudio },
+    controls: { ...base.controls, ...own.controls },
+    fonts: { ...base.fonts, ...own.fonts },
+    behavior: own.behavior || base.behavior,
+    creaturePalette: own.creaturePalette || base.creaturePalette,
   };
 }
 

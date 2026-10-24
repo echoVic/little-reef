@@ -3,6 +3,7 @@ import { Reef } from "./reef.js";
 import { drawPortrait } from "./creatures/species.js";
 import { reviewModel } from "./review.js";
 import { exportToast, importConfirm, importSuccess, downloadArchive } from "./backup.js";
+import { applyTheme } from "./theme.js";
 
 const $ = (id) => document.getElementById(id);
 const desktop = !!window.mygo;
@@ -73,6 +74,9 @@ function apply(next) {
   if (session.status === "running" || session.status === "paused") selectedKind = session.kind;
   else if (session.status === "complete") selectedKind = session.kind;
   render(previous);
+  // Theme rebinding is pure presentation: the same Snapshot drives it, so a
+  // switch arrives through the normal changed event without a new channel.
+  void applyTheme(state.theme || "reef-realistic");
   updateAudio();
 }
 

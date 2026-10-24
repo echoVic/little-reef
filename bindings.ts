@@ -49,6 +49,14 @@ export interface Snapshot {
   notice: string;
   fedSession: number;
   nowMs: number;
+  /** Everything below is derived in snapshotLocked and never persisted. */
+  weekSecs?: number;
+  weekRounds?: number;
+  weekDays?: number;
+  monthSecs?: number;
+  monthRounds?: number;
+  totalDays?: number;
+  nextTierRounds?: number;
 }
 
 /** Visitor is an encounter kept even if the aquarium window was hidden. */

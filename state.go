@@ -66,6 +66,14 @@ type Snapshot struct {
 	Notice      string      `json:"notice"`
 	FedSession  int64       `json:"fedSession"`
 	NowMS       int64       `json:"nowMs"`
+	// Everything below is derived in snapshotLocked and never persisted.
+	WeekSecs      int64 `json:"weekSecs,omitempty"`
+	WeekRounds    int   `json:"weekRounds,omitempty"`
+	WeekDays      int   `json:"weekDays,omitempty"`
+	MonthSecs     int64 `json:"monthSecs,omitempty"`
+	MonthRounds   int   `json:"monthRounds,omitempty"`
+	TotalDays     int   `json:"totalDays,omitempty"`
+	NextTier      int   `json:"nextTierRounds,omitempty"`
 }
 
 // Aquarium owns timer and persistence. No page or animation owns the clock.
@@ -146,17 +154,60 @@ func (a *Aquarium) snapshotLocked() Snapshot {
 		s.Session.ElapsedMS = min(s.Session.DurationMS, s.Session.ElapsedMS+max(0, now.Sub(a.segment).Milliseconds()))
 	}
 	s.TodaySecs, s.TodayRounds = 0, 0
-	date := now.Format("2006-01-02")
+	s.WeekSecs, s.WeekRounds, s.WeekDays = 0, 0, 0
+	s.MonthSecs, s.MonthRounds = 0, 0
+	s.TotalDays = 0
+	loc := now.Location()
+	y, m, d := now.Date()
+	todayStart := time.Date(y, m, d, 0, 0, 0, 0, loc)
+	weekStart := todayStart.AddDate(0, 0, -(int(todayStart.Weekday())+6)%7) // Monday
+	weekEnd := weekStart.AddDate(0, 0, 7)
+	monthPrefix := now.Format("2006-01")
+	todayPrefix := now.Format("2006-01-02")
+	weekDays := map[string]struct{}{}
+	allDays := map[string]struct{}{}
 	for _, r := range s.Records {
-		if strings.HasPrefix(r.Date, date) {
+		t, err := time.Parse(time.RFC3339, r.Date)
+		if err != nil {
+			continue
+		}
+		local := t.In(loc)
+		day := local.Format("2006-01-02")
+		allDays[day] = struct{}{}
+		if day == todayPrefix {
 			s.TodaySecs += r.Seconds
 			if r.Completed {
 				s.TodayRounds++
 			}
 		}
+		if !local.Before(weekStart) && local.Before(weekEnd) {
+			s.WeekSecs += r.Seconds
+			weekDays[day] = struct{}{}
+			if r.Completed {
+				s.WeekRounds++
+			}
+		}
+		if local.Format("2006-01") == monthPrefix {
+			s.MonthSecs += r.Seconds
+			if r.Completed {
+				s.MonthRounds++
+			}
+		}
 	}
+	s.WeekDays = len(weekDays)
+	s.TotalDays = len(allDays)
 	if s.Session.Kind == "focus" && slices.Contains([]string{"running", "paused"}, s.Session.Status) {
 		s.TodaySecs += s.Session.ElapsedMS / 1000
+	}
+	switch {
+	case s.Completed < 3:
+		s.NextTier = 3 - s.Completed
+	case s.Completed < 12:
+		s.NextTier = 12 - s.Completed
+	case s.Completed < 24:
+		s.NextTier = 24 - s.Completed
+	default:
+		s.NextTier = 0
 	}
 	return s
 }

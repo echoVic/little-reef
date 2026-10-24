@@ -101,6 +101,13 @@ func serveBrowser(addr string, web fs.FS, a *Aquarium) error {
 			} else {
 				result, callErr = a.SetPreferences(p)
 			}
+		case "Aquarium.SetTheme":
+			var id string
+			if len(req.Args) != 1 || json.Unmarshal(req.Args[0], &id) != nil {
+				callErr = errors.New("无效的主题")
+			} else {
+				result, callErr = a.SetTheme(id)
+			}
 		default:
 			callErr = errors.New("不支持的操作")
 		}

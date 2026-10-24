@@ -74,6 +74,16 @@ type Snapshot struct {
 	MonthRounds   int   `json:"monthRounds,omitempty"`
 	TotalDays     int   `json:"totalDays,omitempty"`
 	NextTier      int   `json:"nextTierRounds,omitempty"`
+	// Theme is presentation only: the view rebinds CSS variables from it,
+	// but the file archive strips it (see archiveSnapshot).
+	Theme string `json:"theme,omitempty"`
+}
+
+// archiveSnapshot is what actually lands in aquarium.json: the live Snapshot
+// minus the theme choice, which belongs in dataDir/theme.json alone.
+type archiveSnapshot struct {
+	Snapshot
+	Theme string `json:"-"`
 }
 
 // Aquarium owns timer and persistence. No page or animation owns the clock.
@@ -81,6 +91,8 @@ type Aquarium struct {
 	mu       sync.Mutex
 	state    Snapshot
 	path     string
+	theme    string
+	themes   *themeStore
 	segment  time.Time
 	lastTick time.Time
 	now      func() time.Time
@@ -92,7 +104,7 @@ type Aquarium struct {
 }
 
 func newAquarium(path string) (*Aquarium, error) {
-	a := &Aquarium{path: path, now: time.Now, roll: rand.IntN, stop: make(chan struct{}), done: make(chan struct{})}
+	a := &Aquarium{path: path, theme: defaultTheme, now: time.Now, roll: rand.IntN, stop: make(chan struct{}), done: make(chan struct{})}
 	a.state = Snapshot{
 		Preferences: Preferences{FocusMinutes: 25, BreakMinutes: 5, Sound: "waves", Volume: .35, ChimeEnabled: true},
 		Session:     Session{Kind: "focus", Status: "idle", DurationMS: 25 * 60 * 1000},
@@ -167,7 +179,7 @@ func (a *Aquarium) ExportArchive() (string, error) {
 		Version:    archiveVersion,
 		App:        "little-reef",
 		ExportedAt: a.now().Format(time.RFC3339),
-		Aquarium:   mustMarshal(a.Get()),
+		Aquarium:   mustMarshal(archiveSnapshot{Snapshot: a.Get()}),
 	}, "", "  ")
 	return string(data), err
 }
@@ -223,6 +235,7 @@ func (a *Aquarium) snapshotLocked() Snapshot {
 	s := a.state
 	s.Records = slices.Clone(s.Records)
 	s.Visitors = slices.Clone(s.Visitors)
+	s.Theme = a.theme
 	if s.Records == nil {
 		s.Records = []Record{}
 	}
@@ -304,7 +317,7 @@ func (a *Aquarium) saveLocked() error {
 	if err := os.MkdirAll(filepath.Dir(a.path), 0o700); err != nil {
 		return err
 	}
-	data, err := json.MarshalIndent(a.snapshotLocked(), "", "  ")
+	data, err := json.MarshalIndent(archiveSnapshot{Snapshot: a.snapshotLocked()}, "", "  ")
 	if err != nil {
 		return err
 	}
@@ -347,6 +360,25 @@ func (a *Aquarium) change(fn func() error) (Snapshot, error) {
 		a.mu.Unlock()
 		return Snapshot{}, errors.New("保存失败，请检查存档目录是否可写；本次操作未生效")
 	}
+	s := a.snapshotLocked()
+	a.mu.Unlock()
+	if a.onChange != nil {
+		a.onChange(s)
+	}
+	return s, nil
+}
+
+// SetTheme swaps the palette. It never touches the saved archive: theme
+// choice lives in dataDir/theme.json, so switching cannot rewrite aquarium.json.
+func (a *Aquarium) SetTheme(id string) (Snapshot, error) {
+	if a.themes == nil || !a.themes.valid(id) {
+		return Snapshot{}, errors.New("未知的主题")
+	}
+	if err := a.themes.set(id); err != nil {
+		return Snapshot{}, err
+	}
+	a.mu.Lock()
+	a.theme = id
 	s := a.snapshotLocked()
 	a.mu.Unlock()
 	if a.onChange != nil {

@@ -112,6 +112,27 @@ func (d *Desktop) CheckForUpdates() { updater.CheckForUpdates() }
 // Quit closes the desktop app and saves the current session.
 func (*Desktop) Quit() { mygo.App.Quit() }
 
+// themeSubmenu builds the radio group of bundled themes; the checked entry
+// follows the currently applied palette.
+func themeSubmenu(a *Aquarium) []*mygo.MenuItem {
+	current := a.Get().Theme
+	installed, err := installedThemes()
+	if err != nil {
+		return nil
+	}
+	items := make([]*mygo.MenuItem, 0, len(installed))
+	for _, t := range installed {
+		t := t
+		items = append(items, &mygo.MenuItem{
+			Label:   t.Name,
+			Type:    mygo.MenuItemRadio,
+			Checked: t.ID == current,
+			Click:   func(*mygo.MenuItem, *mygo.Window) { _, _ = a.SetTheme(t.ID) },
+		})
+	}
+	return items
+}
+
 // startTraySwim drifts the menu bar fish while a focus session runs, and
 // settles it again otherwise. Frames are applied on the main thread, after
 // the quit flag is checked, so nothing touches the tray once quitting
@@ -205,6 +226,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	themeStore, err := newThemeStore(dir)
+	if err != nil {
+		log.Fatal(err)
+	}
+	a.themes = themeStore
+	a.theme = themeStore.load()
 	desktop.a = a
 	mygo.Bind(a)
 	mygo.Bind(desktop)
@@ -223,7 +250,11 @@ func main() {
 	var win *mygo.Window
 	var quitting atomic.Bool
 	var stopSwim func()
-	a.onChange = func(s Snapshot) { _ = Changed.Broadcast(s) }
+	rebuildTrayMenu := func() {}
+	a.onChange = func(s Snapshot) {
+		_ = Changed.Broadcast(s)
+		rebuildTrayMenu()
+	}
 	a.onDone = func(s Snapshot) {
 		go func() {
 			n := mygo.NewNotification(mygo.NotificationOptions{
@@ -249,10 +280,32 @@ func main() {
 		})
 		show := func() { win.Show(); win.Focus() }
 		mygo.App.OnActivate(func(bool) { show() })
+		buildTrayMenu := func() *mygo.Menu {
+			return mygo.NewMenu([]*mygo.MenuItem{
+				{Label: "打开小海底", Click: func(*mygo.MenuItem, *mygo.Window) { show() }},
+				{Label: "主题 ▸", Submenu: themeSubmenu(a)},
+				updater.MenuItem(),
+				{Label: "问题反馈…", Click: func(*mygo.MenuItem, *mygo.Window) {
+					_ = mygo.Shell.OpenExternal("https://github.com/echoVic/little-reef/issues/new")
+				}},
+				mygo.Separator(),
+				{Label: "退出小海底", Click: func(*mygo.MenuItem, *mygo.Window) { mygo.App.Quit() }},
+			})
+		}
+		builtTheme := ""
+		rebuildTrayMenu = func() {
+			if desktop.tray == nil {
+				return
+			}
+			if t := a.Get().Theme; t == builtTheme {
+				return
+			} else {
+				builtTheme = t
+			}
+			desktop.tray.SetMenu(buildTrayMenu())
+		}
 		tray, trayErr := mygo.NewTray(mygo.TrayOptions{Icon: trayIcon(), IconIsTemplate: runtime.GOOS == "darwin", ToolTip: "小海底 · 专注养出一片海",
-			Menu: mygo.NewMenu([]*mygo.MenuItem{{Label: "打开小海底", Click: func(*mygo.MenuItem, *mygo.Window) { show() }}, updater.MenuItem(), {Label: "问题反馈…", Click: func(*mygo.MenuItem, *mygo.Window) {
-				_ = mygo.Shell.OpenExternal("https://github.com/echoVic/little-reef/issues/new")
-			}}, mygo.Separator(), {Label: "退出小海底", Click: func(*mygo.MenuItem, *mygo.Window) { mygo.App.Quit() }}}),
+			Menu: buildTrayMenu(),
 		})
 		if trayErr == nil {
 			desktop.tray = tray

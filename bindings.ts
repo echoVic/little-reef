@@ -107,6 +107,13 @@ export const Aquarium = {
   setPreferences(p: Preferences): Promise<Snapshot> {
     return call("Aquarium.SetPreferences", p);
   },
+  /**
+   * SetTheme swaps the palette. It never touches the saved archive: theme
+   * choice lives in dataDir/theme.json, so switching cannot rewrite aquarium.json.
+   */
+  setTheme(id: string): Promise<Snapshot> {
+    return call("Aquarium.SetTheme", id);
+  },
   /** Start begins a fresh focus session or the break after a completed focus. */
   start(kind: string, task: string): Promise<Snapshot> {
     return call("Aquarium.Start", kind, task);

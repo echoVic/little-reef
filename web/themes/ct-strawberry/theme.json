@@ -1,0 +1,31 @@
+{
+  "meta": {
+    "themeId": "ct-strawberry",
+    "displayName": "草莓奶昔",
+    "styleFamily": "cute",
+    "version": "1.0.0",
+    "minAppVersion": "0.5.0",
+    "supportsDarkAppearance": false,
+    "reduceMotionFallback": "frozen illustration"
+  },
+  "tokens": {
+    "bgBase": "#FBEFF2",
+    "bgGradient": "#F6D9E0",
+    "waterLight": "#EBD9F0",
+    "sand": "#F7E6C8",
+    "coral": { "color": "#F29CAB", "stages": 3 },
+    "fish": "#FFF4E3",
+    "seaweed": { "color": "#F2AEBB", "stages": 3 },
+    "bubble": "#FFFFFF",
+    "accent": "#D9566C",
+    "timerActive": "#5E82B8",
+    "timerPause": "#C99A4E",
+    "controlBg": "#FFFDF9",
+    "controlBorder": "#EBD3D8",
+    "textPrimary": "#53333B",
+    "textSecondary": "#8A6470",
+    "menuIcon": "#B85365"
+  },
+  "motion": { "bubbleDensity": 0.45, "driftSpeed": 0.5, "easing": "cubic-bezier(0.42,0,0.58,1)" },
+  "ambientAudio": { "defaultOn": false, "maxVolume": 0.2 }
+}

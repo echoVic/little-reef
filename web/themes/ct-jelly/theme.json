@@ -1,0 +1,31 @@
+{
+  "meta": {
+    "themeId": "ct-jelly",
+    "displayName": "水彩果冻",
+    "styleFamily": "cute",
+    "version": "1.0.0",
+    "minAppVersion": "0.5.0",
+    "supportsDarkAppearance": false,
+    "reduceMotionFallback": "frozen illustration"
+  },
+  "tokens": {
+    "bgBase": "#EAF4F6",
+    "bgGradient": "#E6DEF0",
+    "waterLight": "#BFE0EE",
+    "sand": "#F4F1E4",
+    "coral": { "color": "#C3A6E0", "stages": 3 },
+    "fish": "#8FC3E8",
+    "seaweed": { "color": "#8FC3E8", "stages": 3 },
+    "bubble": "#FFFFFF",
+    "accent": "#4E96B4",
+    "timerActive": "#3F7A93",
+    "timerPause": "#D99AA6",
+    "controlBg": "#FDFFFF",
+    "controlBorder": "#CFE0E8",
+    "textPrimary": "#2F3B4A",
+    "textSecondary": "#56697D",
+    "menuIcon": "#3F6E85"
+  },
+  "motion": { "bubbleDensity": 0.55, "driftSpeed": 0.5, "easing": "cubic-bezier(0.42,0,0.58,1)" },
+  "ambientAudio": { "defaultOn": false, "maxVolume": 0.2 }
+}

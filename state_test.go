@@ -349,3 +349,24 @@ func TestImportAcceptsBareAquariumFile(t *testing.T) {
 		t.Fatalf("notice=%q", snap.Notice)
 	}
 }
+
+func TestGetThemesListsEveryBundledTheme(t *testing.T) {
+	a, _ := testAquarium(t)
+	store, err := newThemeStore(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	a.themes = store
+	list, err := a.GetThemes()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(list) != 10 {
+		t.Fatalf("expected 10 bundled themes, got %d", len(list))
+	}
+	for _, item := range list {
+		if item.ID == "" || item.Name == "" || item.Family == "" {
+			t.Fatalf("incomplete theme entry: %+v", item)
+		}
+	}
+}

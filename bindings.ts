@@ -114,11 +114,22 @@ export const Aquarium = {
   setTheme(id: string): Promise<Snapshot> {
     return call("Aquarium.SetTheme", id);
   },
+  /** GetThemes lists every bundled theme for the settings picker. */
+  getThemes(): Promise<ThemeOption[]> {
+    return call("Aquarium.GetThemes");
+  },
   /** Start begins a fresh focus session or the break after a completed focus. */
   start(kind: string, task: string): Promise<Snapshot> {
     return call("Aquarium.Start", kind, task);
   },
 } as const;
+
+/** One selectable theme in the settings picker. */
+export interface ThemeOption {
+  id: string;
+  displayName: string;
+  styleFamily: string;
+}
 
 /** Desktop controls the current aquarium window. */
 export const Desktop = {

@@ -273,11 +273,33 @@ async function toggleSound() {
 }
 $("sound-toggle").onclick = toggleSound;
 $("compact-sound").onclick = toggleSound;
-$("settings-open").onclick = () => {
+// Theme picker: the list comes from the backend (never hardcoded), and a
+// click switches immediately through the existing SetTheme RPC; the same
+// Snapshot that echoes back re-applies the CSS variables via the changed event.
+async function renderThemeList() {
+  const box = $("theme-list");
+  try {
+    const themes = await call("Aquarium.GetThemes");
+    box.replaceChildren(...themes.map((t) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "theme-option";
+      btn.textContent = t.displayName;
+      btn.setAttribute("role", "radio");
+      btn.setAttribute("aria-checked", String(state.theme === t.id));
+      if (state.theme === t.id) btn.classList.add("active");
+      btn.onclick = () => void action(() => call("Aquarium.SetTheme", t.id));
+      return btn;
+    }));
+  } catch { box.replaceChildren(); }
+}
+
+$("settings-open").onclick = async () => {
   if (!state) return;
   $("focus-minutes").value = String(state.preferences.focusMinutes);
   $("break-minutes").value = String(state.preferences.breakMinutes);
   $("chime").checked = state.preferences.chimeEnabled;
+  await renderThemeList();
   $("settings-dialog").showModal();
 };
 $("settings-close").onclick = () => $("settings-dialog").close();

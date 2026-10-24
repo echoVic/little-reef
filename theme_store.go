@@ -21,11 +21,13 @@ const defaultTheme = "reef-realistic"
 type themeMeta struct {
 	ThemeID     string `json:"themeId"`
 	DisplayName string `json:"displayName"`
+	StyleFamily string `json:"styleFamily"`
 }
 
 type themeRecord struct {
-	ID   string
-	Name string
+	ID     string
+	Name   string
+	Family string
 }
 
 // installedThemes lists every bundled theme in load order.
@@ -52,7 +54,7 @@ func installedThemes() ([]themeRecord, error) {
 		if meta.Meta.ThemeID != e.Name() {
 			return nil, errors.New("theme " + e.Name() + " 与目录名不一致")
 		}
-		out = append(out, themeRecord{ID: meta.Meta.ThemeID, Name: meta.Meta.DisplayName})
+		out = append(out, themeRecord{ID: meta.Meta.ThemeID, Name: meta.Meta.DisplayName, Family: meta.Meta.StyleFamily})
 	}
 	return out, nil
 }
@@ -64,6 +66,7 @@ type themeStore struct {
 	dir   string
 	ids   []string
 	names map[string]string
+	families map[string]string
 }
 
 func newThemeStore(dir string) (*themeStore, error) {
@@ -71,10 +74,11 @@ func newThemeStore(dir string) (*themeStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	s := &themeStore{dir: dir, names: map[string]string{}}
+	s := &themeStore{dir: dir, names: map[string]string{}, families: map[string]string{}}
 	for _, t := range installed {
 		s.ids = append(s.ids, t.ID)
 		s.names[t.ID] = t.Name
+		s.families[t.ID] = t.Family
 	}
 	if !s.valid(defaultTheme) {
 		return nil, errors.New("默认主题 reef-realistic 未随应用打包")
@@ -83,6 +87,22 @@ func newThemeStore(dir string) (*themeStore, error) {
 }
 
 func (s *themeStore) valid(id string) bool { return slices.Contains(s.ids, id) }
+
+// ThemeOption is one selectable entry for the settings picker.
+type ThemeOption struct {
+	ID     string `json:"id"`
+	Name   string `json:"displayName"`
+	Family string `json:"styleFamily"`
+}
+
+// list returns every bundled theme in load order.
+func (s *themeStore) list() []ThemeOption {
+	out := make([]ThemeOption, 0, len(s.ids))
+	for _, id := range s.ids {
+		out = append(out, ThemeOption{ID: id, Name: s.names[id], Family: s.families[id]})
+	}
+	return out
+}
 
 // load reads the saved choice; a missing or unreadable file falls back to the
 // default theme, and an unknown id (e.g. uninstalled build) does the same.

@@ -64,7 +64,7 @@ func serveBrowser(addr string, web fs.FS, a *Aquarium) error {
 			http.Error(w, "无效请求", http.StatusBadRequest)
 			return
 		}
-		var result Snapshot
+		var result any
 		var archiveText string
 		var callErr error
 		switch req.Method {
@@ -108,6 +108,8 @@ func serveBrowser(addr string, web fs.FS, a *Aquarium) error {
 			} else {
 				result, callErr = a.SetTheme(id)
 			}
+		case "Aquarium.GetThemes":
+			result, callErr = a.GetThemes()
 		default:
 			callErr = errors.New("不支持的操作")
 		}

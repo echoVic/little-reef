@@ -387,6 +387,15 @@ func (a *Aquarium) SetTheme(id string) (Snapshot, error) {
 	return s, nil
 }
 
+// GetThemes lists every bundled theme for the settings picker; the active id
+// arrives on the Snapshot (theme field), so the UI never stores the list twice.
+func (a *Aquarium) GetThemes() ([]ThemeOption, error) {
+	if a.themes == nil {
+		return []ThemeOption{}, nil
+	}
+	return a.themes.list(), nil
+}
+
 // Start begins a fresh focus session or the break after a completed focus.
 func (a *Aquarium) Start(kind, task string) (Snapshot, error) {
 	return a.change(func() error {

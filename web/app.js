@@ -1,6 +1,7 @@
 import { Soundscape } from "./audio.js";
 import { Reef } from "./reef.js";
 import { drawPortrait } from "./creatures/species.js";
+import { reviewModel } from "./review.js";
 
 const $ = (id) => document.getElementById(id);
 const desktop = !!window.mygo;
@@ -141,6 +142,7 @@ function render(previous) {
   }
   if (!previous || JSON.stringify(previous.visitors) !== JSON.stringify(state.visitors)) renderVisitors();
   if (!previous || JSON.stringify(previous.records) !== JSON.stringify(state.records)) renderRecords();
+  renderReview();
   reef.update(state);
   document.title = active ? `${time} · 小海底` : "小海底 · 桌面水族馆";
 }
@@ -171,6 +173,35 @@ function renderRecords() {
     meta.textContent = `${r.completed ? "完成" : "已记录"} · ${Math.floor(r.seconds / 60)}分${r.seconds % 60}秒 · ${new Date(r.date).toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" })}`;
     el.append(title, meta); return el;
   }));
+}
+
+function renderReview() {
+  const model = reviewModel(state);
+  if (model.empty) {
+    $("review-empty").hidden = false;
+    $("review-rows").hidden = true;
+    $("review-footnote").hidden = false;
+    return;
+  }
+  $("review-empty").hidden = true;
+  $("review-rows").hidden = false;
+  $("review-footnote").hidden = false;
+  for (const [id, text] of [
+    ["review-week-line", model.weekLine],
+    ["review-week-days", model.weekDaysLine],
+    ["review-month-line", model.monthLine],
+    ["review-together", model.togetherLine],
+    ["review-total-days", model.totalDaysLine],
+    ["review-book-line", model.bookLine],
+    ["review-book-note", model.bookNote],
+    ["review-last-visitor", model.lastVisitorLine],
+    ["review-growth-line", model.growthLine],
+    ["review-next", model.nextGrowthLine],
+    ["review-plants", model.plantsLine],
+  ]) {
+    $(id).textContent = text;
+    $(id).hidden = !text;
+  }
 }
 
 async function action(fn) {

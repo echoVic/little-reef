@@ -2,6 +2,7 @@ import { Soundscape } from "./audio.js";
 import { Reef } from "./reef.js";
 import { drawPortrait } from "./creatures/species.js";
 import { reviewModel } from "./review.js";
+import { exportToast, importConfirm, importSuccess, downloadArchive } from "./backup.js";
 
 const $ = (id) => document.getElementById(id);
 const desktop = !!window.mygo;
@@ -278,6 +279,38 @@ $("settings-open").onclick = () => {
 $("settings-close").onclick = () => $("settings-dialog").close();
 // 更新窗口自己会说明结果：已是最新、发现新版本或检查失败。
 $("check-update").onclick = () => { if (desktop) void call("Desktop.CheckForUpdates").catch(() => {}); };
+$("backup-export").onclick = async () => {
+  try {
+    if (desktop) {
+      const path = await call("Desktop.ExportArchive");
+      if (path) toast(exportToast(path.split("/").pop()));
+    } else {
+      const text = await call("Aquarium.ExportArchive");
+      downloadArchive("little-reef-archive.json", text);
+      toast(exportToast("little-reef-archive.json"));
+    }
+  } catch (error) { toast(error.message || "导出未完成，请稍后再试。"); }
+};
+$("backup-import").onclick = async () => {
+  if (!desktop) { $("backup-file").click(); return; }
+  if (!confirm(importConfirm)) return;
+  try {
+    const snap = await call("Desktop.ImportArchive");
+    apply(snap);
+    toast(snap.notice || importSuccess);
+  } catch (error) { if (!String(error.message || error).startsWith("已取消")) toast(error.message || "导入未完成，请稍后再试。"); }
+};
+$("backup-file").onchange = async (event) => {
+  const file = event.target.files[0];
+  event.target.value = "";
+  if (!file) return;
+  if (!confirm(importConfirm)) return;
+  try {
+    const snap = await call("Aquarium.ImportArchive", await file.text());
+    apply(snap);
+    toast(snap.notice || importSuccess);
+  } catch (error) { toast(error.message || "导入未完成，请稍后再试。"); }
+};
 $("settings-form").onsubmit = (event) => {
   event.preventDefault();
   if (!$("settings-form").reportValidity()) return;

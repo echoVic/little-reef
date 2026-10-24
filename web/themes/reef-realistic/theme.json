@@ -34,5 +34,17 @@
   "ambientAudio": {
     "defaultOn": false,
     "maxVolume": 0.2
+  },
+  "controls": {
+    "radius": "20px",
+    "borderWidth": "1px"
+  },
+  "fonts": {
+    "title": "\"PingFang SC\",\"Microsoft YaHei\",system-ui,sans-serif",
+    "body": "inherit",
+    "digits": "inherit"
+  },
+  "behavior": {
+    "maxCreatures": 999
   }
 }

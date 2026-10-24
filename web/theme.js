@@ -61,6 +61,12 @@ export async function applyTheme(id) {
     root.setProperty(cssVar, colorOf(theme.tokens[token]));
   }
   globalThis.THEME = theme;
+  // Controls geometry and font stacks are theme-level too: rebind the same
+  // way, so family constants never live in JS conditionals.
+  if (theme.controls?.radius) root.setProperty("--radius", theme.controls.radius);
+  if (theme.controls?.borderWidth) root.setProperty("--control-border-width", theme.controls.borderWidth);
+  if (theme.fonts?.title) root.setProperty("--font-title", theme.fonts.title);
+  if (theme.fonts?.digits) root.setProperty("--font-digits", theme.fonts.digits);
   applied = id;
   window.dispatchEvent(new CustomEvent("theme:changed"));
 }

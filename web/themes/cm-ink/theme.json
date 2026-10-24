@@ -13,9 +13,15 @@
     "bgGradient": "",
     "waterLight": "#CDE6E4",
     "sand": "#EFD9A8",
-    "coral": { "color": "#EF8FA0", "stages": 3 },
+    "coral": {
+      "color": "#EF8FA0",
+      "stages": 3
+    },
     "fish": "#7FB2D6",
-    "seaweed": { "color": "#9CBF8C", "stages": 3 },
+    "seaweed": {
+      "color": "#9CBF8C",
+      "stages": 3
+    },
     "bubble": "#33313B",
     "accent": "#E0794F",
     "timerActive": "#E0794F",
@@ -26,6 +32,28 @@
     "textSecondary": "#6E6A5C",
     "menuIcon": "#33313B"
   },
-  "motion": { "bubbleDensity": 0.17, "driftSpeed": 0.25, "easing": "cubic-bezier(0.42,0,0.58,1)" },
-  "ambientAudio": { "defaultOn": false, "maxVolume": 0.2 }
+  "motion": {
+    "bubbleDensity": 0.17,
+    "driftSpeed": 0.25,
+    "easing": "cubic-bezier(0.42,0,0.58,1)"
+  },
+  "ambientAudio": {
+    "defaultOn": false,
+    "maxVolume": 0.2
+  },
+  "controls": {
+    "radius": "14px",
+    "borderWidth": "1px"
+  },
+  "fonts": {
+    "title": "LXGW WenKai, PingFang SC",
+    "body": "inherit",
+    "digits": "LXGW WenKai, SF Pro Text"
+  },
+  "behavior": {
+    "maxCreatures": 2
+  },
+  "creaturePalette": {
+    "fish": "#7FB2D6"
+  }
 }

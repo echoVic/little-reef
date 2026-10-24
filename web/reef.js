@@ -1,4 +1,4 @@
-import { create } from "./creatures/species.js";
+import { create, maxCreatures } from "./creatures/species.js";
 import { clamp, random } from "./creatures/motion.js";
 import { themeColor, themeMotion } from "./theme.js";
 
@@ -140,7 +140,7 @@ export class Reef {
   // populate adds a creature for the resident and every visitor met so far;
   // visitors who arrive while the page is open swim or walk in from the side.
   populate() {
-    const visitors = this.state?.visitors || [];
+    const visitors = (this.state?.visitors || []).slice(0, maxCreatures() - 1);
     const enter = this.populated && !this.world.still;
     for (const id of ["resident", ...visitors.map(v => v.species)]) {
       if (this.creatures.has(id)) continue;

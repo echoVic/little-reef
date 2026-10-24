@@ -13,9 +13,15 @@
     "bgGradient": "#C9DAE5",
     "waterLight": "#FBFDFE",
     "sand": "#D8C2A4",
-    "coral": { "color": "#24567F", "stages": 3 },
+    "coral": {
+      "color": "#24567F",
+      "stages": 3
+    },
     "fish": "#2E6BA0",
-    "seaweed": { "color": "#7FA3B8", "stages": 3 },
+    "seaweed": {
+      "color": "#7FA3B8",
+      "stages": 3
+    },
     "bubble": "#FFFFFF",
     "accent": "#235E8C",
     "timerActive": "#3D7EA6",
@@ -26,6 +32,28 @@
     "textSecondary": "#566F82",
     "menuIcon": "#1F3A4D"
   },
-  "motion": { "bubbleDensity": 0.5, "driftSpeed": 0.5, "easing": "cubic-bezier(0.4,0,0.25,1)" },
-  "ambientAudio": { "defaultOn": false, "maxVolume": 0.2 }
+  "motion": {
+    "bubbleDensity": 0.5,
+    "driftSpeed": 0.5,
+    "easing": "cubic-bezier(0.4,0,0.25,1)"
+  },
+  "ambientAudio": {
+    "defaultOn": false,
+    "maxVolume": 0.2
+  },
+  "controls": {
+    "radius": "10px",
+    "borderWidth": "1px"
+  },
+  "fonts": {
+    "title": "Songti SC, Source Han Serif SC, serif",
+    "body": "inherit",
+    "digits": "SF Mono, Menlo"
+  },
+  "behavior": {
+    "maxCreatures": 3
+  },
+  "creaturePalette": {
+    "fish": "#2E6BA0"
+  }
 }

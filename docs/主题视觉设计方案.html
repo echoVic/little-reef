@@ -1,0 +1,1784 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>小海底 little-reef · 多主题视觉设计方案</title>
+<style>
+:root{
+  --paper:#F7F4EC; --card:#FFFEF9; --ink:#2E2A24; --ink2:#6B6457;
+  --line:#E4DECE; --teal:#3F7A5F; --soft:#EDE7D6;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"PingFang SC","Hiragino Sans GB",-apple-system,"Helvetica Neue",sans-serif;
+  line-height:1.75;font-size:15px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+.hero{background:linear-gradient(180deg,#F0EAD8 0%, var(--paper) 100%);border-bottom:1px solid var(--line);padding:56px 0 40px}
+.hero .kicker{display:inline-block;font-size:12px;letter-spacing:.18em;color:var(--teal);font-weight:600;margin-bottom:14px}
+h1{font-size:34px;line-height:1.3;margin:0 0 10px;letter-spacing:.01em}
+.sub{color:var(--ink2);font-size:15px;max-width:760px}
+.meta{margin-top:18px;font-size:13px;color:var(--ink2)}
+.meta b{color:var(--ink);font-weight:600}
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.toc a{text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);
+  border-radius:999px;padding:5px 14px;font-size:13px;transition:border-color .15s}
+.toc a:hover{border-color:var(--teal);color:var(--teal)}
+main{padding:44px 0 20px}
+section{margin-bottom:64px}
+h2{font-size:24px;margin:0 0 6px;letter-spacing:.02em}
+h2 .no{color:var(--teal);font-size:15px;vertical-align:3px;margin-right:8px;font-weight:700}
+.lead{color:var(--ink2);margin:0 0 22px;max-width:860px}
+h3{font-size:17px;margin:26px 0 10px;border-left:4px solid var(--teal);padding-left:10px}
+h4{font-size:15px;margin:18px 0 8px}
+p{margin:8px 0}
+ul,ol{margin:8px 0;padding-left:22px}
+li{margin:4px 0}
+hr{border:none;border-top:1px solid var(--line);margin:30px 0}
+strong{color:#241F1A}
+a{color:var(--teal)}
+table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px;background:var(--card);
+  border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th{background:var(--soft);text-align:left;padding:8px 12px;font-weight:600;border-bottom:1px solid var(--line)}
+td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:none}
+code{font-family:"SF Mono",Menlo,monospace;font-size:12.5px;background-color:#EFEAE0;padding:1px 5px;border-radius:4px}
+pre{background:#2E2A24;color:#EDE7D6;padding:16px;border-radius:10px;overflow-x:auto;font-size:12.5px}
+pre code{background:none;color:inherit;padding:0}
+img{max-width:100%;border-radius:12px;border:1px solid var(--line);margin:6px 0}
+figure{margin:10px 0}
+figcaption{font-size:12.5px;color:var(--ink2);margin-top:2px}
+.chip{white-space:nowrap}
+.chip .sw{display:inline-block;width:13px;height:13px;border-radius:4px;vertical-align:-2px;margin-right:5px;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)}
+.chip code{background:none;padding:0;color:inherit}
+.fam-intro{display:flex;gap:26px;align-items:flex-start;margin-bottom:20px}
+.fam-intro .txt{flex:1}
+.grid9{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:18px 0 26px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.card .tag{display:inline-block;font-size:11.5px;font-weight:600;color:var(--teal);
+  border:1px solid var(--teal);border-radius:999px;padding:1px 10px;margin-bottom:10px}
+.card h4{margin:0 0 4px;font-size:17px}
+.card .codename{font-family:"SF Mono",Menlo,monospace;font-size:12.5px;color:var(--ink2);margin-bottom:8px}
+.card .tagline{font-size:13.5px;color:var(--ink2);min-height:40px}
+.card .sws{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+.sw-dot{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink2)}
+.sw-dot i{width:13px;height:13px;border-radius:4px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14);display:inline-block}
+.note{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:18px 22px;font-size:14px}
+.note h4{margin:0 0 8px;font-size:15px;color:var(--teal)}
+footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--ink2);font-size:13px}
+@media (max-width:860px){.grid9{grid-template-columns:1fr 1fr}.fam-intro{flex-direction:column}}
+</style>
+</head>
+<body>
+<header class="hero">
+<div class="wrap">
+<span class="kicker">LITTLE-REEF · THEME DESIGN SYSTEM</span>
+<h1>小海底 · 多主题视觉设计方案</h1>
+<p class="sub">为 macOS 桌面「专注计时器 + 会成长的珊瑚礁水族馆」设计的 9 套主题：中国风、卡通漫画风、可爱风各 3 套，附一套可落地的主题切换框架。延续产品「无压力」气质——只做正向记录、不提醒、不打扰；每套主题均给出可直接实施的颜色、画面、控件、字体与动效规格。</p>
+<div class="meta"><b>版本</b> v1.0 · <b>日期</b> 2026-10-24 · <b>内容</b> 9 套主题 × 10 章节 + 1 套落地框架 · <b>校验</b> 对比度脚本实测 / hex 全量断言</div>
+<nav class="toc">
+<a href="#overview">总览与对比</a><a href="#cn">中国风 · 3 套</a><a href="#cm">卡通漫画风 · 3 套</a><a href="#ct">可爱风 · 3 套</a><a href="#framework">主题落地框架</a><a href="#notes">采用说明</a>
+</nav>
+</div>
+</header>
+<main class="wrap">
+
+<section id="overview">
+<h2><span class="no">00</span>主题一览</h2>
+<p class="lead">三大家族九套主题，全部延续「安静陪伴」：可爱来自圆润造型与低饱和配色而非动效密度，漫画用明快取代激烈，中国风以留白与墨阶说话。</p>
+<div class="grid9"><div class="card"><span class="tag">中国风</span><h4>水墨兰亭</h4><div class="codename">cn-shuimo</div><div class="tagline">把水族箱养在一张宣纸上——文人画式的水下世界，墨分五色，留白即水。</div><div class="sws"><span class="sw-dot"><i style="background:#F1ECE1"></i>#F1ECE1</span><span class="sw-dot"><i style="background:#B4533C"></i>#B4533C</span><span class="sw-dot"><i style="background:#4E6E5D"></i>#4E6E5D</span></div></div><div class="card"><span class="tag">中国风</span><h4>青花瓷韵</h4><div class="codename">cn-qinghua</div><div class="tagline">把海底烧进一只梅瓶里——钴蓝在瓷白釉面上晕散，雅而不冷。</div><div class="sws"><span class="sw-dot"><i style="background:#EFF4F7"></i>#EFF4F7</span><span class="sw-dot"><i style="background:#235E8C"></i>#235E8C</span><span class="sw-dot"><i style="background:#3D7EA6"></i>#3D7EA6</span></div></div><div class="card"><span class="tag">中国风</span><h4>青绿江山</h4><div class="codename">cn-qinglu</div><div class="tagline">千里江山的袖珍水下版——石青石绿叠染，饱满而不喧哗。</div><div class="sws"><span class="sw-dot"><i style="background:#EAE2C6"></i>#EAE2C6</span><span class="sw-dot"><i style="background:#3F755B"></i>#3F755B</span><span class="sw-dot"><i style="background:#A8563A"></i>#A8563A</span></div></div><div class="card"><span class="tag">卡通漫画风</span><h4>波普</h4><div class="codename">cm-pop</div><div class="tagline">一张贴在桌面上的波普漫画页——网点、粗轮廓、降饱和撞色。</div><div class="sws"><span class="sw-dot"><i style="background:#8FDDE0"></i>#8FDDE0</span><span class="sw-dot"><i style="background:#F4703E"></i>#F4703E</span><span class="sw-dot"><i style="background:#1D3557"></i>#1D3557</span></div></div><div class="card"><span class="tag">卡通漫画风</span><h4>赛璐璐</h4><div class="codename">cm-cel</div><div class="tagline">动画里那一格清澈的浅海——平涂、一阶阴影、明亮干净。</div><div class="sws"><span class="sw-dot"><i style="background:#BDEDE9"></i>#BDEDE9</span><span class="sw-dot"><i style="background:#FF8C42"></i>#FF8C42</span><span class="sw-dot"><i style="background:#17414D"></i>#17414D</span></div></div><div class="card"><span class="tag">卡通漫画风</span><h4>墨线</h4><div class="codename">cm-ink</div><div class="tagline">一本摊开的速写本——炭墨勾线、淡彩注脚，把无压力推到极致。</div><div class="sws"><span class="sw-dot"><i style="background:#FAF6EC"></i>#FAF6EC</span><span class="sw-dot"><i style="background:#E0794F"></i>#E0794F</span><span class="sw-dot"><i style="background:#33313B"></i>#33313B</span></div></div><div class="card"><span class="tag">可爱风</span><h4>马卡龙</h4><div class="codename">ct-cream</div><div class="tagline">一盘低饱和的马卡龙沉进奶油色海底——甜得克制、软得安静。</div><div class="sws"><span class="sw-dot"><i style="background:#FBF4E9"></i>#FBF4E9</span><span class="sw-dot"><i style="background:#C4798D"></i>#C4798D</span><span class="sw-dot"><i style="background:#4F8E6F"></i>#4F8E6F</span></div></div><div class="card"><span class="tag">可爱风</span><h4>草莓奶昔</h4><div class="codename">ct-strawberry</div><div class="tagline">一杯倒进鱼缸的草莓奶昔——粉而不甜腻，深可可色压阵。</div><div class="sws"><span class="sw-dot"><i style="background:#FBEFF2"></i>#FBEFF2</span><span class="sw-dot"><i style="background:#D9566C"></i>#D9566C</span><span class="sw-dot"><i style="background:#5E82B8"></i>#5E82B8</span></div></div><div class="card"><span class="tag">可爱风</span><h4>水彩果冻</h4><div class="codename">ct-jelly</div><div class="tagline">一块会呼吸的水彩果冻沉在苏打水里——清透、微微折射光。</div><div class="sws"><span class="sw-dot"><i style="background:#EAF4F6"></i>#EAF4F6</span><span class="sw-dot"><i style="background:#4E96B4"></i>#4E96B4</span><span class="sw-dot"><i style="background:#3F7A93"></i>#3F7A93</span></div></div></div>
+<h3>跨主题对比</h3>
+
+<table>
+<tr><th>家族</th><th>主题 · 代号</th><th>计时进行色（timerActive）</th><th>文字主色（textPrimary）</th><th>标题 / 计时数字字体</th><th>动效密度</th></tr>
+<tr><td rowspan="3">中国风</td><td>水墨兰亭 · cn-shuimo</td><td>松烟绿 <span class="chip"><i class="sw" style="background:#4E6E5D"></i><code>#4E6E5D</code></span></td><td>浓墨 <span class="chip"><i class="sw" style="background:#33302B"></i><code>#33302B</code></span></td><td>楷体 Kaiti SC / 等宽 SF Mono</td><td>0.2×（最低）</td></tr>
+<tr><td>青花瓷韵 · cn-qinghua</td><td>青釉 <span class="chip"><i class="sw" style="background:#3D7EA6"></i><code>#3D7EA6</code></span></td><td>瓷青墨 <span class="chip"><i class="sw" style="background:#1F3A4D"></i><code>#1F3A4D</code></span></td><td>宋体 Songti SC / 等宽 SF Mono</td><td>0.5×</td></tr>
+<tr><td>青绿江山 · cn-qinglu</td><td>头青 <span class="chip"><i class="sw" style="background:#2F6D74"></i><code>#2F6D74</code></span></td><td>墨褐 <span class="chip"><i class="sw" style="background:#3A342B"></i><code>#3A342B</code></span></td><td>宋体+楷体题跋 / 等宽 SF Mono</td><td>0.4×</td></tr>
+<tr><td rowspan="3">卡通漫画风</td><td>波普 · cm-pop</td><td>波普橘 <span class="chip"><i class="sw" style="background:#F4703E"></i><code>#F4703E</code></span></td><td>深海军 <span class="chip"><i class="sw" style="background:#1D3557"></i><code>#1D3557</code></span></td><td>站酷快乐体 / SF Pro Rounded</td><td>≤6 泡 · 30s 横穿</td></tr>
+<tr><td>赛璐璐 · cm-cel</td><td>柠檬橘 <span class="chip"><i class="sw" style="background:#FF8C42"></i><code>#FF8C42</code></span></td><td>深青墨 <span class="chip"><i class="sw" style="background:#17414D"></i><code>#17414D</code></span></td><td>霞鹜文楷 / SF Pro Display</td><td>≤8 泡 · 25s 横穿</td></tr>
+<tr><td>墨线 · cm-ink</td><td>赤陶橘 <span class="chip"><i class="sw" style="background:#E0794F"></i><code>#E0794F</code></span></td><td>炭墨 <span class="chip"><i class="sw" style="background:#33313B"></i><code>#33313B</code></span></td><td>霞鹜文楷 / 霞鹜文楷数字</td><td>≤3 泡 · 40s（最慢）</td></tr>
+<tr><td rowspan="3">可爱风</td><td>马卡龙 · ct-cream</td><td>抹茶绿 <span class="chip"><i class="sw" style="background:#4F8E6F"></i><code>#4F8E6F</code></span></td><td>焙茶棕 <span class="chip"><i class="sw" style="background:#4B3A32"></i><code>#4B3A32</code></span></td><td>霞鹜文楷 / SF Pro Rounded</td><td>5–8 泡 · 慢</td></tr>
+<tr><td>草莓奶昔 · ct-strawberry</td><td>奶蓝莓 <span class="chip"><i class="sw" style="background:#5E82B8"></i><code>#5E82B8</code></span></td><td>可可梅棕 <span class="chip"><i class="sw" style="background:#53333B"></i><code>#53333B</code></span></td><td>霞鹜文楷 / SF Pro Rounded</td><td>6–9 泡 · 慢</td></tr>
+<tr><td>水彩果冻 · ct-jelly</td><td>海盐墨蓝 <span class="chip"><i class="sw" style="background:#3F7A93"></i><code>#3F7A93</code></span></td><td>深海蓝黑 <span class="chip"><i class="sw" style="background:#2F3B4A"></i><code>#2F3B4A</code></span></td><td>霞鹜文楷 / SF Pro Rounded</td><td>8–12 泡 · 最慢</td></tr>
+</table>
+<p style="font-size:13px;color:var(--ink2)">注：动效密度为相对写实默认主题（1.0×）的归一值；卡通/可爱风给出的「同屏 N 泡」按 1080p 窗口折算。全部文字对比度经 WCAG 相对亮度公式脚本实测：正文 ≥4.5:1（多数 ≥9:1），大号状态色 ≥3:1。</p>
+
+</section>
+
+
+<section id="cn">
+<h2><span class="no">01</span>中国风</h2>
+<p class="lead">宣纸上的水族箱。墨分五色、留白即水，唯一的暖色（朱砂）只在点睛处出现；三套变体由「疏朗」到「叠染」递进，生物数量与动效密度均低于默认写实主题。</p>
+<div class='fam-intro'><div class='txt'><p>三套主题文字对比度均为 WCAG 脚本实测：正文主色 9.49~11.15:1（AAA），次色 4.66~4.84:1（AA）。控件几何家族级恒定：菜单栏 16×16pt、按钮高 28pt、进度环宽 4pt、卡片圆角 10pt、开关 36×22pt；完成反馈分别为朱砂印章落下 / 青花波纹一圈 / 金线一亮，均一次性、≤600ms。</p></div></div><p><strong>范围说明</strong>：本文档包含 3 套中国风主题变体（水墨兰亭 / 青花瓷韵 / 青绿江山）。卡通漫画风、可爱风由其他设计师并行负责。</p>
+<p><strong>全局约定（三个主题共用，不重复）</strong>：控件几何尺寸为家族级常量而非主题 token——菜单栏图标 16×16pt（@2x 提供 32×32）、按钮高 28pt、进度环宽 4pt、卡片圆角 10pt、开关 36×22pt。所有主题文字对比度数值均为 WCAG 相对亮度公式<strong>脚本实测值</strong>，非目测估计。</p>
+<h2>主题一：水墨兰亭（cn-shuimo）</h2>
+<p><img alt="水墨兰亭 mood 图（AI 生成氛围参考）" src="https://aka.doubaocdn.com/s/JgThcsdMgX" /></p>
+<h3>1. 主题名称与代号</h3>
+<p><strong>水墨兰亭</strong> · 代号 <code>cn-shuimo</code></p>
+<h3>2. 气质定位</h3>
+<p>「把水族箱养在一张宣纸上」——一套文人画式的水下世界。墨分五色，留白即水：鱼是纸上一点浓墨，珊瑚是枯笔枝干，气泡是虚圈。整套界面只有一个暖色（朱砂），用于极少数需要点睛的地方，其余全靠墨阶深浅说话。安静、疏朗、不争。</p>
+<h3>3. 适用场景</h3>
+<p>长时间深度专注（写作、阅读、连续编码）的首选主题；夜间想收敛心神、不愿被色彩打扰的时刻。适合偏爱极简与大量留白的用户——它是最接近「一张安静的纸」的主题。</p>
+<h3>4. 色彩体系</h3>
+<p>色相逻辑：<strong>全画面无彩色墨阶（约 40°~50° 的暖灰基调）+ 唯一暖色朱砂做强调</strong>，即传统设色的「万墨丛中一点朱」。文字对比度（实测）：textPrimary 对 bgBase <strong>11.15:1</strong>（AAA），textSecondary 对 bgBase <strong>4.66:1</strong>（AA），accent 对 controlBg <strong>4.62:1</strong>（AA）。</p>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>色名</th>
+<th>HEX</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>bgBase</td>
+<td>宣纸米</td>
+<td><span class="chip"><i class="sw" style="background:#F1ECE1"></i><code>#F1ECE1</code></span></td>
+<td>水族箱整体底色，即「纸」</td>
+</tr>
+<tr>
+<td>bgGradient</td>
+<td>淡墨沉</td>
+<td><span class="chip"><i class="sw" style="background:#DCD5C4"></i><code>#DCD5C4</code></span></td>
+<td>箱底向上渐隐的沉积层</td>
+</tr>
+<tr>
+<td>waterLight</td>
+<td>月白天光</td>
+<td><span class="chip"><i class="sw" style="background:#FBF8F0"></i><code>#FBF8F0</code></span></td>
+<td>上层水体的天光亮带</td>
+</tr>
+<tr>
+<td>sand</td>
+<td>沙洲浅赭</td>
+<td><span class="chip"><i class="sw" style="background:#D9CDB2"></i><code>#D9CDB2</code></span></td>
+<td>底部沙地，带枯笔皴擦纹理</td>
+</tr>
+<tr>
+<td>coral</td>
+<td>浓墨珊瑚</td>
+<td><span class="chip"><i class="sw" style="background:#3A362F"></i><code>#3A362F</code></span></td>
+<td>枯笔鹿角珊瑚的枝干墨色</td>
+</tr>
+<tr>
+<td>fish</td>
+<td>墨鱼</td>
+<td><span class="chip"><i class="sw" style="background:#2B2722"></i><code>#2B2722</code></span></td>
+<td>墨鳞鲤主体色（全画面最深墨）</td>
+</tr>
+<tr>
+<td>seaweed</td>
+<td>苔墨水草</td>
+<td><span class="chip"><i class="sw" style="background:#6E6A5C"></i><code>#6E6A5C</code></span></td>
+<td>兰叶描水草的中墨</td>
+</tr>
+<tr>
+<td>bubble</td>
+<td>留白气泡</td>
+<td><span class="chip"><i class="sw" style="background:#FFFFFF"></i><code>#FFFFFF</code></span></td>
+<td>气泡为空心墨圈，内填留白</td>
+</tr>
+<tr>
+<td>accent</td>
+<td>印朱</td>
+<td><span class="chip"><i class="sw" style="background:#B4533C"></i><code>#B4533C</code></span></td>
+<td>UI 强调色 + 完成态小印章</td>
+</tr>
+<tr>
+<td>timerActive</td>
+<td>松烟绿</td>
+<td><span class="chip"><i class="sw" style="background:#4E6E5D"></i><code>#4E6E5D</code></span></td>
+<td>专注进行中的进度环与状态点</td>
+</tr>
+<tr>
+<td>timerPause</td>
+<td>赭墨</td>
+<td><span class="chip"><i class="sw" style="background:#8F6F45"></i><code>#8F6F45</code></span></td>
+<td>暂停/休息状态（对 controlBg 4.33:1）</td>
+</tr>
+<tr>
+<td>controlBg</td>
+<td>宣白</td>
+<td><span class="chip"><i class="sw" style="background:#FAF7EF"></i><code>#FAF7EF</code></span></td>
+<td>计时卡、按钮底色（叠加 90% 不透明度使用）</td>
+</tr>
+<tr>
+<td>controlBorder</td>
+<td>淡墨线</td>
+<td><span class="chip"><i class="sw" style="background:#C6BFAE"></i><code>#C6BFAE</code></span></td>
+<td>控件 1px 描边、进度环底环</td>
+</tr>
+<tr>
+<td>textPrimary</td>
+<td>浓墨</td>
+<td><span class="chip"><i class="sw" style="background:#33302B"></i><code>#33302B</code></span></td>
+<td>标题、计时数字、正文主文字</td>
+</tr>
+<tr>
+<td>textSecondary</td>
+<td>灰墨</td>
+<td><span class="chip"><i class="sw" style="background:#6E6959"></i><code>#6E6959</code></span></td>
+<td>说明文字、次要信息</td>
+</tr>
+<tr>
+<td>menuIcon</td>
+<td>浓墨（template）</td>
+<td><span class="chip"><i class="sw" style="background:#33302B"></i><code>#33302B</code></span></td>
+<td>菜单栏图标基准色（实际渲染走系统 template）</td>
+</tr>
+</tbody>
+</table>
+<h3>5. 水族箱背景画面</h3>
+<ul>
+<li><strong>构图（远中近三层）</strong>：上 1/3 为大面留白「水天」，仅在顶缘有一道月白天光亮带；中景偏左放一株大型枯笔鹿角珊瑚，偏右 2~3 笔兰叶水草（疏密呼应，忌对称）；底部 1/5 为沙洲浅赭，用横向枯笔皴擦出 3~4 道深浅笔触。</li>
+<li><strong>光照</strong>：顶部柔和漫射天光，色温 4500K 偏暖；不出现体积光柱与光斑——留白主题里光斑即噪音。</li>
+<li><strong>水体通透度</strong>：极高。留白本身就是通透，唯一的深浅变化是从 bgGradient 到 bgBase 的自下而上渐隐。</li>
+<li><strong>静态元素</strong>：宣纸底纹（512×512 可平铺 tile，纹理对比度极低）、沙洲、珊瑚。</li>
+<li><strong>动态元素</strong>：2~3 尾墨鱼、苔墨水草 ±3° 缓摆、每屏不超过 3 个空心墨圈气泡。</li>
+</ul>
+<h3>6. 鱼类与生物视觉</h3>
+<p>造型语言：轮廓由「笔触」构成——起笔重、行笔轻、收笔飞白（透明度渐隐），全部生物带 1px 淡墨轮廓，不用任何高光材质。</p>
+<ul>
+<li><strong>墨鳞鲤</strong>（代表鱼 1）：纺锤形，体长约为画面宽 1/10；背部浓墨 <span class="chip"><i class="sw" style="background:#2B2722"></i><code>#2B2722</code></span> 一笔铺出，向腹部过渡为 60% 透明淡墨，尾鳍两笔撇出、末端飞白（opacity 0.4）；单尾或两尾同游，巡游速度为默认主题的 0.3×，路径为长弧线、几乎不转向。</li>
+<li><strong>齐白石式墨虾</strong>（代表鱼 2）：躯干 6 节、节节淡墨（<span class="chip"><i class="sw" style="background:#6E6A5C"></i><code>#6E6A5C</code></span> @70% 透明度），双长须为 0.5px 细线向前伸出体长 1.5 倍；行为以「停」为主——挂在珊瑚枝上静置，每 20~40 秒一次后退弹跳。</li>
+<li><strong>淡墨蟹</strong>（代表鱼 3）：壳用浓墨点染、螯足用淡墨，趴在沙洲上以 0.1× 速度横向缓爬，是画面中「最慢的元素」。</li>
+<li><strong>珊瑚/水草</strong>：珊瑚为枯笔鹿角状，主干 2.5px、末梢 1px，枝头留白断笔；水草用兰叶描「一笔一叶」，叶尖飞白。</li>
+<li><strong>群游建议</strong>：<strong>不群游</strong>。文人画里鱼永远只有两三尾，本主题生物数量硬上限 3，遵循「疏可走马」。</li>
+</ul>
+<h3>7. 界面控件样式</h3>
+<ul>
+<li><strong>菜单栏图标</strong>：template 单色剪影，16×16pt，一条 S 形单笔鱼轮廓（一笔画出，不断线）；专注中 3 帧横摆动画（位移 ±2px，1.2s/循环），暂停/休息时停帧——与现有默认主题行为一致。</li>
+<li><strong>计时器卡片</strong>：宣白 <span class="chip"><i class="sw" style="background:#FAF7EF"></i><code>#FAF7EF</code></span> @90% 不透明，圆角 10pt，描边 1px <span class="chip"><i class="sw" style="background:#C6BFAE"></i><code>#C6BFAE</code></span>，阴影 <code>0 2px 8px rgba(51,48,43,0.12)</code>；卡片内部计时数字用浓墨，左上角状态点 6pt（进行中松烟绿/休息赭墨）。</li>
+<li><strong>按钮</strong>：高 28pt，圆角 8pt，描边 1px <span class="chip"><i class="sw" style="background:#C6BFAE"></i><code>#C6BFAE</code></span>，默认底 controlBg，hover 底换 bgBase，按下不透明度降至 80%。</li>
+<li><strong>进度环</strong>：环宽 4pt，底环 <span class="chip"><i class="sw" style="background:#C6BFAE"></i><code>#C6BFAE</code></span>，走针 <span class="chip"><i class="sw" style="background:#4E6E5D"></i><code>#4E6E5D</code></span>；<strong>完成时不弹动画彩带，只做一件事</strong>——一枚 16×16pt 朱砂印章（印文可用「休」字）在环心 400ms 内淡入并轻轻落下（位移 2px），随后常驻本次记录条目。</li>
+<li><strong>开关</strong>：36×22pt 胶囊，圆角 11pt，关闭态描边 <span class="chip"><i class="sw" style="background:#C6BFAE"></i><code>#C6BFAE</code></span> + 底 controlBg，开启态填充 <span class="chip"><i class="sw" style="background:#4E6E5D"></i><code>#4E6E5D</code></span>。</li>
+<li><strong>卡片（统计/列表）</strong>：圆角 12pt，其余同计时器卡片；卡片标题左侧加一枚 8pt 淡墨方印作装饰锚点。</li>
+</ul>
+<h3>8. 字体建议</h3>
+<ul>
+<li>标题：<code>"Kaiti SC", "LXGW WenKai", "Songti SC", serif</code>（楷体的手写感呼应笔墨；未装 LXGW WenKai 时优雅回退，不依赖安装）</li>
+<li>正文：<code>"PingFang SC", "Hiragino Sans GB", sans-serif</code></li>
+<li>计时数字：<code>"SF Mono", "Menlo", monospace</code>（等宽数字避免跳动；此主题刻意不用书法体做数字，保证专注中读数零负担）</li>
+</ul>
+<h3>9. 动效与声音</h3>
+<ul>
+<li>缓动：<code>cubic-bezier(0.33, 0, 0.2, 1)</code>——偏慢的缓入缓出，模拟墨迹在水中沉降。</li>
+<li>bubbleDensity：0.2×（每屏 ≤3 个，空心墨圈）；driftSpeed：0.3×；水草摆幅 ±3°、周期 6s。</li>
+<li>环境音（可选、默认关）：极低音量古琴泛音 + 一滴砚台水声，无旋律循环，音量上限内置为系统 20%。</li>
+<li><strong>减少动态效果兼容</strong>：开启后鱼全部停靠为中景悬停姿势、水草垂直、气泡消失、印章淡入改为无位移直接显隐；计时数字变化保留 150ms 纯淡入（不属动态效果，属状态提示）。</li>
+</ul>
+<h3>10. 落地备注</h3>
+<ul>
+<li><strong>Token 映射</strong>：<code>bgBase/bgGradient/waterLight/sand</code>（背景层 4 token 原值直填）；<code>coral/fish/seaweed/bubble</code>（生物层 4 token）；<code>accent/timerActive/timerPause/controlBg/controlBorder/textPrimary/textSecondary/menuIcon</code>（UI 层 8 token 全部使用）；<code>bubbleDensity=0.2、driftSpeed=0.3、easing=墨沉曲线、ambientAudio=guqin-drip</code>。</li>
+<li><strong>资产清单</strong>：鱼 sprite 3 套（墨鳞鲤/墨虾/墨蟹，各含游动帧 3 帧 + 悬停帧 1 帧）；珊瑚贴图 2 套（枯笔鹿角大/小，各含成长 3 阶段）；水草贴图 1 套（兰叶描，3 帧摆动）；菜单栏图标 1 枚（template PDF）；朱砂印章 PNG 1 枚；宣纸纹理 tile 1 张（512×512）。</li>
+<li><strong>特殊实现</strong>：留白区域就是背景层本身，<strong>禁止</strong>叠加任何渐变光斑/体积光粒子；所有透明度通过 CSS 变量挂 token，不硬编码；飞白效果用 sprite 内置 alpha 通道实现，不做运行时滤镜（省性能）。</li>
+</ul>
+<h2>主题二：青花瓷韵（cn-qinghua）</h2>
+<p><img alt="青花瓷韵 mood 图（AI 生成氛围参考）" src="https://aka.doubaocdn.com/s/BWBWUFXYhV" /></p>
+<h3>1. 主题名称与代号</h3>
+<p><strong>青花瓷韵</strong> · 代号 <code>cn-qinghua</code></p>
+<h3>2. 气质定位</h3>
+<p>「把海底烧进一只梅瓶里」——钴蓝在瓷白釉面上晕散，鱼是缠枝纹间游动的一笔青花。整套画面只有两种颜色：瓷的白与钴的蓝，最多再借一点瓷器底足的露胎赭。清凉、规整、雅而不冷。</p>
+<h3>3. 适用场景</h3>
+<p>白天与上午的工作专注段——它是最清爽明亮的一套，与 macOS 浅色外观共处最和谐；适合喜欢蓝白配色、想要「清爽但不性冷淡」氛围的用户。</p>
+<h3>4. 色彩体系</h3>
+<p>色相逻辑：<strong>单色相策略——全部层级色围绕青蓝 210°±10° 做明度分层</strong>，唯一的暖色是露胎赭（瓷器未施釉的底足色），仅用于沙地与暂停态，形成「冷主暖辅」。文字对比度（实测）：textPrimary 对 bgBase <strong>10.70:1</strong>（AAA），textSecondary 对 bgBase <strong>4.75:1</strong>（AA），accent 对 controlBg <strong>6.62:1</strong>（AAA）。</p>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>色名</th>
+<th>HEX</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>bgBase</td>
+<td>釉白</td>
+<td><span class="chip"><i class="sw" style="background:#EFF4F7"></i><code>#EFF4F7</code></span></td>
+<td>水族箱整体底色，即「瓷面」</td>
+</tr>
+<tr>
+<td>bgGradient</td>
+<td>天青沉</td>
+<td><span class="chip"><i class="sw" style="background:#C9DAE5"></i><code>#C9DAE5</code></span></td>
+<td>箱底向上渐隐的青釉层</td>
+</tr>
+<tr>
+<td>waterLight</td>
+<td>月白釉光</td>
+<td><span class="chip"><i class="sw" style="background:#FBFDFE"></i><code>#FBFDFE</code></span></td>
+<td>水面斜向高光带</td>
+</tr>
+<tr>
+<td>sand</td>
+<td>露胎赭</td>
+<td><span class="chip"><i class="sw" style="background:#D8C2A4"></i><code>#D8C2A4</code></span></td>
+<td>底部沙地（瓷器露胎质感）</td>
+</tr>
+<tr>
+<td>coral</td>
+<td>苏麻离青</td>
+<td><span class="chip"><i class="sw" style="background:#24567F"></i><code>#24567F</code></span></td>
+<td>缠枝莲纹珊瑚的钴蓝枝干</td>
+</tr>
+<tr>
+<td>fish</td>
+<td>青花蓝</td>
+<td><span class="chip"><i class="sw" style="background:#2E6BA0"></i><code>#2E6BA0</code></span></td>
+<td>鱼体纹样的主蓝</td>
+</tr>
+<tr>
+<td>seaweed</td>
+<td>青灰水草</td>
+<td><span class="chip"><i class="sw" style="background:#7FA3B8"></i><code>#7FA3B8</code></span></td>
+<td>蕉叶纹带状水草</td>
+</tr>
+<tr>
+<td>bubble</td>
+<td>釉泡</td>
+<td><span class="chip"><i class="sw" style="background:#FFFFFF"></i><code>#FFFFFF</code></span></td>
+<td>白实心气泡 + 1px 青灰描边</td>
+</tr>
+<tr>
+<td>accent</td>
+<td>钴蓝</td>
+<td><span class="chip"><i class="sw" style="background:#235E8C"></i><code>#235E8C</code></span></td>
+<td>UI 强调色、按钮选中、链接</td>
+</tr>
+<tr>
+<td>timerActive</td>
+<td>青釉</td>
+<td><span class="chip"><i class="sw" style="background:#3D7EA6"></i><code>#3D7EA6</code></span></td>
+<td>专注进行中的进度环与状态点</td>
+</tr>
+<tr>
+<td>timerPause</td>
+<td>露胎赭</td>
+<td><span class="chip"><i class="sw" style="background:#97744B"></i><code>#97744B</code></span></td>
+<td>暂停/休息状态（对 controlBg 4.11:1）</td>
+</tr>
+<tr>
+<td>controlBg</td>
+<td>瓷白</td>
+<td><span class="chip"><i class="sw" style="background:#F8FBFD"></i><code>#F8FBFD</code></span></td>
+<td>计时卡、按钮底色（@92% 不透明度）</td>
+</tr>
+<tr>
+<td>controlBorder</td>
+<td>青线</td>
+<td><span class="chip"><i class="sw" style="background:#9DB8CA"></i><code>#9DB8CA</code></span></td>
+<td>控件 1px 描边、进度环底环</td>
+</tr>
+<tr>
+<td>textPrimary</td>
+<td>瓷青墨</td>
+<td><span class="chip"><i class="sw" style="background:#1F3A4D"></i><code>#1F3A4D</code></span></td>
+<td>标题、计时数字、正文主文字</td>
+</tr>
+<tr>
+<td>textSecondary</td>
+<td>淡青灰</td>
+<td><span class="chip"><i class="sw" style="background:#566F82"></i><code>#566F82</code></span></td>
+<td>说明文字、次要信息</td>
+</tr>
+<tr>
+<td>menuIcon</td>
+<td>瓷青墨（template）</td>
+<td><span class="chip"><i class="sw" style="background:#1F3A4D"></i><code>#1F3A4D</code></span></td>
+<td>菜单栏图标基准色</td>
+</tr>
+</tbody>
+</table>
+<h3>5. 水族箱背景画面</h3>
+<ul>
+<li><strong>构图</strong>：上 2/5 为釉白向天青沉的极缓垂直渐变（模拟釉层厚度的感觉，渐变跨度大、对比弱）；水面下 1/6 处一条 45° 入射的月白高光带（柔和椭圆羽化，非镜面反光）；中景左右各一组缠枝珊瑚（左高右低，呼应不等边构图）；底部 1/6 露胎赭沙地，边缘做一圈 2px 的「釉面垂流」过渡（青釉色滴垂入沙地的界线）。</li>
+<li><strong>光照</strong>：45° 斜向天光，色温 5600K 中性偏冷，仅一条高光带，无光柱。</li>
+<li><strong>水体通透度</strong>：高——白瓷底色本身即通透感来源。</li>
+<li><strong>静态元素</strong>：全幅叠加极细开片纹路 tile（512×512，线宽 0.5px，透明度 4%，近看有瓷面细节、远看不可见）、沙地、珊瑚。</li>
+<li><strong>动态元素</strong>：青花鱼群、水草缓摆、中等密度的白釉泡。</li>
+</ul>
+<h3>6. 鱼类与生物视觉</h3>
+<p>造型语言：鱼体以瓷白为底、钴蓝纹样绘身，轮廓圆润无棱角（瓷器没有尖锐转折）；纹样借鉴青花分水技法——同一笔内有浓淡晕散。</p>
+<ul>
+<li><strong>青花锦鲤</strong>（代表鱼 1）：瓷白躯体，钴蓝 <span class="chip"><i class="sw" style="background:#2E6BA0"></i><code>#2E6BA0</code></span> 缠枝纹从鳃后沿体侧延伸至尾柄，尾鳍为三笔水波纹；2~3 尾小队巡游，速度 0.5×，队形松散（前后错开 1.5 体长）。</li>
+<li><strong>青花燕鱼</strong>（代表鱼 2，神仙鱼意象）：高身圆盘轮廓如一只小瓷盘，体侧居中一朵缠枝莲纹，长鳍上下两笔如盘沿弧线；慢速（0.3×），偏好停驻中景珊瑚旁，游动时姿态近乎平移。</li>
+<li><strong>青线小虾</strong>（代表鱼 3）：青灰 <span class="chip"><i class="sw" style="background:#7FA3B8"></i><code>#7FA3B8</code></span> @80% 透明的节肢躯干，双须为钴蓝 0.5px 细线，在沙地边缘来回觅食，偶有后弹。</li>
+<li><strong>珊瑚/水草</strong>：珊瑚枝干苏麻离青 <span class="chip"><i class="sw" style="background:#24567F"></i><code>#24567F</code></span>，枝头点瓷白高光（模拟青花瓷盘上的「甜白」留白）；水草为带状蕉叶纹，叶缘一道细青线。</li>
+<li><strong>群游建议</strong>：允许小群游（≤3 尾），锦鲤群游 + 燕鱼单游形成「一动一静」的层次。</li>
+</ul>
+<h3>7. 界面控件样式</h3>
+<ul>
+<li><strong>菜单栏图标</strong>：template 单色剪影 16×16pt——小鱼轮廓 + 尾后一道水波弧线；专注中 3 帧横摆 ±2px，暂停停帧。</li>
+<li><strong>计时器卡片</strong>：瓷白 <span class="chip"><i class="sw" style="background:#F8FBFD"></i><code>#F8FBFD</code></span> @92%，圆角 10pt，描边 1px <span class="chip"><i class="sw" style="background:#9DB8CA"></i><code>#9DB8CA</code></span>，阴影 <code>0 2px 8px rgba(31,58,77,0.10)</code>；数字瓷青墨。</li>
+<li><strong>按钮</strong>：28pt 高，圆角 8pt，描边 1px 青线，选中态填充 <span class="chip"><i class="sw" style="background:#235E8C"></i><code>#235E8C</code></span>、文字反白 <span class="chip"><i class="sw" style="background:#F8FBFD"></i><code>#F8FBFD</code></span>。</li>
+<li><strong>进度环</strong>：4pt 环宽，底环青线，走针青釉 <span class="chip"><i class="sw" style="background:#3D7EA6"></i><code>#3D7EA6</code></span>；完成时环外一次性淡出一圈青花波纹（半径 +8pt、600ms、仅一次，非循环）。</li>
+<li><strong>开关</strong>：36×22pt 胶囊，开启态填充钴蓝 <span class="chip"><i class="sw" style="background:#235E8C"></i><code>#235E8C</code></span>。</li>
+<li><strong>卡片</strong>：圆角 12pt；卡片角落可放 12pt 的缠枝角花装饰（低透明度 20%，仅设置页/统计页使用）。</li>
+</ul>
+<h3>8. 字体建议</h3>
+<ul>
+<li>标题：<code>"Songti SC", "Source Han Serif SC", serif</code>（宋体的雕版笔画与青花纹样的版画底稿气质同源）</li>
+<li>正文：<code>"PingFang SC", "Hiragino Sans GB", sans-serif</code></li>
+<li>计时数字：<code>"SF Mono", "Menlo", monospace</code></li>
+</ul>
+<h3>9. 动效与声音</h3>
+<ul>
+<li>缓动：<code>cubic-bezier(0.4, 0, 0.25, 1)</code>——比墨沉曲线略利落，但不急促。</li>
+<li>bubbleDensity：0.5×（白釉泡，直径 3~6pt）；driftSpeed：0.5×；水草摆幅 ±4°、周期 5s。</li>
+<li>环境音（可选、默认关）：极低音量「雨滴落瓷面」+ 远处一记风铃，无节拍循环。</li>
+<li><strong>减少动态效果兼容</strong>：鱼群停驻悬停、气泡与波纹消失、水草静止；高光带保持静态（它本来就是静态层）；计时数字 150ms 纯淡入保留。</li>
+</ul>
+<h3>10. 落地备注</h3>
+<ul>
+<li><strong>Token 映射</strong>：背景层 4 token、生物层 4 token、UI 层 8 token 全部按上表直填；<code>bubbleDensity=0.5、driftSpeed=0.5、easing=釉面曲线、ambientAudio=rain-on-porcelain</code>。</li>
+<li><strong>资产清单</strong>：鱼 sprite 3 套（青花锦鲤含 3 帧游动/青花燕鱼/青线小虾）；珊瑚贴图 2 套（缠枝莲大/小，各含成长 3 阶段）；水草 1 套（蕉叶纹 3 帧）；菜单栏图标 1 枚（template PDF）；开片纹 tile 1 张；缠枝角花装饰组件 1 套（SVG，设置页用）。</li>
+<li><strong>特殊实现</strong>：瓷白鱼体在瓷白背景上必须保留 1px <span class="chip"><i class="sw" style="background:#C9DAE5"></i><code>#C9DAE5</code></span> 外描边防「消失」；开片纹 tile 用纯 CSS 叠加（<code>background-image</code> + <code>opacity: 0.04</code>），不做 Canvas 粒子；青花波纹完成动效做一次性触发器，严格非循环。</li>
+</ul>
+<h2>主题三：青绿江山（cn-qinglu）</h2>
+<p><img alt="青绿江山 mood 图（AI 生成氛围参考）" src="https://aka.doubaocdn.com/s/NqyhHT5a8M" /></p>
+<h3>1. 主题名称与代号</h3>
+<p><strong>青绿江山</strong> · 代号 <code>cn-qinglu</code></p>
+<h3>2. 气质定位</h3>
+<p>「千里江山的袖珍水下版」——《千里江山图》的石青石绿搬进水族箱：珊瑚是层层叠染的山峦，鱼是山间一点朱砂。三套主题里色彩最丰富的一套，但全部矿物色都压在绢底的温润里，饱满而不喧哗。</p>
+<h3>3. 适用场景</h3>
+<p>午后与周末的长专注段；情绪需要一点色彩滋养、又不想被亮色刺激的时刻；秋冬季氛围最佳。适合作为「进阶中国风」推荐给已经用过前两套的用户。</p>
+<h3>4. 色彩体系</h3>
+<p>色相逻辑：<strong>绢黄暖底（低饱和黄，60° 附近）× 石绿/石青（160°~195° 邻近色）× 朱砂暖点缀</strong>——传统的「青绿设色、绢底衬金」。文字对比度（实测）：textPrimary 对 bgBase <strong>9.49:1</strong>（AAA），textSecondary 对 bgBase <strong>4.84:1</strong>（AA），accent 对 controlBg <strong>4.83:1</strong>（AA）。</p>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>色名</th>
+<th>HEX</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>bgBase</td>
+<td>绢色</td>
+<td><span class="chip"><i class="sw" style="background:#EAE2C6"></i><code>#EAE2C6</code></span></td>
+<td>水族箱整体底色，即「绢本」</td>
+</tr>
+<tr>
+<td>bgGradient</td>
+<td>淡石绿</td>
+<td><span class="chip"><i class="sw" style="background:#B5C6A9"></i><code>#B5C6A9</code></span></td>
+<td>箱底向上渐隐的水体色</td>
+</tr>
+<tr>
+<td>waterLight</td>
+<td>蛤粉白</td>
+<td><span class="chip"><i class="sw" style="background:#FBFAF3"></i><code>#FBFAF3</code></span></td>
+<td>上层天光（蛤粉即传统白色矿物颜料）</td>
+</tr>
+<tr>
+<td>sand</td>
+<td>金碧沙</td>
+<td><span class="chip"><i class="sw" style="background:#D9BC74"></i><code>#D9BC74</code></span></td>
+<td>底部沙地，「金碧山水」之金</td>
+</tr>
+<tr>
+<td>coral</td>
+<td>石绿珊瑚</td>
+<td><span class="chip"><i class="sw" style="background:#3F7A5F"></i><code>#3F7A5F</code></span></td>
+<td>珊瑚中层的石绿叠染</td>
+</tr>
+<tr>
+<td>fish</td>
+<td>朱砂鲤</td>
+<td><span class="chip"><i class="sw" style="background:#A8563A"></i><code>#A8563A</code></span></td>
+<td>代表鱼主体的朱砂色</td>
+</tr>
+<tr>
+<td>seaweed</td>
+<td>石绿水草</td>
+<td><span class="chip"><i class="sw" style="background:#5C8A63"></i><code>#5C8A63</code></span></td>
+<td>兰叶描水草</td>
+</tr>
+<tr>
+<td>bubble</td>
+<td>蛤粉泡</td>
+<td><span class="chip"><i class="sw" style="background:#FFFFFF"></i><code>#FFFFFF</code></span></td>
+<td>白气泡 + 1px 石绿描边</td>
+</tr>
+<tr>
+<td>accent</td>
+<td>石绿</td>
+<td><span class="chip"><i class="sw" style="background:#3F755B"></i><code>#3F755B</code></span></td>
+<td>UI 强调色、按钮选中</td>
+</tr>
+<tr>
+<td>timerActive</td>
+<td>头青</td>
+<td><span class="chip"><i class="sw" style="background:#2F6D74"></i><code>#2F6D74</code></span></td>
+<td>专注进行中的进度环与状态点</td>
+</tr>
+<tr>
+<td>timerPause</td>
+<td>赭石</td>
+<td><span class="chip"><i class="sw" style="background:#8F5F3C"></i><code>#8F5F3C</code></span></td>
+<td>暂停/休息状态（对 controlBg 4.88:1）</td>
+</tr>
+<tr>
+<td>controlBg</td>
+<td>绢白</td>
+<td><span class="chip"><i class="sw" style="background:#F7F3E3"></i><code>#F7F3E3</code></span></td>
+<td>计时卡、按钮底色（@92% 不透明度）</td>
+</tr>
+<tr>
+<td>controlBorder</td>
+<td>墨描</td>
+<td><span class="chip"><i class="sw" style="background:#BFB79E"></i><code>#BFB79E</code></span></td>
+<td>控件 1px 描边、进度环底环</td>
+</tr>
+<tr>
+<td>textPrimary</td>
+<td>墨褐</td>
+<td><span class="chip"><i class="sw" style="background:#3A342B"></i><code>#3A342B</code></span></td>
+<td>标题、计时数字、正文主文字</td>
+</tr>
+<tr>
+<td>textSecondary</td>
+<td>赭灰</td>
+<td><span class="chip"><i class="sw" style="background:#66604E"></i><code>#66604E</code></span></td>
+<td>说明文字、次要信息</td>
+</tr>
+<tr>
+<td>menuIcon</td>
+<td>墨褐（template）</td>
+<td><span class="chip"><i class="sw" style="background:#3A342B"></i><code>#3A342B</code></span></td>
+<td>菜单栏图标基准色</td>
+</tr>
+</tbody>
+</table>
+<h3>5. 水族箱背景画面</h3>
+<ul>
+<li><strong>构图（远中近三层，最讲层次的一套）</strong>：<strong>远景</strong>——2~3 座淡石青山影剪影（<span class="chip"><i class="sw" style="background:#B5C6A9"></i><code>#B5C6A9</code></span> 再叠 30% 透明度的头青轮廓），只有大轮廓无细节，置于画面上 1/3；<strong>中景</strong>——石绿珊瑚群自左向右如峰峦叠嶂排布（大中小三株，错落如手卷展开）；<strong>近景</strong>——金碧沙地 + 2 丛石绿水草压住左右两角。</li>
+<li><strong>光照</strong>：顶部柔光偏暖 4800K，模拟绢本的反光温润感；无光柱、无闪烁。</li>
+<li><strong>水体通透度</strong>：中高——绢底带来轻微「雾感」，比青花主题通透度略低，比写实水族馆安稳。</li>
+<li><strong>静态元素</strong>：全幅绢丝横纹 tile（512×512，纹理透明度 6%）、远山、沙地、珊瑚。</li>
+<li><strong>动态元素</strong>：朱砂鲤小群、石绿水草 ±4° 缓摆、低密度蛤粉泡。</li>
+</ul>
+<h3>6. 鱼类与生物视觉</h3>
+<p>造型语言：<strong>工笔重彩</strong>——矿物色平涂 + 1.5px 墨褐勾线轮廓，色块内部可做「叠染」两阶色（不做渐变光）。</p>
+<ul>
+<li><strong>朱砂鲤</strong>（代表鱼 1）：躯体朱砂 <span class="chip"><i class="sw" style="background:#A8563A"></i><code>#A8563A</code></span> 平涂，鳞片以蛤粉白点出（隔一片点一片），背鳍点一笔石绿；3~5 尾小群游，速度 0.4×，队形为松散雁行（前后错位），是全画面最暖的视觉焦点。</li>
+<li><strong>头青鱼</strong>（代表鱼 2）：头青 <span class="chip"><i class="sw" style="background:#2F6D74"></i><code>#2F6D74</code></span> 覆鳞、腹部蛤粉白渐染两阶色、墨线勾边；慢速（0.25×），常在中景珊瑚的「山谷」间穿行。</li>
+<li><strong>石绿蟹</strong>（代表鱼 3）：壳石绿 <span class="chip"><i class="sw" style="background:#3F7A5F"></i><code>#3F7A5F</code></span>、双螯赭石 <span class="chip"><i class="sw" style="background:#8F5F3C"></i><code>#8F5F3C</code></span>、墨线勾足；沙地横爬 0.1×，每 30 秒停下「吐泡」一枚蛤粉泡。</li>
+<li><strong>珊瑚/水草</strong>：三段式设色——枝干赭石打底、中层石绿叠染（占枝条 70%）、枝头蛤粉白提亮三笔，通体 1.5px 墨褐勾线；水草为石绿兰叶描、叶缘墨线。</li>
+<li><strong>群游建议</strong>：唯一允许「小群游」感的中国风主题（朱砂鲤 3~5 尾），但仍低于写实默认的密度；群游路径走平滑大弧线，禁止急转。</li>
+</ul>
+<h3>7. 界面控件样式</h3>
+<ul>
+<li><strong>菜单栏图标</strong>：template 单色剪影 16×16pt——鱼形剪影 + 下方一抹山形弧线（呼应「鱼跃江山」）；专注中 3 帧横摆 ±2px，暂停停帧。</li>
+<li><strong>计时器卡片</strong>：绢白 <span class="chip"><i class="sw" style="background:#F7F3E3"></i><code>#F7F3E3</code></span> @92%，圆角 10pt，描边 1px <span class="chip"><i class="sw" style="background:#BFB79E"></i><code>#BFB79E</code></span>，阴影 <code>0 2px 8px rgba(58,52,43,0.10)</code>；数字墨褐。</li>
+<li><strong>按钮</strong>：28pt 高，圆角 8pt，描边 1px 墨描，选中态填充 <span class="chip"><i class="sw" style="background:#3F755B"></i><code>#3F755B</code></span>、文字反白绢白。</li>
+<li><strong>进度环</strong>：4pt 环宽，底环墨描，走针头青 <span class="chip"><i class="sw" style="background:#2F6D74"></i><code>#2F6D74</code></span>；完成时卡片描边处一次性亮起一道金线（<span class="chip"><i class="sw" style="background:#D9BC74"></i><code>#D9BC74</code></span>、120ms 淡入、仅一次）——「金碧」点题，克制不循环。</li>
+<li><strong>开关</strong>：36×22pt 胶囊，开启态填充石绿 <span class="chip"><i class="sw" style="background:#3F755B"></i><code>#3F755B</code></span>。</li>
+<li><strong>卡片</strong>：圆角 12pt；卡片小标题可用 <code>"Kaiti SC"</code> 如题跋落款（见第 8 节）。</li>
+</ul>
+<h3>8. 字体建议</h3>
+<ul>
+<li>标题：<code>"Songti SC", "Source Han Serif SC", serif</code>（工笔重彩配宋体骨架）</li>
+<li>卡片小标题（题跋感）：<code>"Kaiti SC", "LXGW WenKai", serif</code></li>
+<li>正文：<code>"PingFang SC", "Hiragino Sans GB", sans-serif</code></li>
+<li>计时数字：<code>"SF Mono", "Menlo", monospace</code></li>
+</ul>
+<h3>9. 动效与声音</h3>
+<ul>
+<li>缓动：<code>cubic-bezier(0.38, 0, 0.22, 1)</code>——介于墨沉与釉面之间。</li>
+<li>bubbleDensity：0.4×；driftSpeed：0.4×；水草摆幅 ±4°、周期 5.5s。</li>
+<li>环境音（可选、默认关）：极低音量古筝泛音 + 山涧细流白噪，无节拍。</li>
+<li><strong>减少动态效果兼容</strong>：开启后鱼群悬停于各自深度、蟹停爬、气泡消失、水草垂直；金线完成动效改为描边直接换色显隐。</li>
+</ul>
+<h3>10. 落地备注</h3>
+<ul>
+<li><strong>Token 映射</strong>：背景层、生物层、UI 层 16 个 token 全部按上表直填；<code>bubbleDensity=0.4、driftSpeed=0.4、easing=叠染曲线、ambientAudio=guzheng-brook</code>。</li>
+<li><strong>资产清单</strong>：鱼 sprite 3 套（朱砂鲤群 5 帧游动/头青鱼 3 帧/石绿蟹 2 帧）；珊瑚贴图 3 套（峰峦大/中/小，各含成长 3 阶段）；水草 1 套（石绿兰叶 3 帧）；远山剪影 PNG 2 张；菜单栏图标 1 枚（template PDF）；绢丝横纹 tile 1 张。</li>
+<li><strong>特殊实现</strong>：矿物色饱和度高于前两套，<strong>所有色块统一叠加 8% 墨褐罩层</strong>（一层全屏 <code>mix-blend-mode: multiply</code> 或直接在贴图内做）压住整体明度，这是「丰富而不喧闹」的关键，务必保留；远山是唯一允许「重影」的层次，其他元素禁止半透明叠加。</li>
+</ul>
+<h2>自检清单（中国风家族）</h2>
+<ul>
+<li><strong>10 节完整性</strong>：水墨兰亭 10/10 ✅、青花瓷韵 10/10 ✅、青绿江山 10/10 ✅，无缺节。</li>
+<li><strong>HEX 有效性</strong>：三主题共 48 个色值全部为 6 位 #RRGGBB，已用脚本逐个断言校验通过（含合法性检查与对比度计算）。</li>
+<li><strong>无压力原则</strong>：无刺眼对比、无闪烁、无循环庆祝动效；气泡密度 0.2×/0.5×/0.4× 全部低于默认；环境音默认关且音量内置上限；文字对比度全部达 WCAG AA 以上（正文主色均 AAA）。</li>
+<li><strong>减少动态效果兼容</strong>：三套主题均给出完整静态停靠方案（生物姿势、气泡、水草、切换过渡）。</li>
+<li><strong>字体可用性</strong>：PingFang SC / Kaiti SC / Songti SC / SF Mono / Menlo / Hiragino Sans GB 均为 macOS 系统自带；Source Han Serif SC、LXGW WenKai 为开源字体可免费本地安装，且所有字体栈均以系统字体兜底、不硬依赖安装。</li>
+</ul>
+</section>
+
+
+<section id="cm">
+<h2><span class="no">02</span>卡通漫画风</h2>
+<p class="lead">三种不同的「印刷与手绘」语言：波普的硬色阶与网点、赛璐璐的双色阶平涂、墨线的线稿淡彩。统一规则：降饱和撞色、深色轮廓收边、动效时长下限 0.25s、禁止高频循环。</p>
+<div class='fam-intro'><div class='txt'><p>三套主题文字对比度脚本实测：正文主色 8.0~12.55:1，次色 5.02~5.35:1。菜单栏图标均按 22pt / @2x 画布给出具体线宽（4 / 3 / 3.5px）与减笔策略，另备 Template 单色版自动适配深浅菜单栏。</p></div></div><p><strong>范围说明</strong>：本次交付范围仅卡通漫画风方向的三套主题变体。三套主题均遵守产品「无压力」原则（只正向记录、不打扰）与系统「减少动态效果」无障碍兼容要求。</p>
+<ul>
+<li><strong>主题一 波普（cm-pop）</strong>：美式波普漫画——Benday 网点、粗轮廓、降饱和撞色，三套中最「外向」但仍克制</li>
+<li><strong>主题二 赛璐璐（cm-cel）</strong>：日式赛璐璐动画——平涂、一阶阴影、细描边，明亮清新，与现有写实主题气质最接近</li>
+<li><strong>主题三 墨线（cm-ink）</strong>：手绘线稿淡彩——墨线勾勒、留白、稀疏排线，三套中最安静，接近速写本</li>
+</ul>
+<p>各主题文字对比度均为按 WCAG 相对亮度公式实测。</p>
+<h2>主题一：波普（cm-pop）</h2>
+<p><img alt="cm-pop mood 图（AI 生成氛围参考）" src="https://aka.doubaocdn.com/s/x8UVVV6wXb" /></p>
+<h3>1. 主题名称与代号</h3>
+<p><strong>波普</strong>，代号 <code>cm-pop</code>。</p>
+<h3>2. 气质定位</h3>
+<p>一句话定位：一张贴在桌面上的波普漫画页，海底是印刷色的，但情绪是松弛的。画面像 Lichtenstein 式漫画定格：色块硬切、网点规则、轮廓粗而稳，鱼是漫画里的配角而非真实物种。撞色全部降饱和处理，杜绝红黑高对比的攻击性；「喧闹」的部分只保留在造型趣味上，色彩始终保持明快而非激烈。</p>
+<h3>3. 适用场景</h3>
+<ul>
+<li>想要视觉上「换个心情」的用户：下午犯困、周末休整，需要一点明快但不需要刺激</li>
+<li>喜欢复古漫画、美式插画审美的用户；桌面本身偏简约（深色壁纸或纯色壁纸）时对比效果最佳</li>
+<li>白天的专注时段：亮色印刷底比写实深海底在强光环境下更易读</li>
+</ul>
+<h3>4. 色彩体系</h3>
+<p>色相逻辑：冷调青绿占约 70% 画面面积，暖调橘粉占 25%，柠檬黄点缀 5%；所有撞色被统一的深海军蓝轮廓「收边」，使对比热闹但不刺眼。全部为纯平涂色，无渐变（波普语言的硬色阶分界代替渐变）。</p>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>色名</th>
+<th>HEX</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>背景主色 bgBase</td>
+<td>浪花青</td>
+<td><span class="chip"><i class="sw" style="background:#8FDDE0"></i><code>#8FDDE0</code></span></td>
+<td>水体中景主色，画面最大色块</td>
+</tr>
+<tr>
+<td>水体亮阶</td>
+<td>浅湖绿</td>
+<td><span class="chip"><i class="sw" style="background:#C6F2EF"></i><code>#C6F2EF</code></span></td>
+<td>顶部 20% 亮阶，与 <span class="chip"><i class="sw" style="background:#8FDDE0"></i><code>#8FDDE0</code></span> 硬切分界</td>
+</tr>
+<tr>
+<td>水体光照 waterLight</td>
+<td>晨光白</td>
+<td><span class="chip"><i class="sw" style="background:#FFFFFF"></i><code>#FFFFFF</code></span></td>
+<td>三道斜向光带、气泡与鱼体高光圆点</td>
+</tr>
+<tr>
+<td>沙地 sand</td>
+<td>奶油沙</td>
+<td><span class="chip"><i class="sw" style="background:#F6E7C6"></i><code>#F6E7C6</code></span></td>
+<td>底部沙丘主体</td>
+</tr>
+<tr>
+<td>网点阴影</td>
+<td>深浪青</td>
+<td><span class="chip"><i class="sw" style="background:#2FA8C4"></i><code>#2FA8C4</code></span></td>
+<td>沙地背光面 Benday 网点、礁石暗面、进度环底轨</td>
+</tr>
+<tr>
+<td>珊瑚主色 coral</td>
+<td>波普橘</td>
+<td><span class="chip"><i class="sw" style="background:#F4703E"></i><code>#F4703E</code></span></td>
+<td>枝状珊瑚、UI 强调色、计时进行状态</td>
+</tr>
+<tr>
+<td>鱼体主色 fish</td>
+<td>樱桃粉</td>
+<td><span class="chip"><i class="sw" style="background:#F27EA9"></i><code>#F27EA9</code></span></td>
+<td>主角鱼「波波鱼」身体</td>
+</tr>
+<tr>
+<td>强调点缀</td>
+<td>柠檬黄</td>
+<td><span class="chip"><i class="sw" style="background:#FFC94D"></i><code>#FFC94D</code></span></td>
+<td>小丑鱼条纹、尾鳍、按钮 hover 底色</td>
+</tr>
+<tr>
+<td>水草 seaweed</td>
+<td>荧光草绿</td>
+<td><span class="chip"><i class="sw" style="background:#67C58F"></i><code>#67C58F</code></span></td>
+<td>丛状水草叶片（一丛双色：亮叶 + 深浪青网点叶）</td>
+</tr>
+<tr>
+<td>计时暂停 timerPause</td>
+<td>石板蓝灰</td>
+<td><span class="chip"><i class="sw" style="background:#7C93A6"></i><code>#7C93A6</code></span></td>
+<td>暂停时进度环与状态点（刻意降饱和，表达「歇一下」）</td>
+</tr>
+<tr>
+<td>控件底色 controlBg</td>
+<td>云朵白</td>
+<td><span class="chip"><i class="sw" style="background:#FFFDF7"></i><code>#FFFDF7</code></span></td>
+<td>计时卡片、按钮、下拉面板底色</td>
+</tr>
+<tr>
+<td>文字主色/轮廓 textPrimary</td>
+<td>深海军</td>
+<td><span class="chip"><i class="sw" style="background:#1D3557"></i><code>#1D3557</code></span></td>
+<td>全部轮廓描边、标题与正文</td>
+</tr>
+<tr>
+<td>文字次色 textSecondary</td>
+<td>青灰蓝</td>
+<td><span class="chip"><i class="sw" style="background:#517084"></i><code>#517084</code></span></td>
+<td>说明文字、次要信息</td>
+</tr>
+</tbody>
+</table>
+<p>实测对比度（WCAG 相对亮度法）：文字主色 <span class="chip"><i class="sw" style="background:#1D3557"></i><code>#1D3557</code></span> 在 <span class="chip"><i class="sw" style="background:#8FDDE0"></i><code>#8FDDE0</code></span> 背景上 <strong>8.0:1</strong>、在 <span class="chip"><i class="sw" style="background:#FFFDF7"></i><code>#FFFDF7</code></span> 控件底上 <strong>12.15:1</strong>；次级文字 <span class="chip"><i class="sw" style="background:#517084"></i><code>#517084</code></span> 在控件底上 <strong>5.16:1</strong>；计时进行色 <span class="chip"><i class="sw" style="background:#F4703E"></i><code>#F4703E</code></span> 与轮廓 <span class="chip"><i class="sw" style="background:#1D3557"></i><code>#1D3557</code></span> 的非文字对比 <strong>4.26:1</strong>（≥3:1 达标）。注意：<span class="chip"><i class="sw" style="background:#517084"></i><code>#517084</code></span> 直接压在水体背景上仅约 3.4:1，<strong>次级文字只允许出现在白底控件上</strong>，落水底的场景文字一律用 <span class="chip"><i class="sw" style="background:#1D3557"></i><code>#1D3557</code></span>。</p>
+<h3>5. 水族箱背景画面</h3>
+<p>以 1600×900 逻辑分辨率描述（等比缩放）：</p>
+<ul>
+<li><strong>远景（上 0–22%）</strong>：两阶硬切色带——最顶 22% 为 <span class="chip"><i class="sw" style="background:#C6F2EF"></i><code>#C6F2EF</code></span>，其下无缝硬切入 <span class="chip"><i class="sw" style="background:#8FDDE0"></i><code>#8FDDE0</code></span>（分界线为平直水平线，无羽化）。三条白色光带从右上斜向左下（倾角 20°），宽 24 / 16 / 20 px、间隔 120 px，不透明度 85%，<strong>静态</strong>。</li>
+<li><strong>中景（22–70%）</strong>：左侧一丛荧光草绿水草（7 叶，叶形为胖柳叶贝塞尔，高度 120–180 px，根部 8 px 深海军描边）；右侧一块圆角礁石（<span class="chip"><i class="sw" style="background:#FFFDF7"></i><code>#FFFDF7</code></span> 填充 + 深浪青 <span class="chip"><i class="sw" style="background:#2FA8C4"></i><code>#2FA8C4</code></span> 网点铺左下 40% 暗面，描边 4 px）。</li>
+<li><strong>近景（70–100%）</strong>：两道起伏沙丘曲线（每道由 3 段大半径圆弧拼接），沙丘 <span class="chip"><i class="sw" style="background:#F6E7C6"></i><code>#F6E7C6</code></span>；背光侧铺 Benday 网点——圆点直径 3 px、正交网格间距 6 px、颜色 <span class="chip"><i class="sw" style="background:#2FA8C4"></i><code>#2FA8C4</code></span>。沙丘左端一组枝状珊瑚（3 枝，波普橘 <span class="chip"><i class="sw" style="background:#F4703E"></i><code>#F4703E</code></span>，枝端圆头）；右端一丛管状珊瑚（5 管，樱桃粉 <span class="chip"><i class="sw" style="background:#F27EA9"></i><code>#F27EA9</code></span>，管口椭圆深军蓝描边）。</li>
+<li><strong>全元素通用</strong>：轮廓线 <span class="chip"><i class="sw" style="background:#1D3557"></i><code>#1D3557</code></span>、4 px、round join / round cap；填充纯色平涂，无内部渐变。</li>
+<li><strong>动态元素</strong>：仅鱼群与气泡（见第 6、9 节）；其余全部静态，符合「安静陪伴」。</li>
+</ul>
+<h3>6. 鱼类与生物视觉</h3>
+<p>通用造型语言：几何化憨圆造型，4 px 深军蓝轮廓，平涂主体 + 单块白色高光 + 局部网点，无渐变。</p>
+<ol>
+<li><strong>波波鱼（主角）</strong>：椭圆身（宽高比 1.4:1）+ 三角尾，身体樱桃粉 <span class="chip"><i class="sw" style="background:#F27EA9"></i><code>#F27EA9</code></span>，尾鳍柠檬黄 <span class="chip"><i class="sw" style="background:#FFC94D"></i><code>#FFC94D</code></span>；身体中部一块直径 18 px 白色高光圆点，鳃后三枚 3 px 深浪青网点排成弧线作「鳞」。游动：横穿全屏约 30 s，正弦上下浮动 ±8 px、周期 6 s，尾鳍两帧摆动（±10°，1.2 s/帧）。</li>
+<li><strong>橘子小丑</strong>：圆胖身橘 <span class="chip"><i class="sw" style="background:#F4703E"></i><code>#F4703E</code></span>，两条白色竖条纹（每条带宽 14 px、两侧 4 px 深军描边），尾鳍奶白。比波波鱼小 20%，常贴珊瑚枝附近 60–100 px 半径内慢速绕圈（一圈 40 s）。</li>
+<li><strong>点点河豚</strong>：正圆身柠檬黄 <span class="chip"><i class="sw" style="background:#FFC94D"></i><code>#FFC94D</code></span>，下半腹铺深浪青 Benday 网点（直径 2 px、间距 4 px），呆滞小眼（实心 6 px 深军圆 + 2 px 白高光）。静置在沙地，仅每 15 s 缓慢平移 20 px。</li>
+</ol>
+<p><strong>群游建议</strong>：樱桃粉波波鱼按「前 1 后 2」固定三角队形群游，间距 60 px、同相位摆尾，像漫画里复制的网点一样整齐——整齐感是这个主题的幽默点。同屏总数 ≤5 尾，无追逐、无快速变向。</p>
+<p>珊瑚/水草造型见第 5 节；气泡为白描边空心圆（2.5 px 深军轮廓 + 45° 单点白高光）。</p>
+<h3>7. 界面控件样式</h3>
+<p>菜单栏图标（22 pt，按 44×44 px @2x 画布绘制）：单尾波波鱼侧影，身体 <span class="chip"><i class="sw" style="background:#F27EA9"></i><code>#F27EA9</code></span>、轮廓 4 px（画布内约 9% 高度，缩小后仍清晰）、尾部一抹 <span class="chip"><i class="sw" style="background:#FFC94D"></i><code>#FFC94D</code></span>，眼睛为 3 px <span class="chip"><i class="sw" style="background:#1D3557"></i><code>#1D3557</code></span> 实心圆 + 1.5 px 白点。同时提供 Template 单色版（全 <span class="chip"><i class="sw" style="background:#1D3557"></i><code>#1D3557</code></span> 轮廓线稿）供深色菜单栏自动反色。专注时尾鳍每 2 s 轻摆 6°；暂停/休息时完全静止。</p>
+<ul>
+<li><strong>专注计时器卡片</strong>：底色 <span class="chip"><i class="sw" style="background:#FFFDF7"></i><code>#FFFDF7</code></span>，圆角 16 px，描边 4 px <span class="chip"><i class="sw" style="background:#1D3557"></i><code>#1D3557</code></span>，硬投影（offset 0/4 px，颜色 <span class="chip"><i class="sw" style="background:#1D3557"></i><code>#1D3557</code></span> 25% 不透明，blur=0——漫画印刷硬阴影，禁柔光）；建议尺寸 320×180 pt 居中悬浮。计时数字 <span class="chip"><i class="sw" style="background:#1D3557"></i><code>#1D3557</code></span>。</li>
+<li><strong>进度环</strong>：线宽 12 pt，底轨 <span class="chip"><i class="sw" style="background:#2FA8C4"></i><code>#2FA8C4</code></span> 20% 不透明，前景进行色 <span class="chip"><i class="sw" style="background:#F4703E"></i><code>#F4703E</code></span>；端帽为 16 pt 白底深军描边「小气泡」圆钮。暂停时前景整体换 <span class="chip"><i class="sw" style="background:#7C93A6"></i><code>#7C93A6</code></span>，无闪烁过渡（0.4 s 色彩插值）。</li>
+<li><strong>按钮</strong>：胶囊形（全圆角）。默认：白底 + 3.5 px 深军描边 + 文字 <span class="chip"><i class="sw" style="background:#1D3557"></i><code>#1D3557</code></span>；hover：柠檬黄 <span class="chip"><i class="sw" style="background:#FFC94D"></i><code>#FFC94D</code></span> 底；主按钮「开始专注」：波普橘 <span class="chip"><i class="sw" style="background:#F4703E"></i><code>#F4703E</code></span> 底 + 白字 + 深军描边。按下态：控件整体下移 2 px 且硬投影缩短为 2 px（铅字压印手感）。高度 36 pt，水平内边距 20 pt。</li>
+<li><strong>开关</strong>：轨道 44×26 pt 圆角全圆，开 <span class="chip"><i class="sw" style="background:#2FA8C4"></i><code>#2FA8C4</code></span> / 关 <span class="chip"><i class="sw" style="background:#B8C7CC"></i><code>#B8C7CC</code></span>，滑块白色 22 pt 圆 + 2.5 pt 深军描边，切换 0.25 s ease-in-out。</li>
+<li><strong>卡片（统计/设置面板）</strong>：圆角 16 px、描边 3 px <span class="chip"><i class="sw" style="background:#1D3557"></i><code>#1D3557</code></span>、同款硬投影，底 <span class="chip"><i class="sw" style="background:#FFFDF7"></i><code>#FFFDF7</code></span>；卡片之间不叠阴影，靠 16 pt 间距分隔。</li>
+</ul>
+<h3>8. 字体建议</h3>
+<ul>
+<li>标题：<code>"ZCOOL KuaiLe", "PingFang SC", sans-serif</code>（站酷快乐体，免费商用，本地安装；标题字重固定，不用仿粗体）</li>
+<li>正文：<code>"PingFang SC", "Helvetica Neue", sans-serif</code>（系统自带，Regular / Medium 两档足够）</li>
+<li>计时数字：<code>"SF Pro Rounded", "SF Pro Text", "PingFang SC", sans-serif</code>，weight 600，启用等宽数字（tabular figures）避免跳动；SF Pro Rounded 为 macOS 系统自带圆体，与波普圆润造型同构</li>
+</ul>
+<h3>9. 动效与声音</h3>
+<ul>
+<li>缓动统一 <code>cubic-bezier(0.33, 0, 0.15, 1)</code>（快进缓出，带一点印刷翻页的「落定感」）</li>
+<li>气泡密度：同屏 ≤6 颗，直径 6–14 px，上升 20 px/s，到顶部淡出（0.5 s）；不做缩放脉动</li>
+<li>光带静止；鱼群游动见第 6 节；所有动效时长下限 0.25 s、无高频循环，杜绝急促闪烁</li>
+<li><strong>「减少动态效果」开启时</strong>：鱼停在预设静帧姿势（sprite 的 idle 帧）、气泡隐藏、菜单栏图标静止，画面即为一张完整漫画定格——静态构图本身完整，动效只是附加层</li>
+<li>环境音（可选，默认关）：每 8–15 s 随机一颗低音量「咕噜」水泡声（约 -30 dB）；无背景音乐、无提示音</li>
+</ul>
+<h3>10. 落地备注</h3>
+<ul>
+<li><strong>token 映射</strong>：bgBase=<span class="chip"><i class="sw" style="background:#8FDDE0"></i><code>#8FDDE0</code></span>、bgGradient=硬色阶（<span class="chip"><i class="sw" style="background:#C6F2EF"></i><code>#C6F2EF</code></span>→<span class="chip"><i class="sw" style="background:#8FDDE0"></i><code>#8FDDE0</code></span>，非渐变，两 token 存同一色表）、waterLight=<span class="chip"><i class="sw" style="background:#FFFFFF"></i><code>#FFFFFF</code></span>、sand=<span class="chip"><i class="sw" style="background:#F6E7C6"></i><code>#F6E7C6</code></span>、coral=<span class="chip"><i class="sw" style="background:#F4703E"></i><code>#F4703E</code></span>、fish=<span class="chip"><i class="sw" style="background:#F27EA9"></i><code>#F27EA9</code></span>、seaweed=<span class="chip"><i class="sw" style="background:#67C58F"></i><code>#67C58F</code></span>、bubble=白描边空心（描边 <span class="chip"><i class="sw" style="background:#1D3557"></i><code>#1D3557</code></span>）、accent=<span class="chip"><i class="sw" style="background:#F4703E"></i><code>#F4703E</code></span>、timerActive=<span class="chip"><i class="sw" style="background:#F4703E"></i><code>#F4703E</code></span>、timerPause=<span class="chip"><i class="sw" style="background:#7C93A6"></i><code>#7C93A6</code></span>、controlBg=<span class="chip"><i class="sw" style="background:#FFFDF7"></i><code>#FFFDF7</code></span>、controlBorder=<span class="chip"><i class="sw" style="background:#1D3557"></i><code>#1D3557</code></span>（统一 4 px 描边规格）、textPrimary=<span class="chip"><i class="sw" style="background:#1D3557"></i><code>#1D3557</code></span>、textSecondary=<span class="chip"><i class="sw" style="background:#517084"></i><code>#517084</code></span>、menuIcon=双色（<span class="chip"><i class="sw" style="background:#F27EA9"></i><code>#F27EA9</code></span>/<span class="chip"><i class="sw" style="background:#1D3557"></i><code>#1D3557</code></span>）+ Template 单色版、bubbleDensity=6、driftSpeed=0.33（30 s 横穿全屏）、easing=cubic-bezier(0.33,0,0.15,1)、ambientAudio=bubble-low（默认关）</li>
+<li><strong>资产清单</strong>：鱼 sprite 3 套（每套 8 朝向 × 摆尾 2 帧 + 静帧 1 帧）、珊瑚贴图 2 套（枝状/管状）、水草 1 套（摆动 2 帧）、Benday 网点 seamless tile 1 张（6 px 网格）、光带 PNG 1 套、礁石 1 张、气泡位图 6 颗、菜单栏图标 1 枚（@1x/@2x/@3x 彩色版 + Template 版、专注/暂停两态）</li>
+<li><strong>实现注意</strong>：网点一律用平铺 tile 实现，禁止逐点实时绘制（性能）；描边统一 Core Graphics stroke + round join，轮廓色单一 <span class="chip"><i class="sw" style="background:#1D3557"></i><code>#1D3557</code></span> 便于全局换色；硬投影禁用 blur（省性能且风格自洽）；本主题仅设计浅色外观，暂不提供夜间变体——深色环境靠系统菜单栏 Template 图标自动适配即可</li>
+</ul>
+<h2>主题二：赛璐璐（cm-cel）</h2>
+<p><img alt="cm-cel mood 图（AI 生成氛围参考）" src="https://aka.doubaocdn.com/s/kDZODlFgTU" /></p>
+<h3>1. 主题名称与代号</h3>
+<p><strong>赛璐璐</strong>，代号 <code>cm-cel</code>。</p>
+<h3>2. 气质定位</h3>
+<p>一句话定位：90 年代手绘动画里那一格清澈的浅海，吉卜力式的平涂和光柱。颜色是分层的、干净的，每种颜色只有「亮面/阴影一阶」两个色阶，像逐帧画在赛璐璐片上。明亮但不饱和过度，光柱柔和、水草缓缓摇——三套中最接近现有写实主题的「安静陪伴」气质，是卡通风里的默认安全款。</p>
+<h3>3. 适用场景</h3>
+<ul>
+<li>首选入门卡通主题：想要轻松一点、又不希望风格突变太大的用户</li>
+<li>清晨/上午的高质量专注时段，喜欢日系动画审美的用户</li>
+<li>桌面偏浅色壁纸、或需要长时间挂在水族箱前发呆放松的用户（明度分布均匀，长时间注视不疲劳）</li>
+</ul>
+<h3>4. 色彩体系</h3>
+<p>色相逻辑：全画面一个统一色温的「清透水色」底（青绿系），生物与 UI 用同明度区间的暖橘、樱粉、草绿点缀；阴影不用黑灰色，而用各色的<strong>同色相加深一阶</strong>（赛璐璐二分法），保证画面整体始终明亮。每个颜色只存在「固有色 + 一阶阴影」两层，无第三层。</p>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>色名</th>
+<th>HEX</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>背景主色 bgBase</td>
+<td>浅碧</td>
+<td><span class="chip"><i class="sw" style="background:#BDEDE9"></i><code>#BDEDE9</code></span></td>
+<td>水体下部主色</td>
+</tr>
+<tr>
+<td>水体亮阶</td>
+<td>亮青</td>
+<td><span class="chip"><i class="sw" style="background:#6FD0CE"></i><code>#6FD0CE</code></span></td>
+<td>上部 30% 亮带，与 <span class="chip"><i class="sw" style="background:#BDEDE9"></i><code>#BDEDE9</code></span> 硬色阶分界</td>
+</tr>
+<tr>
+<td>水体光照 waterLight</td>
+<td>云隙白</td>
+<td><span class="chip"><i class="sw" style="background:#FFFFFF"></i><code>#FFFFFF</code></span></td>
+<td>三束光柱（80% 不透明）、鱼眼高光</td>
+</tr>
+<tr>
+<td>沙地 sand</td>
+<td>奶沙</td>
+<td><span class="chip"><i class="sw" style="background:#F2E8CF"></i><code>#F2E8CF</code></span></td>
+<td>底部沙丘；一阶阴影 <span class="chip"><i class="sw" style="background:#E3D5B5"></i><code>#E3D5B5</code></span></td>
+</tr>
+<tr>
+<td>珊瑚主色 coral</td>
+<td>樱粉</td>
+<td><span class="chip"><i class="sw" style="background:#FF9AA8"></i><code>#FF9AA8</code></span></td>
+<td>鹿角珊瑚与海葵主体；阴影阶 <span class="chip"><i class="sw" style="background:#E57F92"></i><code>#E57F92</code></span></td>
+</tr>
+<tr>
+<td>鱼体主色 fish</td>
+<td>柠檬橘</td>
+<td><span class="chip"><i class="sw" style="background:#FF8C42"></i><code>#FF8C42</code></span></td>
+<td>小丑鱼身体；阴影阶 <span class="chip"><i class="sw" style="background:#E06B2E"></i><code>#E06B2E</code></span>；同时兼任 UI 强调</td>
+</tr>
+<tr>
+<td>鱼体辅色</td>
+<td>晴空蓝</td>
+<td><span class="chip"><i class="sw" style="background:#4FA9E0"></i><code>#4FA9E0</code></span></td>
+<td>蓝倒吊身体；阴影阶 <span class="chip"><i class="sw" style="background:#3E8CC4"></i><code>#3E8CC4</code></span></td>
+</tr>
+<tr>
+<td>水草 seaweed</td>
+<td>鳗草绿</td>
+<td><span class="chip"><i class="sw" style="background:#67C58F"></i><code>#67C58F</code></span></td>
+<td>鳗草叶片；阴影阶 <span class="chip"><i class="sw" style="background:#52AB79"></i><code>#52AB79</code></span></td>
+</tr>
+<tr>
+<td>计时暂停 timerPause</td>
+<td>雾蓝灰</td>
+<td><span class="chip"><i class="sw" style="background:#A8B8C0"></i><code>#A8B8C0</code></span></td>
+<td>暂停时进度环与状态点</td>
+</tr>
+<tr>
+<td>控件底色 controlBg</td>
+<td>云白</td>
+<td><span class="chip"><i class="sw" style="background:#FFFEFB"></i><code>#FFFEFB</code></span></td>
+<td>计时卡片、按钮、面板底色</td>
+</tr>
+<tr>
+<td>文字主色/描边 textPrimary</td>
+<td>深青墨</td>
+<td><span class="chip"><i class="sw" style="background:#17414D"></i><code>#17414D</code></span></td>
+<td>全部轮廓描边、标题与正文</td>
+</tr>
+<tr>
+<td>文字次色 textSecondary</td>
+<td>青蓝灰</td>
+<td><span class="chip"><i class="sw" style="background:#47707F"></i><code>#47707F</code></span></td>
+<td>说明文字、次要信息</td>
+</tr>
+</tbody>
+</table>
+<p>实测对比度：<span class="chip"><i class="sw" style="background:#17414D"></i><code>#17414D</code></span> 在 <span class="chip"><i class="sw" style="background:#BDEDE9"></i><code>#BDEDE9</code></span> 背景上 <strong>8.66:1</strong>、在 <span class="chip"><i class="sw" style="background:#FFFEFB"></i><code>#FFFEFB</code></span> 控件底上 <strong>10.96:1</strong>；<span class="chip"><i class="sw" style="background:#47707F"></i><code>#47707F</code></span> 在控件底上 <strong>5.35:1</strong>、直接压在水体上 <strong>4.23:1</strong>（≥3:1，可用于 18 pt 以上大字；小号次要文字仍放白底控件上）；强调色 <span class="chip"><i class="sw" style="background:#FF8C42"></i><code>#FF8C42</code></span> 与 <span class="chip"><i class="sw" style="background:#17414D"></i><code>#17414D</code></span> 的非文字对比 <strong>4.78:1</strong>。</p>
+<h3>5. 水族箱背景画面</h3>
+<p>以 1600×900 逻辑分辨率描述：</p>
+<ul>
+<li><strong>远景（上 0–30%）</strong>：亮青 <span class="chip"><i class="sw" style="background:#6FD0CE"></i><code>#6FD0CE</code></span> 亮带，底部以一条缓弧曲线硬切到 <span class="chip"><i class="sw" style="background:#BDEDE9"></i><code>#BDEDE9</code></span>（赛璐璐色阶，无渐变过渡）。三束白色光柱从水面斜贯至画面中部（倾角 15°，宽 40 / 30 / 24 px、间距约 200 px，边缘平直无羽化，不透明度 80%），以 8 s 周期做 72%–88% 的透明度呼吸——极缓，几乎察觉不到。</li>
+<li><strong>中景（30–70%）</strong>：左、右各一丛鳗草（5–7 片，叶形为两段贝塞尔的飘带形，高 100–160 px，<span class="chip"><i class="sw" style="background:#67C58F"></i><code>#67C58F</code></span>，每片叶根部向下 1/3 处铺一片 <span class="chip"><i class="sw" style="background:#52AB79"></i><code>#52AB79</code></span> 月牙形阴影阶）；中部偏左一群樱粉海葵（6 根圆头触手，触手末端圆球 <span class="chip"><i class="sw" style="background:#FF9AA8"></i><code>#FF9AA8</code></span>、柄 <span class="chip"><i class="sw" style="background:#E57F92"></i><code>#E57F92</code></span> 阴影阶）。</li>
+<li><strong>近景（70–100%）</strong>：两道奶油沙丘（<span class="chip"><i class="sw" style="background:#F2E8CF"></i><code>#F2E8CF</code></span>，背光侧 <span class="chip"><i class="sw" style="background:#E3D5B5"></i><code>#E3D5B5</code></span> 阴影阶硬边色块）；左下一枝鹿角珊瑚（樱粉 <span class="chip"><i class="sw" style="background:#FF9AA8"></i><code>#FF9AA8</code></span>，枝端圆钝）；右下一块圆角礁石（固有色用沙丘阴影色 <span class="chip"><i class="sw" style="background:#E3D5B5"></i><code>#E3D5B5</code></span>，阴影阶再加深为 <span class="chip"><i class="sw" style="background:#CDBB98"></i><code>#CDBB98</code></span>——遵循同色相加深规则）。</li>
+<li><strong>全元素通用</strong>：描边 <span class="chip"><i class="sw" style="background:#17414D"></i><code>#17414D</code></span>、2 px（细描边，赛璐璐片的干净线条）、round join；所有阴影为硬边形状（沿轮廓偏移 2–4 px 的月牙色块），禁止羽化和半透明叠加。</li>
+<li><strong>动态元素</strong>：海草摇摆、光柱呼吸、鱼群游动、气泡；「减少动态效果」时全部取中位静帧。</li>
+</ul>
+<h3>6. 鱼类与生物视觉</h3>
+<p>通用造型语言：圆钝可爱的动画造型，2 px 深青墨描边，平涂固有色 + 单块硬边阴影阶，白色高光只点眼睛。</p>
+<ol>
+<li><strong>小丑鱼「小橘」（主角）</strong>：圆胖身柠檬橘 <span class="chip"><i class="sw" style="background:#FF8C42"></i><code>#FF8C42</code></span>，三条白色描边条纹（白条纹带 2 px 深青描边，宽 10 px），背鳍一片圆三角；腹部铺 <span class="chip"><i class="sw" style="background:#E06B2E"></i><code>#E06B2E</code></span> 阴影月牙。游动：横穿全屏约 25 s，路径带 4 s 周期的 ±10 px 正弦起伏，尾鳍两帧摆动（1 s/帧），转向时身体先倾斜 8° 再转弯（动画预备动作）。</li>
+<li><strong>蓝倒吊「阿蓝」</strong>：近正圆身晴空蓝 <span class="chip"><i class="sw" style="background:#4FA9E0"></i><code>#4FA9E0</code></span>，尾鳍黄色小三角，背鳍一条深色弧线；下腹 <span class="chip"><i class="sw" style="background:#3E8CC4"></i><code>#3E8CC4</code></span> 阴影。成对出现，两只间距 80 px 同速同向，像动画里的双子配角。</li>
+<li><strong>蝴蝶鱼「阿黄」</strong>：扁圆身柠檬黄 <span class="chip"><i class="sw" style="background:#FFC94D"></i><code>#FFC94D</code></span>（此主题内黄色仅此一种用法），眼带一条垂直深青条纹，吻部尖。贴礁石附近慢游，转弯半径大、动作绵软。</li>
+</ol>
+<p><strong>群游建议</strong>：蓝倒吊固定结对（2 尾）即可，不要 5 尾以上的大群（大群游动会带来「热闹感」，违背安静气质）；同屏总鱼数 ≤4 尾。所有鱼禁止急转、禁止追尾。</p>
+<h3>7. 界面控件样式</h3>
+<p>菜单栏图标（22 pt，44×44 px @2x 画布）：小丑鱼侧影，身 <span class="chip"><i class="sw" style="background:#FF8C42"></i><code>#FF8C42</code></span>、仅保留 1 条白条纹（22 pt 下两条会糊成一团），轮廓 3 px <span class="chip"><i class="sw" style="background:#17414D"></i><code>#17414D</code></span>，白眼 1 枚（3 px 白圆 + 2 px 青墨瞳）。另备 Template 单色线稿版。专注时尾鳍每 2.5 s 轻摆 8°；暂停时静止。</p>
+<ul>
+<li><strong>专注计时器卡片</strong>：底色 <span class="chip"><i class="sw" style="background:#FFFEFB"></i><code>#FFFEFB</code></span>，圆角 20 pt，无描边（赛璐璐主题控件走干净路线），柔投影 0/6/16 pt、颜色 rgba(23,65,77,0.12)；尺寸建议 320×180 pt。计时数字 <span class="chip"><i class="sw" style="background:#17414D"></i><code>#17414D</code></span>。</li>
+<li><strong>进度环</strong>：线宽 10 pt，底轨 <span class="chip"><i class="sw" style="background:#EAF4F2"></i><code>#EAF4F2</code></span>（bgBase 的淡阶），进行色 <span class="chip"><i class="sw" style="background:#FF8C42"></i><code>#FF8C42</code></span>，端帽圆形；暂停换 <span class="chip"><i class="sw" style="background:#A8B8C0"></i><code>#A8B8C0</code></span>，0.4 s 色彩插值，无闪烁。</li>
+<li><strong>按钮</strong>：圆角 12 pt。默认：云白底 + 1 pt rgba(23,65,77,0.15) 描边、文字 <span class="chip"><i class="sw" style="background:#17414D"></i><code>#17414D</code></span>；主按钮「开始专注」：<span class="chip"><i class="sw" style="background:#FF8C42"></i><code>#FF8C42</code></span> 底白字，hover 变 <span class="chip"><i class="sw" style="background:#E06B2E"></i><code>#E06B2E</code></span>（直接复用一阶阴影色，风格自洽）；高度 36 pt。</li>
+<li><strong>开关</strong>：轨道开 <span class="chip"><i class="sw" style="background:#FF8C42"></i><code>#FF8C42</code></span> / 关 <span class="chip"><i class="sw" style="background:#D5DEE0"></i><code>#D5DEE0</code></span>，滑块白色带 1 pt 淡描边，切换 0.25 s ease-in-out。</li>
+<li><strong>卡片</strong>：圆角 20 pt、云白底、同款柔投影；卡片描边一律不用深色，保持「胶片上干净的色块」观感。</li>
+</ul>
+<h3>8. 字体建议</h3>
+<ul>
+<li>标题：<code>"LXGW WenKai", "PingFang SC", sans-serif</code>（霞鹜文楷，开源 OFL 协议免费，本地安装；带手写温度，接近动画字幕气质）</li>
+<li>正文：<code>"PingFang SC", "Helvetica Neue", sans-serif</code>（系统自带）</li>
+<li>计时数字：<code>"SF Pro Display", "SF Pro Text", "PingFang SC", sans-serif</code>，weight 500，启用 tabular figures；未安装霞鹜文楷时全链路自动回落到 PingFang SC，观感依然成立</li>
+</ul>
+<h3>9. 动效与声音</h3>
+<ul>
+<li>缓动统一 <code>cubic-bezier(0.45, 0, 0.25, 1)</code>（标准 ease-out，动画中割手感）</li>
+<li>海草摇摆：根部固定、叶尖 ±4°、4 s 周期，左右两丛相位错开 2 s；光柱 8 s 呼吸（见第 5 节）</li>
+<li>气泡密度：同屏 ≤8 颗，直径 4–10 px，上升 16 px/s，表面 1 px 白描边</li>
+<li><strong>「减少动态效果」开启时</strong>：海草/海葵取中位静帧、光柱恒定 80%、鱼冻结在游动 pose、气泡隐藏；整幅画面即一张完整的赛璐璐背景美术（BG 用原画，动效仅是作画层）</li>
+<li>环境音（可选，默认关）：极低音量（约 -36 dB）的海面水声 loop，无旋律、无音效事件</li>
+</ul>
+<h3>10. 落地备注</h3>
+<ul>
+<li><strong>token 映射</strong>：bgBase=<span class="chip"><i class="sw" style="background:#BDEDE9"></i><code>#BDEDE9</code></span>、bgGradient=硬色阶（<span class="chip"><i class="sw" style="background:#6FD0CE"></i><code>#6FD0CE</code></span>→<span class="chip"><i class="sw" style="background:#BDEDE9"></i><code>#BDEDE9</code></span>）、waterLight=<span class="chip"><i class="sw" style="background:#FFFFFF"></i><code>#FFFFFF</code></span>、sand=<span class="chip"><i class="sw" style="background:#F2E8CF"></i><code>#F2E8CF</code></span>、coral=<span class="chip"><i class="sw" style="background:#FF9AA8"></i><code>#FF9AA8</code></span>、fish=<span class="chip"><i class="sw" style="background:#FF8C42"></i><code>#FF8C42</code></span>、seaweed=<span class="chip"><i class="sw" style="background:#67C58F"></i><code>#67C58F</code></span>、bubble=白描边小泡、accent=<span class="chip"><i class="sw" style="background:#FF8C42"></i><code>#FF8C42</code></span>、timerActive=<span class="chip"><i class="sw" style="background:#FF8C42"></i><code>#FF8C42</code></span>、timerPause=<span class="chip"><i class="sw" style="background:#A8B8C0"></i><code>#A8B8C0</code></span>、controlBg=<span class="chip"><i class="sw" style="background:#FFFEFB"></i><code>#FFFEFB</code></span>、controlBorder=rgba(23,65,77,0.15)（1 pt 规则）、textPrimary=<span class="chip"><i class="sw" style="background:#17414D"></i><code>#17414D</code></span>、textSecondary=<span class="chip"><i class="sw" style="background:#47707F"></i><code>#47707F</code></span>、menuIcon=三色（<span class="chip"><i class="sw" style="background:#FF8C42"></i><code>#FF8C42</code></span>/<span class="chip"><i class="sw" style="background:#FFFFFF"></i><code>#FFFFFF</code></span>/<span class="chip"><i class="sw" style="background:#17414D"></i><code>#17414D</code></span>）+ Template 版、bubbleDensity=8、driftSpeed=0.4（25 s 横穿）、easing=cubic-bezier(0.45,0,0.25,1)、ambientAudio=sea-loop-low（默认关）</li>
+<li><strong>资产清单</strong>：鱼 sprite 3 套（每套 8 朝向 × 摆尾 2 帧 + 静帧，附各自阴影阶分层）、鳗草 2 丛（各 3 帧摇摆）、海葵 1 株（2 帧）、鹿角珊瑚 1、礁石 1、光柱 PNG 3 束、气泡位图 8 颗、菜单栏图标 1 枚（@1x/@2x/@3x 彩色 + Template、专注/暂停两态）</li>
+<li><strong>实现注意</strong>：阴影阶全部作为独立色块/shape 落在 sprite 的第二图层，禁止用叠黑或乘法混合实现（会破坏「明亮」基调）；色阶硬切是本主题的辨识度来源，背景切勿图省事做渐变；控件统一柔投影与描边二选一，避免「描边+柔影」双重装饰</li>
+</ul>
+<h2>主题三：墨线（cm-ink）</h2>
+<p><img alt="cm-ink mood 图（AI 生成氛围参考）" src="https://aka.doubaocdn.com/s/3ZLVixDD1V" /></p>
+<h3>1. 主题名称与代号</h3>
+<p><strong>墨线</strong>，代号 <code>cm-ink</code>。</p>
+<h3>2. 气质定位</h3>
+<p>一句话定位：一本摊开的速写本，海底是几笔炭墨勾出来、再淡淡晕了一点水彩。大面积留白，水用弧线表示而非色块，鱼像日记本里的小插图。三套中最安静、纸感最强的一套，色彩从不铺满，永远只是墨线的淡彩注脚。它把「无压力」推到极致：连颜色都不着急。</p>
+<h3>3. 适用场景</h3>
+<ul>
+<li>深度专注、夜间或需要最低视觉干扰的时段；对明快色也嫌吵的用户</li>
+<li>喜欢手账、速写、独立漫画审美（如《海兽之子》线稿、《一人之下》水墨插页气质）的用户</li>
+<li>桌面本身色彩丰富（照片壁纸）时，墨线主题的留白与任何壁纸都不打架</li>
+</ul>
+<h3>4. 色彩体系</h3>
+<p>色相逻辑：纸底一色（米白）撑起 60% 以上画面；墨线为唯一「结构色」；淡彩仅四五种（青、蓝、粉、绿、黄），全部以 40–70% 不透明度薄涂在对应造型上，像水彩在宣纸上留下的那层色。没有任何深色大面积底，天然低刺激。</p>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>色名</th>
+<th>HEX</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>背景主色 bgBase</td>
+<td>宣纸米</td>
+<td><span class="chip"><i class="sw" style="background:#FAF6EC"></i><code>#FAF6EC</code></span></td>
+<td>全幅纸底（可叠加 8% 强度纸纹）</td>
+</tr>
+<tr>
+<td>水体淡彩 waterLight</td>
+<td>淡青水洗</td>
+<td><span class="chip"><i class="sw" style="background:#CDE6E4"></i><code>#CDE6E4</code></span></td>
+<td>水体薄涂，45% 不透明，边缘 8 px 羽化</td>
+</tr>
+<tr>
+<td>沙地 sand</td>
+<td>稻草黄</td>
+<td><span class="chip"><i class="sw" style="background:#EFD9A8"></i><code>#EFD9A8</code></span></td>
+<td>沙丘淡彩（45%）+ 45° 炭墨排线</td>
+</tr>
+<tr>
+<td>珊瑚主色 coral</td>
+<td>胭脂粉</td>
+<td><span class="chip"><i class="sw" style="background:#EF8FA0"></i><code>#EF8FA0</code></span></td>
+<td>枝珊瑚淡彩（60%）</td>
+</tr>
+<tr>
+<td>珊瑚辅色</td>
+<td>赭橘</td>
+<td><span class="chip"><i class="sw" style="background:#E8975A"></i><code>#E8975A</code></span></td>
+<td>管珊瑚、海星淡彩（50%）</td>
+</tr>
+<tr>
+<td>鱼体主色 fish</td>
+<td>雾霭蓝</td>
+<td><span class="chip"><i class="sw" style="background:#7FB2D6"></i><code>#7FB2D6</code></span></td>
+<td>主角「霭蓝小鱼」淡彩（70%）</td>
+</tr>
+<tr>
+<td>水草 seaweed</td>
+<td>苔绿</td>
+<td><span class="chip"><i class="sw" style="background:#9CBF8C"></i><code>#9CBF8C</code></span></td>
+<td>水草淡彩（40%）</td>
+</tr>
+<tr>
+<td>UI 强调/计时进行 accent</td>
+<td>赤陶橘</td>
+<td><span class="chip"><i class="sw" style="background:#E0794F"></i><code>#E0794F</code></span></td>
+<td>主按钮、墨线进度弧前景、进行状态</td>
+</tr>
+<tr>
+<td>计时暂停 timerPause</td>
+<td>亚麻灰</td>
+<td><span class="chip"><i class="sw" style="background:#B8A98F"></i><code>#B8A98F</code></span></td>
+<td>暂停时的进度弧</td>
+</tr>
+<tr>
+<td>控件底色 controlBg</td>
+<td>纸白</td>
+<td><span class="chip"><i class="sw" style="background:#FFFDF5"></i><code>#FFFDF5</code></span></td>
+<td>计时卡片、按钮底色</td>
+</tr>
+<tr>
+<td>墨线/文字主色 textPrimary</td>
+<td>炭墨</td>
+<td><span class="chip"><i class="sw" style="background:#33313B"></i><code>#33313B</code></span></td>
+<td>全部轮廓线、排线、气泡圈线、标题正文</td>
+</tr>
+<tr>
+<td>文字次色 textSecondary</td>
+<td>灰褐</td>
+<td><span class="chip"><i class="sw" style="background:#6E6A5C"></i><code>#6E6A5C</code></span></td>
+<td>次要说明文字</td>
+</tr>
+</tbody>
+</table>
+<p>实测对比度：<span class="chip"><i class="sw" style="background:#33313B"></i><code>#33313B</code></span> 在纸底 <span class="chip"><i class="sw" style="background:#FAF6EC"></i><code>#FAF6EC</code></span> 上 <strong>11.84:1</strong>、在控件底 <span class="chip"><i class="sw" style="background:#FFFDF5"></i><code>#FFFDF5</code></span> 上 <strong>12.55:1</strong>；<span class="chip"><i class="sw" style="background:#6E6A5C"></i><code>#6E6A5C</code></span> 在纸底上 <strong>5.02:1</strong>、控件底上 <strong>5.32:1</strong>——全部通过 AA，是三套中文字可读性余量最大的一套。赤陶橘 <span class="chip"><i class="sw" style="background:#E0794F"></i><code>#E0794F</code></span> 与炭墨非文字对比 <strong>4.27:1</strong>（≥3:1）。</p>
+<h3>5. 水族箱背景画面</h3>
+<p>以 1600×900 逻辑分辨率描述：</p>
+<ul>
+<li><strong>远景（上 0–35%）</strong>：纸底留白为主；水面用 3 条起伏弧线表示（2 px 炭墨，线条每隔约 40 px 带 ±0.5 px 的预置抖动偏移——手绘微颤感烘焙进矢量路径，非实时随机）；弧线之下一片 <span class="chip"><i class="sw" style="background:#CDE6E4"></i><code>#CDE6E4</code></span> 淡彩薄刷（45% 不透明，上边缘贴弧线、下边缘羽化 8 px 消散于纸底）。右上角 2 颗纯圈线气泡（无填充）。</li>
+<li><strong>中景（35–70%）</strong>：左侧一丛水草（4 条 S 形曲线勾勒，苔绿 40% 淡彩只填叶身下半段，叶尖留白）；右侧一株枝珊瑚（炭墨枝干 + 胭脂粉 60% 淡彩点在枝端圆头）；中部点缀 2 朵五线海星（赭橘 50%，仅 5 条短弧线 + 中心点）。</li>
+<li><strong>近景（70–100%）</strong>：底部一道大弧沙丘（稻草黄 45% 淡彩），背光处 45° 排线（1.2 px、间距 5 px、每段 12–18 px 长、炭墨 60% 不透明）；左下角一只简笔小蟹（两笔弧线壳 + 两条钳弧，赭橘 50% 淡彩壳面）。</li>
+<li><strong>全元素通用</strong>：所有轮廓为同一规格炭墨线——2 px、round cap、预置微抖动路径；淡彩永不溢出轮廓（溢出感仅靠羽化边缘在轮廓内侧表达）。</li>
+<li><strong>动态元素</strong>：极少量——鱼、圈线气泡、水草微摆（见下）；沙丘、排线、珊瑚完全静态。</li>
+</ul>
+<h3>6. 鱼类与生物视觉</h3>
+<p>通用造型语言：一笔到位的简笔弧线轮廓，淡彩只填身体中部、边缘留白，眼睛大而呆。</p>
+<ol>
+<li><strong>霭蓝小鱼（主角）</strong>：椭圆身两笔弧线勾出，鱼腹一条内弧线留白；雾霭蓝 70% 淡彩填背部 2/3；眼睛为 5 px 炭墨实心圆 + 上方一条 3 px 弧线眼睑（呆萌感来自这条眼睑）；尾鳍一片三角、无彩。游动：横穿全屏约 40 s（三套中最慢），几乎贴沙丘弧线平游，正弦起伏 ±5 px、周期 8 s，尾鳍不做帧动画、仅随路径自然摆。</li>
+<li><strong>纸鹤河鲀</strong>：纯线稿无淡彩——正圆身炭墨描线，身上 6 条短弧线小刺；每 6 s 一次极缓慢的「呼吸鼓身」（scale 1.00→1.02→1.00，3 s 完成一半周期），像纸上画在轻轻浮动。</li>
+<li><strong>赭橘小虾</strong>：3 节弧线身体 + 两根 1 px 长须（各约 30 px，尾端 2 px 微弯），淡彩 50%；以每 8 s 约 20 px 的速度倒退式缓移——慢到需要盯一会才发现它在动，这是本主题的趣味彩蛋。</li>
+</ol>
+<p><strong>群游建议</strong>：本主题不设群游。鱼以「独居插画」方式出现，同屏 ≤2 尾且永不同框相遇——速写本上每页只画一只小动物，翻页才见下一只（可作为「每次专注完成后随机换一只」的实现伏笔）。</p>
+<h3>7. 界面控件样式</h3>
+<p>菜单栏图标（22 pt，44×44 px @2x 画布）：霭蓝小鱼单线侧影，线条 3.5 px <span class="chip"><i class="sw" style="background:#33313B"></i><code>#33313B</code></span>（44 px 画布下粗细足以辨认）+ 身体 <span class="chip"><i class="sw" style="background:#7FB2D6"></i><code>#7FB2D6</code></span> 填充 70%，22 pt 下省略鱼腹内弧只留外轮廓 + 眼点。Template 单色版即「仅轮廓线稿」天然成立。专注时图标上方 4 px 处出现一枚小圈气泡，3 s 周期淡入淡出（不透明度 0→30%→0）；暂停时无气泡、完全静止。</p>
+<ul>
+<li><strong>专注计时器卡片</strong>：底色 <span class="chip"><i class="sw" style="background:#FFFDF5"></i><code>#FFFDF5</code></span>，圆角 14 pt，描边 1.5 pt <span class="chip"><i class="sw" style="background:#33313B"></i><code>#33313B</code></span>（圆角路径带预置微抖动，与背景线稿同一套笔触），投影极淡：0/2/6 pt rgba(51,49,59,0.08)；尺寸建议 320×176 pt。计时数字 <span class="chip"><i class="sw" style="background:#33313B"></i><code>#33313B</code></span>。</li>
+<li><strong>进度环</strong>：改为「墨线弧」——3 pt 炭墨底弧（92% 弧长）+ 3 pt 赤陶橘前景弧，端头不收圆帽、在最后 8% 弧段线宽由 3 pt 渐收至 1.5 pt（模拟毛笔提笔收锋）；暂停换亚麻灰 <span class="chip"><i class="sw" style="background:#B8A98F"></i><code>#B8A98F</code></span>。数字走完不做任何庆祝动效，仅弧线收锋。</li>
+<li><strong>按钮</strong>：圆角 10 pt，纸白底 + 1.5 pt 炭墨描边、文字 <span class="chip"><i class="sw" style="background:#33313B"></i><code>#33313B</code></span>；主按钮「开始专注」：赤陶橘 <span class="chip"><i class="sw" style="background:#E0794F"></i><code>#E0794F</code></span> 底 + 纸白字 + 炭墨描边，hover 加深一阶 <span class="chip"><i class="sw" style="background:#C96436"></i><code>#C96436</code></span>；按下整体下移 1 pt。高度 34 pt（三套中最矮——纸面排版更紧凑）。</li>
+<li><strong>开关</strong>：轨道开 <span class="chip"><i class="sw" style="background:#E0794F"></i><code>#E0794F</code></span> / 关 <span class="chip"><i class="sw" style="background:#D9CFB8"></i><code>#D9CFB8</code></span>，滑块纸白 22 pt 圆 + 1.5 pt 炭墨描边，切换 0.3 s ease-in-out。</li>
+<li><strong>卡片</strong>：圆角 14 pt、同款 1.5 pt 抖动描边；卡片标题下加一条手绘波浪线（2 px，振幅 1.5 px、波长 24 px）做装饰分隔——主题化的分隔符。</li>
+</ul>
+<h3>8. 字体建议</h3>
+<ul>
+<li>标题与正文：<code>"LXGW WenKai", "PingFang SC", sans-serif</code>（霞鹜文楷 Screen 版，开源免费本地安装；正文用 Regular、标题用 Medium——LXGW WenKai 是全链路最贴合墨线气质的选择，正文可读性实测良好）</li>
+<li>计时数字：<code>"LXGW WenKai", "SF Pro Text", "PingFang SC", sans-serif</code>，weight 500，tabular figures；霞鹜文楷的数字略带手写骨架，与炭墨弧线同构；未安装时回落 SF Pro Text 依然协调</li>
+</ul>
+<h3>9. 动效与声音</h3>
+<ul>
+<li>缓动统一 <code>cubic-bezier(0.42, 0, 0.58, 1)</code>（对称 ease-in-out，纸页翻动般的从容）</li>
+<li>气泡密度：同屏 ≤3 颗、纯圈线无填充，上升 12 px/s；粒子总量为三套最低</li>
+<li>水草微摆 ±2°、6 s 周期；河鲀呼吸见第 6 节；全程无任何不透明度骤变</li>
+<li><strong>「减少动态效果」开启时</strong>：一切冻结，画面即为完成稿（线稿淡彩本身就是终点形态，动效只是「纸在呼吸」的可选层）；菜单栏气泡隐藏</li>
+<li>环境音：默认无声（三套中最克制）；唯一声音是切换到本主题瞬间的一记「纸页轻翻」声（0.5 s，约 -30 dB，一次性）——用声音强化「翻开速写本」的隐喻，之后归于寂静</li>
+</ul>
+<h3>10. 落地备注</h3>
+<ul>
+<li><strong>token 映射</strong>：bgBase=<span class="chip"><i class="sw" style="background:#FAF6EC"></i><code>#FAF6EC</code></span>、bgGradient=无（单色纸底，token 留空或同 bgBase）、waterLight=<span class="chip"><i class="sw" style="background:#CDE6E4"></i><code>#CDE6E4</code></span>（45% 薄涂）、sand=<span class="chip"><i class="sw" style="background:#EFD9A8"></i><code>#EFD9A8</code></span>、coral=<span class="chip"><i class="sw" style="background:#EF8FA0"></i><code>#EF8FA0</code></span>、fish=<span class="chip"><i class="sw" style="background:#7FB2D6"></i><code>#7FB2D6</code></span>、seaweed=<span class="chip"><i class="sw" style="background:#9CBF8C"></i><code>#9CBF8C</code></span>、bubble=炭墨圈线、accent=<span class="chip"><i class="sw" style="background:#E0794F"></i><code>#E0794F</code></span>、timerActive=<span class="chip"><i class="sw" style="background:#E0794F"></i><code>#E0794F</code></span>、timerPause=<span class="chip"><i class="sw" style="background:#B8A98F"></i><code>#B8A98F</code></span>、controlBg=<span class="chip"><i class="sw" style="background:#FFFDF5"></i><code>#FFFDF5</code></span>、controlBorder=<span class="chip"><i class="sw" style="background:#33313B"></i><code>#33313B</code></span>（1.5 pt 抖动描边规格）、textPrimary=<span class="chip"><i class="sw" style="background:#33313B"></i><code>#33313B</code></span>、textSecondary=<span class="chip"><i class="sw" style="background:#6E6A5C"></i><code>#6E6A5C</code></span>、menuIcon=双色线稿（<span class="chip"><i class="sw" style="background:#33313B"></i><code>#33313B</code></span> + 70% <span class="chip"><i class="sw" style="background:#7FB2D6"></i><code>#7FB2D6</code></span>）+ Template 版、bubbleDensity=3、driftSpeed=0.25（40 s 横穿）、easing=cubic-bezier(0.42,0,0.58,1)、ambientAudio=none（仅主题切换时一次性 page-flip 音）</li>
+<li><strong>资产清单</strong>：鱼 sprite 3 套（矢量 PDF/SVG 优先，各 2 帧 + 静帧）、水草 2 株（各 2 帧）、珊瑚 2 种（枝状/管状）、海星 1、小蟹 1、抖动线框矢量库 1 套（圆角矩形/波浪线/弧线的预置微抖路径）、45° 排线笔刷 tile 1 张、纸纹底图 1 张（8% 强度，可关）、菜单栏图标 1 枚（@1x/@2x/@3x 彩色 + Template、专注气泡/暂停静止两态）</li>
+<li><strong>实现注意</strong>：所有线稿资产必须矢量（PDF/SVG）以保证 22 pt 与 Retina 缩放下的线条锐度；微抖动路径烘焙进资产、运行时不再叠加随机数（保证「减少动态效果」下完全一致）；淡彩统一用不透明度分层（40–70%）而非预先混好的实色，方便统一调饱和度；纸纹可选但默认关闭，避免低配机器整幅噪声采样</li>
+</ul>
+<h2>自检清单（卡通漫画家族）</h2>
+<table>
+<thead>
+<tr>
+<th>检查项</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>每个主题 10 节齐全（波普/赛璐璐/墨线）</td>
+<td>✅ 3 × 10 节全部逐节填写</td>
+</tr>
+<tr>
+<td>所有颜色为有效 6 位 HEX</td>
+<td>✅ 全文 36 个色值均为 #RRGGBB 格式，逐个核对</td>
+</tr>
+<tr>
+<td>覆盖必填色彩角色（背景/水体光照/沙地/珊瑚/鱼体/UI 强调/进行/暂停/文字主次）</td>
+<td>✅ 三套均覆盖，每套 12–13 色</td>
+</tr>
+<tr>
+<td>无压力原则</td>
+<td>✅ 无连续打卡/目标/催促元素；无高频闪烁（最低动效周期 2 s 且幅度小）；暂停色均降饱和；气泡密度 ≤3/≤6/≤8；声效全部默认关或极低音量</td>
+</tr>
+<tr>
+<td>「减少动态效果」兼容</td>
+<td>✅ 三套均给出冻结态实现：静帧/定格 pose/完成稿，且静态构图本身完整</td>
+</tr>
+<tr>
+<td>菜单栏 22pt 清晰度</td>
+<td>✅ 三套均给出 @2x 画布、具体线宽（4/3/3.5 px）与减笔策略 + Template 单色版</td>
+</tr>
+<tr>
+<td>字体 macOS 实际可用</td>
+<td>✅ PingFang SC、SF Pro 各变体系统自带；站酷快乐体（免费商用）、霞鹜文楷（OFL 开源）可下载安装，font stack 均带回退</td>
+</tr>
+<tr>
+<td>主题代号格式</td>
+<td>✅ cm-pop / cm-cel / cm-ink，均为 cm- 前缀 + 小写连字符</td>
+</tr>
+<tr>
+<td>对比度数字来源</td>
+<td>✅ 由 Python 脚本按 WCAG 相对亮度公式实算，非估算</td>
+</tr>
+</tbody>
+</table>
+</section>
+
+
+<section id="ct">
+<h2><span class="no">03</span>可爱风</h2>
+<p class="lead">甜得克制、软得安静。可爱来自圆润造型、腮红与低饱和配色，不来自动效与音量；饱和度整体压在 30% 以下，强调色只允许出现在进度环与选中态。</p>
+<div class='fam-intro'><div class='txt'><p>三套主题对比度脚本实测：正文主色 9.8~10.2:1，次色 4.5~5.1:1，大号状态色 3.5~4.3:1。菜单栏图标一律 template image（黑白 alpha）由系统适配；控件基线：按钮 32px、圆角 10px、卡片 16px、开关 28×16px、计时数字 64px——切主题只换 token，不换布局。可爱风暂未生成 mood 图。</p></div></div><p><strong>设计前提</strong>：三套变体均延续「安静陪伴」气质——可爱来自圆润造型与低饱和配色，不来自动效密度与音量；控件保持克制，无打卡、无提醒、无催促性动效；全部动效层在系统「减少动态效果」开启时退化为静态整帧插画。</p>
+<h2>变体一 · 马卡龙（ct-cream）</h2>
+<h3>1. 主题名称与代号</h3>
+<p><strong>马卡龙</strong> · 代号 <code>ct-cream</code></p>
+<h3>2. 气质定位</h3>
+<p>一句话定位：<strong>一盘低饱和的马卡龙沉进奶油色海底</strong>。氛围：像午后烘焙坊橱窗，甜得克制、软得安静；所有颜色都像掺了牛奶，饱和度整体压在 30% 以下。画面给人的感受是「暖」而非「甜腻」——看久了不腻，是能待一整个下午的颜色。</p>
+<h3>3. 适用场景</h3>
+<ul>
+<li>长时间深度工作（写代码、写长文）时选用：低对比、无高饱和刺激，视觉负担最小；</li>
+<li>傍晚与夜间工作时段：暖色底对屏幕蓝光环境更柔和；</li>
+<li>喜欢被温暖感包围、但不想被粉色包围的用户的第一只可爱主题。</li>
+</ul>
+<h3>4. 色彩体系</h3>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>色名</th>
+<th>HEX</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>背景主色 bgBase</td>
+<td>奶油白</td>
+<td><span class="chip"><i class="sw" style="background:#FBF4E9"></i><code>#FBF4E9</code></span></td>
+<td>全屏背景底色</td>
+</tr>
+<tr>
+<td>背景渐变 bgGradient</td>
+<td>杏仁奶</td>
+<td><span class="chip"><i class="sw" style="background:#F2E3CF"></i><code>#F2E3CF</code></span></td>
+<td>背景下 1/3 渐变加深，制造水深</td>
+</tr>
+<tr>
+<td>水体光照 waterLight</td>
+<td>薄荷奶绿</td>
+<td><span class="chip"><i class="sw" style="background:#D8EEDF"></i><code>#D8EEDF</code></span></td>
+<td>顶部斜向光带、水面反光</td>
+</tr>
+<tr>
+<td>沙地 sand</td>
+<td>糖霜奶黄</td>
+<td><span class="chip"><i class="sw" style="background:#EFDDBE"></i><code>#EFDDBE</code></span></td>
+<td>箱底沙丘</td>
+</tr>
+<tr>
+<td>珊瑚主色 coral</td>
+<td>樱花粉</td>
+<td><span class="chip"><i class="sw" style="background:#F4B9C2"></i><code>#F4B9C2</code></span></td>
+<td>珊瑚、点缀生物</td>
+</tr>
+<tr>
+<td>鱼体主色 fish</td>
+<td>蜜桃橙</td>
+<td><span class="chip"><i class="sw" style="background:#F6C6A0"></i><code>#F6C6A0</code></span></td>
+<td>主角鱼身体</td>
+</tr>
+<tr>
+<td>UI 强调色 accent</td>
+<td>莓果粉</td>
+<td><span class="chip"><i class="sw" style="background:#C4798D"></i><code>#C4798D</code></span></td>
+<td>进度环、选中态、开关开启</td>
+</tr>
+<tr>
+<td>计时进行 timerActive</td>
+<td>抹茶绿</td>
+<td><span class="chip"><i class="sw" style="background:#4F8E6F"></i><code>#4F8E6F</code></span></td>
+<td>专注进行中的大号计时数字</td>
+</tr>
+<tr>
+<td>计时暂停 timerPause</td>
+<td>焦糖奶黄</td>
+<td><span class="chip"><i class="sw" style="background:#C99A4E"></i><code>#C99A4E</code></span></td>
+<td>暂停态数字与状态点</td>
+</tr>
+<tr>
+<td>文字主色 textPrimary</td>
+<td>焙茶棕</td>
+<td><span class="chip"><i class="sw" style="background:#4B3A32"></i><code>#4B3A32</code></span></td>
+<td>标题与正文</td>
+</tr>
+<tr>
+<td>文字次色 textSecondary</td>
+<td>拿铁棕</td>
+<td><span class="chip"><i class="sw" style="background:#7A6555"></i><code>#7A6555</code></span></td>
+<td>说明文字、时间戳</td>
+</tr>
+<tr>
+<td>控件底色 controlBg</td>
+<td>云朵白</td>
+<td><span class="chip"><i class="sw" style="background:#FFFDF8"></i><code>#FFFDF8</code></span></td>
+<td>卡片、按钮底</td>
+</tr>
+<tr>
+<td>控件描边 controlBorder</td>
+<td>亚麻米</td>
+<td><span class="chip"><i class="sw" style="background:#E3D2BC"></i><code>#E3D2BC</code></span></td>
+<td>卡片与按钮 1px 描边</td>
+</tr>
+<tr>
+<td>气泡 bubble</td>
+<td>奶泡白</td>
+<td><span class="chip"><i class="sw" style="background:#FFFFFF"></i><code>#FFFFFF</code></span></td>
+<td>气泡，25% 不透明度叠加</td>
+</tr>
+</tbody>
+</table>
+<p><strong>色相逻辑</strong>：整盘色相从「黄橙（沙地）→ 粉（珊瑚）→ 绿（水体/计时）」低饱和大跨布点，靠明度接近（L 值集中在 88~96 区间）维持整体感；强调色莓果粉是全盘饱和度最高的点（约 42%），因此只允许出现在进度环与选中态，禁止大面积铺色。
+<strong>对比度（实算）</strong>：焙茶棕 <span class="chip"><i class="sw" style="background:#4B3A32"></i><code>#4B3A32</code></span> / 奶油白 <span class="chip"><i class="sw" style="background:#FBF4E9"></i><code>#FBF4E9</code></span> = <strong>9.9:1</strong>；拿铁棕 <span class="chip"><i class="sw" style="background:#7A6555"></i><code>#7A6555</code></span> / <span class="chip"><i class="sw" style="background:#FBF4E9"></i><code>#FBF4E9</code></span> = <strong>5.0:1</strong>；抹茶绿 <span class="chip"><i class="sw" style="background:#4F8E6F"></i><code>#4F8E6F</code></span> 大号计时数字（≥24pt semibold，按大字标准）/ <span class="chip"><i class="sw" style="background:#FBF4E9"></i><code>#FBF4E9</code></span> = <strong>3.5:1</strong> ✓；莓果粉 <span class="chip"><i class="sw" style="background:#C4798D"></i><code>#C4798D</code></span> 作为非文字 UI 组件（进度环）于云朵白上 = <strong>3.2:1</strong> ✓。</p>
+<h3>5. 水族箱背景画面</h3>
+<p><strong>构图（远景→近景，以 1080p 高度参考）</strong>：
+- <strong>远景（0~35% 高度）</strong>：纯奶油白 <span class="chip"><i class="sw" style="background:#FBF4E9"></i><code>#FBF4E9</code></span> 向下渐变至杏仁奶 <span class="chip"><i class="sw" style="background:#F2E3CF"></i><code>#F2E3CF</code></span>；左上角一条 12° 倾斜的薄荷奶绿 <span class="chip"><i class="sw" style="background:#D8EEDF"></i><code>#D8EEDF</code></span> 光带（宽约 180px、边缘羽化 40px），缓慢做 0~6% 不透明度呼吸，周期 8s，模拟水面透光。
+- <strong>中景（35~75%）</strong>：右侧 1/3 处一组马卡龙塔珊瑚——3~4 层圆角伞形自下而上逐层缩小（底层层宽 220px，每层缩 18%，圆角 = 层宽的 35%），层与层之间留 8px 阴影缝（阴影色 <span class="chip"><i class="sw" style="background:#F7D4C6"></i><code>#F7D4C6</code></span> 60% 不透明度）；左侧一组奶油卷水草 5~7 根，下宽上圆的长条（宽 14px、高 90~150px，顶端为半圆），随水流每 4s 完成 ±5° 倾斜摆动。
+- <strong>近景（75~100%）</strong>：糖霜奶黄 <span class="chip"><i class="sw" style="background:#EFDDBE"></i><code>#EFDDBE</code></span> 沙丘 2~3 条柔和起伏（贝塞尔曲线，起伏幅度 ≤40px），沙面上撒少量奶白圆点石粒（直径 4~8px，<span class="chip"><i class="sw" style="background:#FFFDF8"></i><code>#FFFDF8</code></span>）。
+- <strong>动态元素</strong>：仅光带呼吸、水草摆动、鱼群、低密度气泡；无任何闪烁元素。</p>
+<h3>6. 鱼类与生物视觉</h3>
+<p><strong>造型语言</strong>：身体一律为超椭圆/水滴形，无尖鳍——鳍是贴身的半圆小扇形；每条鱼头侧下方有 1 枚椭圆腮红（<span class="chip"><i class="sw" style="background:#F49FAF"></i><code>#F49FAF</code></span>，40% 不透明度，约体长 8%）；眼睛为 <span class="chip"><i class="sw" style="background:#4B3A32"></i><code>#4B3A32</code></span> 实心圆点（直径 4px）+ 左上 1px 白色高光点。</p>
+<p><strong>代表鱼种（3 套 sprite）</strong>：
+1. <strong>团子鱼</strong>（主角）：蜜桃橙 <span class="chip"><i class="sw" style="background:#F6C6A0"></i><code>#F6C6A0</code></span> 水滴形身体（长宽比 1.2:1，约 64px 长），背脊一条奶白 <span class="chip"><i class="sw" style="background:#FFFDF8"></i><code>#FFFDF8</code></span> 波浪纹（描边 3px、圆头端点），尾鳍为半圆（半径 = 体长 0.35×）。游速 6~10px/s，正弦路径，摆尾幅度 ±6°、周期 2.4s。
+2. <strong>薄荷小鱼</strong>：薄荷绿 <span class="chip"><i class="sw" style="background:#A9D6BE"></i><code>#A9D6BE</code></span> 小型鱼（约 28px），糖霜白肚。<strong>群游</strong>：5 条组成松散弧线队形，间距 1.5× 体长，相邻相位差 0.3s，整群游速 12px/s——同向、匀速、不扎堆。
+3. <strong>泡芙河豚</strong>：樱花粉 <span class="chip"><i class="sw" style="background:#F4B9C2"></i><code>#F4B9C2</code></span> 圆球体（直径约 72px），腮红加大一倍；独立慢速巡航（4px/s）。完成一轮专注时鼓至 1.15× 再缓落回，全程 1.6s，仅此一次、无音效、无闪烁。</p>
+<p><strong>珊瑚/水草补充</strong>：珊瑚群边缘全部圆角 ≥30% 层宽；水草填充色自根部 <span class="chip"><i class="sw" style="background:#A9D6BE"></i><code>#A9D6BE</code></span> 渐变到梢部 <span class="chip"><i class="sw" style="background:#C9E5CF"></i><code>#C9E5CF</code></span>。</p>
+<h3>7. 界面控件样式</h3>
+<ul>
+<li><strong>菜单栏图标</strong>：1 枚 <strong>template image</strong>（黑色 alpha，系统自动适配明暗菜单栏）——团子鱼的简化剪影（水滴形 + 半圆尾，保留腮红位置镂空），专注时整体沿正弦轻摆 ±4°、周期 2.4s；暂停/休息/开启「减少动态效果」时静止。窗口内图标可着色 <span class="chip"><i class="sw" style="background:#C4808E"></i><code>#C4808E</code></span>。</li>
+<li><strong>专注计时器显示</strong>：64px 数字（SF Pro Rounded，weight 510），进行中用抹茶绿 <span class="chip"><i class="sw" style="background:#4F8E6F"></i><code>#4F8E6F</code></span>，暂停切焦糖奶黄 <span class="chip"><i class="sw" style="background:#C99A4E"></i><code>#C99A4E</code></span> 并将不透明度降为 90%。</li>
+<li><strong>按钮</strong>：高 32px，内边距左右 16px，圆角 10px（全圆角胶囊用于主操作），底色云朵白 <span class="chip"><i class="sw" style="background:#FFFDF8"></i><code>#FFFDF8</code></span>，1px 亚麻米 <span class="chip"><i class="sw" style="background:#E3D2BC"></i><code>#E3D2BC</code></span> 描边，阴影 <code>0 2px 8px rgba(75,58,50,0.08)</code>；hover 仅提升背景至 <span class="chip"><i class="sw" style="background:#FFFFFF"></i><code>#FFFFFF</code></span>，无缩放动效。</li>
+<li><strong>进度环</strong>：线宽 6px，圆头端点，莓果粉 <span class="chip"><i class="sw" style="background:#C4798D"></i><code>#C4798D</code></span> 填充，轨道为 <span class="chip"><i class="sw" style="background:#E3D2BC"></i><code>#E3D2BC</code></span>；环外留 8px 间距，不加光晕。</li>
+<li><strong>开关</strong>：28×16px 胶囊，开启态填充莓果粉 <span class="chip"><i class="sw" style="background:#C4798D"></i><code>#C4798D</code></span>，把手 12px 白色圆点，切换动画 0.25s ease-in-out。</li>
+<li><strong>卡片</strong>：圆角 16px，内边距 20px，底色云朵白 <span class="chip"><i class="sw" style="background:#FFFDF8"></i><code>#FFFDF8</code></span>，1px <span class="chip"><i class="sw" style="background:#E3D2BC"></i><code>#E3D2BC</code></span> 描边，阴影同按钮。</li>
+</ul>
+<h3>8. 字体建议</h3>
+<ul>
+<li><strong>标题</strong>：<code>"LXGW WenKai", "PingFang SC", sans-serif</code>（霞鹜文楷开源免费、需本地安装；未装时回落系统苹方，不破版式）</li>
+<li><strong>正文</strong>：<code>"PingFang SC", "Hiragino Sans GB", sans-serif</code>（regular 14px / secondary 13px）</li>
+<li><strong>计时数字</strong>：<code>"SF Pro Rounded", "SF Pro Display", "PingFang SC", sans-serif</code>（weight 510；数字段用 tabular-figures 防跳动）</li>
+</ul>
+<h3>9. 动效与声音</h3>
+<ul>
+<li><strong>缓动</strong>：所有 UI 过渡统一 <code>cubic-bezier(0.42, 0, 0.58, 1)</code>（ease-in-out），时长 0.25~1.2s；生物运动为连续正弦/缓动混合，无弹跳 overshoot（不允许弹簧曲线的回弹感）。</li>
+<li><strong>气泡密度 bubbleDensity</strong>：同屏 5~8 枚，直径 3~7px，上升 8px/s，到顶静默消散。</li>
+<li><strong>漂移速度 driftSpeed</strong>：水草摆动周期 4s，光带呼吸周期 8s——整体「慢一拍」。</li>
+<li><strong>环境音 ambientAudio</strong>：默认<strong>关闭</strong>；可选「奶泡咕嘟」极轻冒泡声（-28 LUFS 级、无固定节拍、静音键跟随系统）。</li>
+<li><strong>「减少动态效果」对齐</strong>：光带、水草、鱼、气泡全部停止；渲染整帧静态插画（1 张主视觉静帧：光带定格 60% 不透明度、鱼固定在构图位）；菜单栏图标静止。静态模式下不影响任何功能读取。</li>
+</ul>
+<h3>10. 落地备注</h3>
+<ul>
+<li><strong>Token 映射</strong>：bgBase→<span class="chip"><i class="sw" style="background:#FBF4E9"></i><code>#FBF4E9</code></span>、bgGradient→<span class="chip"><i class="sw" style="background:#F2E3CF"></i><code>#F2E3CF</code></span>、waterLight→<span class="chip"><i class="sw" style="background:#D8EEDF"></i><code>#D8EEDF</code></span>、sand→<span class="chip"><i class="sw" style="background:#EFDDBE"></i><code>#EFDDBE</code></span>、coral→<span class="chip"><i class="sw" style="background:#F4B9C2"></i><code>#F4B9C2</code></span>、fish→<span class="chip"><i class="sw" style="background:#F6C6A0"></i><code>#F6C6A0</code></span>、bubble→<span class="chip"><i class="sw" style="background:#FFFFFF"></i><code>#FFFFFF</code></span>(25%)、accent→<span class="chip"><i class="sw" style="background:#C4798D"></i><code>#C4798D</code></span>、timerActive→<span class="chip"><i class="sw" style="background:#4F8E6F"></i><code>#4F8E6F</code></span>、timerPause→<span class="chip"><i class="sw" style="background:#C99A4E"></i><code>#C99A4E</code></span>、controlBg→<span class="chip"><i class="sw" style="background:#FFFDF8"></i><code>#FFFDF8</code></span>、controlBorder→<span class="chip"><i class="sw" style="background:#E3D2BC"></i><code>#E3D2BC</code></span>、textPrimary→<span class="chip"><i class="sw" style="background:#4B3A32"></i><code>#4B3A32</code></span>、textSecondary→<span class="chip"><i class="sw" style="background:#7A6555"></i><code>#7A6555</code></span>、menuIcon→template + 窗口内 <span class="chip"><i class="sw" style="background:#C4808E"></i><code>#C4808E</code></span>；easing→(0.42,0,0.58,1)、bubbleDensity→5~8、driftSpeed→慢（水草 4s/光带 8s）、ambientAudio→可选奶泡音。</li>
+<li><strong>资产清单</strong>：鱼 sprite 3 套×左右镜像（团子鱼/薄荷小鱼×5 群、泡芙河豚）、珊瑚贴图 2 套（马卡龙塔/糖霜球）、水草 1 套（奶油卷）、沙地 tile 1 张、气泡 1 枚（矢量）、菜单栏 template 图标 1 枚、静态整帧插画 1 张。</li>
+<li><strong>实现注意</strong>：腮红/高光做进 sprite 而非运行时叠加，保证「减少动态效果」下帧内一致；淡入淡出用 alpha 过渡而非位移，避免感知为「加载」。</li>
+</ul>
+<h2>变体二 · 草莓奶昔（ct-strawberry）</h2>
+<h3>1. 主题名称与代号</h3>
+<p><strong>草莓奶昔</strong> · 代号 <code>ct-strawberry</code></p>
+<h3>2. 气质定位</h3>
+<p>一句话定位：<strong>一杯倒进鱼缸的草莓奶昔，粉而不甜腻</strong>。氛围：整体是掺了大量牛奶的莓粉世界，点缀以香草与焦糖的中性暖色压住甜度；比 ct-cream 更「软」一点，是三套中最接近毛绒触感的一套。安静感来自大面积低饱和粉底 + 深可可色文字的重墨压阵。</p>
+<h3>3. 适用场景</h3>
+<ul>
+<li>想要被柔软氛围包裹的时刻：雨天、周末、心情需要安抚时；</li>
+<li>轻工作量时段（阅读、整理、轻度创作）——粉底暖意更偏情绪陪伴；</li>
+<li>与 ct-cream 二选一时偏「少女感但不幼稚」的用户。</li>
+</ul>
+<h3>4. 色彩体系</h3>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>色名</th>
+<th>HEX</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>背景主色 bgBase</td>
+<td>草莓牛奶</td>
+<td><span class="chip"><i class="sw" style="background:#FBEFF2"></i><code>#FBEFF2</code></span></td>
+<td>全屏背景底色</td>
+</tr>
+<tr>
+<td>背景渐变 bgGradient</td>
+<td>树莓奶昔</td>
+<td><span class="chip"><i class="sw" style="background:#F6D9E0"></i><code>#F6D9E0</code></span></td>
+<td>下 1/3 渐变加深</td>
+</tr>
+<tr>
+<td>水体光照 waterLight</td>
+<td>莓奶紫</td>
+<td><span class="chip"><i class="sw" style="background:#EBD9F0"></i><code>#EBD9F0</code></span></td>
+<td>顶部光带</td>
+</tr>
+<tr>
+<td>沙地 sand</td>
+<td>香草奶昔</td>
+<td><span class="chip"><i class="sw" style="background:#F7E6C8"></i><code>#F7E6C8</code></span></td>
+<td>箱底沙丘</td>
+</tr>
+<tr>
+<td>珊瑚主色 coral</td>
+<td>草莓粉</td>
+<td><span class="chip"><i class="sw" style="background:#F29CAB"></i><code>#F29CAB</code></span></td>
+<td>珊瑚、河豚点缀</td>
+</tr>
+<tr>
+<td>鱼体主色 fish</td>
+<td>香草奶油白</td>
+<td><span class="chip"><i class="sw" style="background:#FFF4E3"></i><code>#FFF4E3</code></span></td>
+<td>主角鱼身体</td>
+</tr>
+<tr>
+<td>UI 强调色 accent</td>
+<td>草莓酱红</td>
+<td><span class="chip"><i class="sw" style="background:#D9566C"></i><code>#D9566C</code></span></td>
+<td>进度环、选中态</td>
+</tr>
+<tr>
+<td>计时进行 timerActive</td>
+<td>奶蓝莓</td>
+<td><span class="chip"><i class="sw" style="background:#5E82B8"></i><code>#5E82B8</code></span></td>
+<td>专注数字（刻意避开粉色系，与背景拉开辨识度）</td>
+</tr>
+<tr>
+<td>计时暂停 timerPause</td>
+<td>焦糖黄</td>
+<td><span class="chip"><i class="sw" style="background:#C99A4E"></i><code>#C99A4E</code></span></td>
+<td>暂停点缀</td>
+</tr>
+<tr>
+<td>文字主色 textPrimary</td>
+<td>可可梅棕</td>
+<td><span class="chip"><i class="sw" style="background:#53333B"></i><code>#53333B</code></span></td>
+<td>标题与正文</td>
+</tr>
+<tr>
+<td>文字次色 textSecondary</td>
+<td>浆果灰粉</td>
+<td><span class="chip"><i class="sw" style="background:#8A6470"></i><code>#8A6470</code></span></td>
+<td>说明文字</td>
+</tr>
+<tr>
+<td>控件底色 controlBg</td>
+<td>奶昔白</td>
+<td><span class="chip"><i class="sw" style="background:#FFFDF9"></i><code>#FFFDF9</code></span></td>
+<td>卡片、按钮底</td>
+</tr>
+<tr>
+<td>控件描边 controlBorder</td>
+<td>淡莓粉</td>
+<td><span class="chip"><i class="sw" style="background:#EBD3D8"></i><code>#EBD3D8</code></span></td>
+<td>控件 1px 描边</td>
+</tr>
+<tr>
+<td>气泡 bubble</td>
+<td>奶昔泡</td>
+<td><span class="chip"><i class="sw" style="background:#FFFFFF"></i><code>#FFFFFF</code></span></td>
+<td>气泡，28% 不透明度</td>
+</tr>
+</tbody>
+</table>
+<p><strong>色相逻辑</strong>：整盘围绕「粉」做同色相不同明度层（<span class="chip"><i class="sw" style="background:#FBEFF2"></i><code>#FBEFF2</code></span>→<span class="chip"><i class="sw" style="background:#F6D9E0"></i><code>#F6D9E0</code></span>→<span class="chip"><i class="sw" style="background:#F29CAB"></i><code>#F29CAB</code></span>），用香草/焦糖（中性暖黄）做沙地与暂停态的中和色，用奶蓝莓做计时色的冷暖对冲——<strong>计时进行色不用粉</strong>，保证「工作状态」与「氛围」在色彩语义上分离。
+<strong>对比度（实算）</strong>：可可梅棕 <span class="chip"><i class="sw" style="background:#53333B"></i><code>#53333B</code></span> / <span class="chip"><i class="sw" style="background:#FBEFF2"></i><code>#FBEFF2</code></span> = <strong>9.8:1</strong>；浆果灰粉 <span class="chip"><i class="sw" style="background:#8A6470"></i><code>#8A6470</code></span> / <span class="chip"><i class="sw" style="background:#FBEFF2"></i><code>#FBEFF2</code></span> = <strong>4.5:1</strong> ✓；奶蓝莓 <span class="chip"><i class="sw" style="background:#5E82B8"></i><code>#5E82B8</code></span> 大号数字 / <span class="chip"><i class="sw" style="background:#FBEFF2"></i><code>#FBEFF2</code></span> = <strong>3.5:1</strong> ✓；草莓酱红 <span class="chip"><i class="sw" style="background:#D9566C"></i><code>#D9566C</code></span> 进度环于奶昔白 <span class="chip"><i class="sw" style="background:#FFFDF9"></i><code>#FFFDF9</code></span> 上 = <strong>3.8:1</strong> ✓。</p>
+<h3>5. 水族箱背景画面</h3>
+<ul>
+<li><strong>远景（0~35%）</strong>：草莓牛奶 <span class="chip"><i class="sw" style="background:#FBEFF2"></i><code>#FBEFF2</code></span> 向下渐入树莓奶昔 <span class="chip"><i class="sw" style="background:#F6D9E0"></i><code>#F6D9E0</code></span>；右上光带用莓奶紫 <span class="chip"><i class="sw" style="background:#EBD9F0"></i><code>#EBD9F0</code></span>（宽约 160px、倾角 10°、羽化 40px），不透明度呼吸 0~5%，周期 9s。</li>
+<li><strong>中景（35~75%）</strong>：右侧「草莓奶油卷珊瑚」——螺旋圆管造型（管径 26px、圆头端点、绕 2.5 圈），主体草莓粉 <span class="chip"><i class="sw" style="background:#F29CAB"></i><code>#F29CAB</code></span>，螺旋缝隙填香草奶油白 <span class="chip"><i class="sw" style="background:#FFF4E3"></i><code>#FFF4E3</code></span>；左侧「蛋糕杯珊瑚」2 只（倒圆角梯形杯身，杯壁 <span class="chip"><i class="sw" style="background:#F6D9E0"></i><code>#F6D9E0</code></span>，顶部 3 球奶油 <span class="chip"><i class="sw" style="background:#FFF4E3"></i><code>#FFF4E3</code></span> 圆球，半径 16~22px）；裱花边水草 6~8 株——下宽上圆，边缘为连续半圆波浪（波幅 6px），颜色自 <span class="chip"><i class="sw" style="background:#F2AEBB"></i><code>#F2AEBB</code></span> 至 <span class="chip"><i class="sw" style="background:#F8CDD5"></i><code>#F8CDD5</code></span> 渐变，摆动周期 4.5s。</li>
+<li><strong>近景（75~100%）</strong>：香草奶昔 <span class="chip"><i class="sw" style="background:#F7E6C8"></i><code>#F7E6C8</code></span> 沙丘（起伏 ≤35px），撒 4~6 枚草莓籽形小石（淡金椭圆 <span class="chip"><i class="sw" style="background:#E9C98F"></i><code>#E9C98F</code></span>，4×8px，随机 15° 内倾斜）。</li>
+<li><strong>静态元素</strong>：所有珊瑚为静帧贴图；动态仅光带、水草、鱼、气泡。</li>
+</ul>
+<h3>6. 鱼类与生物视觉</h3>
+<p><strong>造型语言</strong>：同一「超椭圆 + 半圆鳍 + 腮红」基因（腮红 <span class="chip"><i class="sw" style="background:#F49FAF"></i><code>#F49FAF</code></span> 45% 不透明度）；花纹一律用圆头短弧线，模拟草莓酱在奶昔里划过的一笔。</p>
+<p><strong>代表生物（3 套 sprite）</strong>：
+1. <strong>奶昔白鱼</strong>（主角）：香草奶油白 <span class="chip"><i class="sw" style="background:#FFF4E3"></i><code>#FFF4E3</code></span> 水滴形身体（约 60px），身侧 1~2 笔草莓酱红 <span class="chip"><i class="sw" style="background:#D9566C"></i><code>#D9566C</code></span> 圆头弧线（描边 4px）作花纹，沿身侧 3 枚淡金草莓籽点缀；游速 6~10px/s，摆尾 ±6°、周期 2.6s。
+2. <strong>樱桃小鱼</strong>：草莓粉 <span class="chip"><i class="sw" style="background:#F29CAB"></i><code>#F29CAB</code></span> 圆球形小鱼（约 24px），白色肚皮。<strong>群游</strong>：6~7 条散点式松群（不排队形，各自正弦路径，彼此间距 ≥2× 体长），整体缓慢同向漂移 10px/s——「散而不乱」的安静群游。
+3. <strong>布丁虾</strong>：香草奶昔 <span class="chip"><i class="sw" style="background:#F7E6C8"></i><code>#F7E6C8</code></span> 80% 不透明度弯月形虾（长约 44px），节肢分 3 段圆弧，长须为 2px 圆头曲线；贴沙地慢爬 3px/s，偶发（≤每 2 分钟一次）原地停顿——停顿即休息，无催促语义。</p>
+<p><strong>泡芙河豚点缀</strong>：完成一轮专注时，画面角落的草莓粉小河豚鼓起 1.15×（同 ct-cream 参数，无声、一次、1.6s）。</p>
+<h3>7. 界面控件样式</h3>
+<ul>
+<li><strong>菜单栏图标</strong>：template image 剪影 = 奶昔白鱼简化形（水滴 + 酱色弧线位镂空）；窗口内图标着色 <span class="chip"><i class="sw" style="background:#B85365"></i><code>#B85365</code></span>；动态规则同 ct-cream（±4°、2.4s，暂停与减动效下静止）。</li>
+<li><strong>计时数字</strong>：64px、SF Pro Rounded 510，进行中奶蓝莓 <span class="chip"><i class="sw" style="background:#5E82B8"></i><code>#5E82B8</code></span>、暂停焦糖黄 <span class="chip"><i class="sw" style="background:#C99A4E"></i><code>#C99A4E</code></span> + 90% 不透明度。</li>
+<li><strong>按钮/卡片</strong>：尺寸与圆角同 ct-cream 基线（按钮 10px 胶囊化、卡片 16px），描边换淡莓粉 <span class="chip"><i class="sw" style="background:#EBD3D8"></i><code>#EBD3D8</code></span>，阴影 <code>0 2px 8px rgba(83,51,59,0.08)</code>；hover 仅提亮，无位移缩放。</li>
+<li><strong>进度环</strong>：6px、圆头、草莓酱红 <span class="chip"><i class="sw" style="background:#D9566C"></i><code>#D9566C</code></span>，轨道 <span class="chip"><i class="sw" style="background:#EBD3D8"></i><code>#EBD3D8</code></span>。</li>
+<li><strong>开关</strong>：28×16px，开启态 <span class="chip"><i class="sw" style="background:#D9566C"></i><code>#D9566C</code></span>，把手白，0.25s ease-in-out。</li>
+<li><strong>材质建议</strong>：卡片可叠加 3% 白色内高光（<code>inset 0 1px 0 rgba(255,255,255,0.5)</code>），模拟奶昔表面光泽——克制到几乎不可察觉。</li>
+</ul>
+<h3>8. 字体建议</h3>
+<ul>
+<li><strong>标题</strong>：<code>"LXGW WenKai", "PingFang SC", sans-serif</code>（圆润手写感与奶油主题最搭）</li>
+<li><strong>正文</strong>：<code>"PingFang SC", "Hiragino Sans GB", sans-serif</code></li>
+<li><strong>计时数字</strong>：<code>"SF Pro Rounded", "SF Pro Display", "PingFang SC", sans-serif</code>（510，tabular-figures）</li>
+</ul>
+<h3>9. 动效与声音</h3>
+<ul>
+<li><strong>缓动</strong>：<code>cubic-bezier(0.42, 0, 0.58, 1)</code>，UI 过渡 0.25~1.2s；生物无 overshoot。</li>
+<li><strong>气泡</strong>：6~9 枚同屏，直径 3~8px，上升 8px/s；气泡可在到顶前 10% 行程做轻微晃动（±1px，纯装饰）。</li>
+<li><strong>漂移</strong>：水草 4.5s、光带 9s；群游小鱼相位随机但速度统一。</li>
+<li><strong>环境音 ambientAudio</strong>：默认关闭；可选「奶油搅动」白噪（-30 LUFS 级、可开关节拍为无）。</li>
+<li><strong>减动效对齐</strong>：整帧静态插画（樱桃鱼群定格在构图位、光带 60%）、菜单栏图标静止、河豚不鼓起（改为静止尺寸 1.08× 作为完成标记）。</li>
+</ul>
+<h3>10. 落地备注</h3>
+<ul>
+<li><strong>Token 映射</strong>：bgBase→<span class="chip"><i class="sw" style="background:#FBEFF2"></i><code>#FBEFF2</code></span>、bgGradient→<span class="chip"><i class="sw" style="background:#F6D9E0"></i><code>#F6D9E0</code></span>、waterLight→<span class="chip"><i class="sw" style="background:#EBD9F0"></i><code>#EBD9F0</code></span>、sand→<span class="chip"><i class="sw" style="background:#F7E6C8"></i><code>#F7E6C8</code></span>、coral→<span class="chip"><i class="sw" style="background:#F29CAB"></i><code>#F29CAB</code></span>、fish→<span class="chip"><i class="sw" style="background:#FFF4E3"></i><code>#FFF4E3</code></span>、bubble→<span class="chip"><i class="sw" style="background:#FFFFFF"></i><code>#FFFFFF</code></span>(28%)、accent→<span class="chip"><i class="sw" style="background:#D9566C"></i><code>#D9566C</code></span>、timerActive→<span class="chip"><i class="sw" style="background:#5E82B8"></i><code>#5E82B8</code></span>、timerPause→<span class="chip"><i class="sw" style="background:#C99A4E"></i><code>#C99A4E</code></span>、controlBg→<span class="chip"><i class="sw" style="background:#FFFDF9"></i><code>#FFFDF9</code></span>、controlBorder→<span class="chip"><i class="sw" style="background:#EBD3D8"></i><code>#EBD3D8</code></span>、textPrimary→<span class="chip"><i class="sw" style="background:#53333B"></i><code>#53333B</code></span>、textSecondary→<span class="chip"><i class="sw" style="background:#8A6470"></i><code>#8A6470</code></span>、menuIcon→template + 窗口内 <span class="chip"><i class="sw" style="background:#B85365"></i><code>#B85365</code></span>；easing/bubbleDensity(6~9)/driftSpeed（4.5s/9s）/ambientAudio（奶油搅动）同上。</li>
+<li><strong>资产清单</strong>：鱼 sprite 3 套×镜像（奶昔白鱼/樱桃小鱼×7、布丁虾）、河豚点缀 1 套、珊瑚贴图 2 套（奶油卷/蛋糕杯）、裱花水草 1 套、沙地 tile 1 张、草莓籽石粒 1 组、菜单栏 template 图标 1 枚、静态整帧 1 张。</li>
+<li><strong>实现注意</strong>：粉色系最怕「糊」——珊瑚与鱼之间靠香草奶油白 <span class="chip"><i class="sw" style="background:#FFF4E3"></i><code>#FFF4E3</code></span> 勾 1px 描边分离层次；timerActive 与背景色相差 105° 色相，色弱用户也能凭色相区分进行/暂停，不单靠明度。</li>
+</ul>
+<h2>变体三 · 水彩果冻（ct-jelly）</h2>
+<h3>1. 主题名称与代号</h3>
+<p><strong>水彩果冻</strong> · 代号 <code>ct-jelly</code></p>
+<h3>2. 气质定位</h3>
+<p>一句话定位：<strong>一块会呼吸的水彩果冻沉在苏打水里</strong>。氛围：三套中唯一偏冷调的可爱——半透明、清透、微微折射光；甜味来自果冻质感的圆润高光，而非色彩浓度。像加了冰的夏日饮品，安静里带一点凉意，适合夏天与清醒的头脑。</p>
+<h3>3. 适用场景</h3>
+<ul>
+<li>白天、明亮房间、需要「清醒感陪伴」的专注时段；</li>
+<li>夏季或偏怕「太暖太甜」的用户——可爱但冷感；</li>
+<li>深夜加班但不想被暖色催眠、也不想要写实深海的压抑时。</li>
+</ul>
+<h3>4. 色彩体系</h3>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>色名</th>
+<th>HEX</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>背景主色 bgBase</td>
+<td>淡水彩蓝</td>
+<td><span class="chip"><i class="sw" style="background:#EAF4F6"></i><code>#EAF4F6</code></span></td>
+<td>全屏背景</td>
+</tr>
+<tr>
+<td>背景渐变 bgGradient</td>
+<td>荔枝雾紫</td>
+<td><span class="chip"><i class="sw" style="background:#E6DEF0"></i><code>#E6DEF0</code></span></td>
+<td>下 1/4 冷雾渐变</td>
+</tr>
+<tr>
+<td>水体光照 waterLight</td>
+<td>玻璃浅蓝</td>
+<td><span class="chip"><i class="sw" style="background:#BFE0EE"></i><code>#BFE0EE</code></span></td>
+<td>顶部光带、水面折射</td>
+</tr>
+<tr>
+<td>沙地 sand</td>
+<td>椰果白</td>
+<td><span class="chip"><i class="sw" style="background:#F4F1E4"></i><code>#F4F1E4</code></span></td>
+<td>箱底沙地（偏中性，稳住冷调）</td>
+</tr>
+<tr>
+<td>珊瑚主色 coral</td>
+<td>葡萄果冻</td>
+<td><span class="chip"><i class="sw" style="background:#C3A6E0"></i><code>#C3A6E0</code></span></td>
+<td>珊瑚主色</td>
+</tr>
+<tr>
+<td>珊瑚辅色</td>
+<td>蓝莓果冻</td>
+<td><span class="chip"><i class="sw" style="background:#9DB8E8"></i><code>#9DB8E8</code></span></td>
+<td>珊瑚第二色相</td>
+</tr>
+<tr>
+<td>鱼体主色 fish</td>
+<td>水彩蓝</td>
+<td><span class="chip"><i class="sw" style="background:#8FC3E8"></i><code>#8FC3E8</code></span></td>
+<td>小鱼身体（80% 不透明度呈现果冻感）</td>
+</tr>
+<tr>
+<td>UI 强调色 accent</td>
+<td>苏打蓝</td>
+<td><span class="chip"><i class="sw" style="background:#4E96B4"></i><code>#4E96B4</code></span></td>
+<td>进度环、选中态</td>
+</tr>
+<tr>
+<td>计时进行 timerActive</td>
+<td>海盐墨蓝</td>
+<td><span class="chip"><i class="sw" style="background:#3F7A93"></i><code>#3F7A93</code></span></td>
+<td>专注数字</td>
+</tr>
+<tr>
+<td>计时暂停 timerPause</td>
+<td>荔枝粉</td>
+<td><span class="chip"><i class="sw" style="background:#D99AA6"></i><code>#D99AA6</code></span></td>
+<td>暂停点缀</td>
+</tr>
+<tr>
+<td>文字主色 textPrimary</td>
+<td>深海蓝黑</td>
+<td><span class="chip"><i class="sw" style="background:#2F3B4A"></i><code>#2F3B4A</code></span></td>
+<td>标题与正文</td>
+</tr>
+<tr>
+<td>文字次色 textSecondary</td>
+<td>蓝灰</td>
+<td><span class="chip"><i class="sw" style="background:#56697D"></i><code>#56697D</code></span></td>
+<td>说明文字</td>
+</tr>
+<tr>
+<td>控件底色 controlBg</td>
+<td>云雾白</td>
+<td><span class="chip"><i class="sw" style="background:#FDFFFF"></i><code>#FDFFFF</code></span></td>
+<td>卡片、按钮底</td>
+</tr>
+<tr>
+<td>控件描边 controlBorder</td>
+<td>冰蓝灰</td>
+<td><span class="chip"><i class="sw" style="background:#CFE0E8"></i><code>#CFE0E8</code></span></td>
+<td>控件 1px 描边</td>
+</tr>
+</tbody>
+</table>
+<p><strong>色相逻辑</strong>：蓝（背景/鱼）→ 紫（珊瑚）→ 粉（暂停点缀）做同冷调色相过渡，椰果白沙地负责接地；所有生物层颜色以 80~85% 不透明度 + 同色 100% 描边 2px 呈现「果冻半透明」统一质感。timerActive 海盐墨蓝与背景拉开明度差而非依赖饱和度。
+<strong>对比度（实算）</strong>：深海蓝黑 <span class="chip"><i class="sw" style="background:#2F3B4A"></i><code>#2F3B4A</code></span> / <span class="chip"><i class="sw" style="background:#EAF4F6"></i><code>#EAF4F6</code></span> = <strong>10.2:1</strong>；蓝灰 <span class="chip"><i class="sw" style="background:#56697D"></i><code>#56697D</code></span> / <span class="chip"><i class="sw" style="background:#EAF4F6"></i><code>#EAF4F6</code></span> = <strong>5.1:1</strong> ✓；海盐墨蓝 <span class="chip"><i class="sw" style="background:#3F7A93"></i><code>#3F7A93</code></span> 大号数字 / <span class="chip"><i class="sw" style="background:#EAF4F6"></i><code>#EAF4F6</code></span> = <strong>4.3:1</strong> ✓；苏打蓝 <span class="chip"><i class="sw" style="background:#4E96B4"></i><code>#4E96B4</code></span> 进度环于云雾白 <span class="chip"><i class="sw" style="background:#FDFFFF"></i><code>#FDFFFF</code></span> 上 = <strong>3.3:1</strong> ✓。</p>
+<h3>5. 水族箱背景画面</h3>
+<ul>
+<li><strong>远景（0~40%）</strong>：淡水彩蓝 <span class="chip"><i class="sw" style="background:#EAF4F6"></i><code>#EAF4F6</code></span>，底部 1/4 渐入荔枝雾紫 <span class="chip"><i class="sw" style="background:#E6DEF0"></i><code>#E6DEF0</code></span>；顶部两条平行玻璃浅蓝 <span class="chip"><i class="sw" style="background:#BFE0EE"></i><code>#BFE0EE</code></span> 折射光带（各宽 120px、倾角 8°、间距 90px、羽化 36px），不透明度呼吸 0~7%、周期 10s、两带相位差 2s——像水面对流光，极慢。</li>
+<li><strong>中景（40~75%）</strong>：右侧「水彩葡萄珊瑚」——圆球簇 5~7 球（直径 12~28px 不等，交错填充葡萄果冻 <span class="chip"><i class="sw" style="background:#C3A6E0"></i><code>#C3A6E0</code></span> 与蓝莓果冻 <span class="chip"><i class="sw" style="background:#9DB8E8"></i><code>#9DB8E8</code></span>，每球 85% 不透明度 + 同色 100% 描边 2px，球间叠加处透明度叠加出更深的葡萄色）；左侧「果冻草」4~6 条半透明色带（宽 16px、高 100~140px、水彩蓝 <span class="chip"><i class="sw" style="background:#8FC3E8"></i><code>#8FC3E8</code></span> 40% 不透明度，顶端圆头），随流 ±4° 摆动、周期 5s。</li>
+<li><strong>近景（75~100%）</strong>：椰果白 <span class="chip"><i class="sw" style="background:#F4F1E4"></i><code>#F4F1E4</code></span> 平缓沙地（起伏 ≤30px），零散几粒圆形椰果粒（<span class="chip"><i class="sw" style="background:#FDFFFF"></i><code>#FDFFFF</code></span>，直径 6~10px）。</li>
+<li><strong>专属动态</strong>：中景一束极慢的「果冻折射」——珊瑚球簇整体做 0.5% 尺度呼吸（周期 6s），模拟果冻的微颤；此动效在「减少动态效果」下取消。</li>
+</ul>
+<h3>6. 鱼类与生物视觉</h3>
+<p><strong>造型语言</strong>：圆润轮廓 + <strong>半透明填充（80~85% 不透明度）+ 同色系 100% 描边 2px</strong> 是本主题的统一基因；所有生物带一枚白色不规则椭圆高光（约体长 15%，右上角），是「果冻感」的来源；腮红统一荔枝粉 <span class="chip"><i class="sw" style="background:#D99AA6"></i><code>#D99AA6</code></span> 40%。</p>
+<p><strong>代表生物（3 套 sprite）</strong>：
+1. <strong>果冻水母</strong>（主角，非鱼但作为主题签名）：葡萄果冻 <span class="chip"><i class="sw" style="background:#C3A6E0"></i><code>#C3A6E0</code></span> 85% 半透明伞体（半圆、直径 56px、底边圆角 8px），下摆 4~6 条圆头短触须（描边 4px、长 20~30px）；垂直漂浮 ±8px、周期 4s，水平漂移 3px/s，伞体每 4s 完成 3% 的收缩-舒张（推进感，极缓）。
+2. <strong>苏打小鱼</strong>：水彩蓝 <span class="chip"><i class="sw" style="background:#8FC3E8"></i><code>#8FC3E8</code></span> 80% 纺锤偏椭圆身体（约 40px），背部一道白色高光弧（描边 3px），尾鳍半圆。<strong>群游</strong>：4~6 条，纵向松散排布在光带下方（像被光照托着），间距 2× 体长，速度 8px/s，相位差 0.4s。
+3. <strong>玻璃虾</strong>：近乎透明——<span class="chip"><i class="sw" style="background:#FFFFFF"></i><code>#FFFFFF</code></span> 40% 填充 + 冰蓝灰 <span class="chip"><i class="sw" style="background:#8FB8C9"></i><code>#8FB8C9</code></span> 描边 2px 的弯月形虾（约 40px），贴沙地爬行 3px/s，是「找到它」的安静彩蛋。</p>
+<p><strong>游动节奏总则</strong>：全主题最慢——水母主题本身就是「漂浮」而非「游」，与无压力原则天然契合。</p>
+<h3>7. 界面控件样式</h3>
+<ul>
+<li><strong>菜单栏图标</strong>：template image = 果冻水母剪影（半圆伞 + 3 短须）；窗口内图标着色 <span class="chip"><i class="sw" style="background:#3F6E85"></i><code>#3F6E85</code></span>；专注时触须轻摆 ±3°、周期 3s（比 ct-cream 更慢），暂停与减动效下静止。</li>
+<li><strong>计时数字</strong>：64px，进行中海盐墨蓝 <span class="chip"><i class="sw" style="background:#3F7A93"></i><code>#3F7A93</code></span>、暂停荔枝粉 <span class="chip"><i class="sw" style="background:#D99AA6"></i><code>#D99AA6</code></span> + 90% 不透明度。</li>
+<li><strong>按钮/卡片</strong>：同基线尺寸（按钮 32px 高、圆角 10px；卡片圆角 16px、内边距 20px）；材质上果冻主题专属建议——controlBg 云雾白 <span class="chip"><i class="sw" style="background:#FDFFFF"></i><code>#FDFFFF</code></span> 叠加 <strong>8% 半透明</strong>（<code>rgba(253,255,255,0.92)</code>），让背景的水色微微透上来，描边冰蓝灰 <span class="chip"><i class="sw" style="background:#CFE0E8"></i><code>#CFE0E8</code></span>，阴影 <code>0 2px 8px rgba(47,59,74,0.06)</code>（三套中最轻）。</li>
+<li><strong>进度环</strong>：6px、圆头、苏打蓝 <span class="chip"><i class="sw" style="background:#4E96B4"></i><code>#4E96B4</code></span>，轨道 <span class="chip"><i class="sw" style="background:#CFE0E8"></i><code>#CFE0E8</code></span>；可在环内侧加 10% 白色内高光呼应果冻质感。</li>
+<li><strong>开关</strong>：28×16px，开启态 <span class="chip"><i class="sw" style="background:#4E96B4"></i><code>#4E96B4</code></span>，0.25s ease-in-out。</li>
+</ul>
+<h3>8. 字体建议</h3>
+<ul>
+<li><strong>标题</strong>：<code>"LXGW WenKai", "PingFang SC", sans-serif</code>（若希望冷感更利落，可改 <code>"ZCOOL KuaiLe", "PingFang SC", sans-serif</code>，站酷快乐体免费可商用，更圆润跳脱——二选一，默认前者更克制）</li>
+<li><strong>正文</strong>：<code>"PingFang SC", "Hiragino Sans GB", sans-serif</code></li>
+<li><strong>计时数字</strong>：<code>"SF Pro Rounded", "SF Pro Display", "PingFang SC", sans-serif</code>（weight 510，tabular-figures；果冻主题下不加粗一级，保持清透）</li>
+</ul>
+<h3>9. 动效与声音</h3>
+<ul>
+<li><strong>缓动</strong>：<code>cubic-bezier(0.42, 0, 0.58, 1)</code>；水母漂浮为正弦叠加，无回弹。</li>
+<li><strong>气泡</strong>：8~12 枚（三套中最高，因气泡本身透明、视觉密度低），直径 2~6px，上升 7px/s。</li>
+<li><strong>漂移 driftSpeed</strong>：果冻草 5s、光带 10s、水母收缩 4s——整体节奏比前两套再慢半拍。</li>
+<li><strong>环境音 ambientAudio</strong>：默认关闭；可选「水下气泡环境音」极低音量（-30 LUFS 级）。</li>
+<li><strong>减动效对齐</strong>：光带呼吸、珊瑚微颤、水母收缩、鱼、气泡全部停止；渲染静态整帧（水母定格在收缩中位）；菜单栏图标静止。功能不受影响。</li>
+</ul>
+<h3>10. 落地备注</h3>
+<ul>
+<li><strong>Token 映射</strong>：bgBase→<span class="chip"><i class="sw" style="background:#EAF4F6"></i><code>#EAF4F6</code></span>、bgGradient→<span class="chip"><i class="sw" style="background:#E6DEF0"></i><code>#E6DEF0</code></span>、waterLight→<span class="chip"><i class="sw" style="background:#BFE0EE"></i><code>#BFE0EE</code></span>、sand→<span class="chip"><i class="sw" style="background:#F4F1E4"></i><code>#F4F1E4</code></span>、coral→<span class="chip"><i class="sw" style="background:#C3A6E0"></i><code>#C3A6E0</code></span>（辅 <span class="chip"><i class="sw" style="background:#9DB8E8"></i><code>#9DB8E8</code></span>）、fish→<span class="chip"><i class="sw" style="background:#8FC3E8"></i><code>#8FC3E8</code></span>、bubble→<span class="chip"><i class="sw" style="background:#FFFFFF"></i><code>#FFFFFF</code></span>(透明系最高密度)、accent→<span class="chip"><i class="sw" style="background:#4E96B4"></i><code>#4E96B4</code></span>、timerActive→<span class="chip"><i class="sw" style="background:#3F7A93"></i><code>#3F7A93</code></span>、timerPause→<span class="chip"><i class="sw" style="background:#D99AA6"></i><code>#D99AA6</code></span>、controlBg→<span class="chip"><i class="sw" style="background:#FDFFFF"></i><code>#FDFFFF</code></span>、controlBorder→<span class="chip"><i class="sw" style="background:#CFE0E8"></i><code>#CFE0E8</code></span>、textPrimary→<span class="chip"><i class="sw" style="background:#2F3B4A"></i><code>#2F3B4A</code></span>、textSecondary→<span class="chip"><i class="sw" style="background:#56697D"></i><code>#56697D</code></span>、menuIcon→template + 窗口内 <span class="chip"><i class="sw" style="background:#3F6E85"></i><code>#3F6E85</code></span>；easing 同一曲线、bubbleDensity→8~12、driftSpeed→最慢、ambientAudio→水下气泡。</li>
+<li><strong>资产清单</strong>：生物 sprite 3 套×镜像（果冻水母/苏打小鱼×6、玻璃虾）、珊瑚贴图 2 套（葡萄球簇/蓝莓柱状）、果冻草 1 套、沙地 tile 1 张、椰果粒 1 组、菜单栏 template 图标 1 枚、静态整帧 1 张。</li>
+<li><strong>实现注意</strong>：半透明叠加层（珊瑚球簇间的透明度叠加、卡片 8% 透底）在浅色窗口下安全，但若未来支持深色模式需重新校验叠加色；「果冻微颤」是唯一新增动效类型，必须纳入 Reduce Motion 开关的统一判断，建议在动效层用单一布尔量 gating。</li>
+</ul>
+<h2>三套变体共性基线（落地时统一执行）</h2>
+<ul>
+<li>控件尺寸/圆角/描边基线一致：按钮高 32px、圆角 10px、描边 1px、阴影 <code>0 2px 8px</code>（各自主题色 6~8% 黑）；卡片圆角 16px；开关 28×16px；计时数字 64px——<strong>切主题只换 token，不换布局</strong>，为规划中的主题切换功能留好结构。</li>
+<li>菜单栏图标一律 template image（黑白 alpha），由系统适配明暗菜单栏；窗口内图标才使用主题色。</li>
+<li>全部动效受同一个「减少动态效果」开关 gating（静态整帧兜底）；禁止 overshoot/弹簧曲线、禁止闪烁、禁止任何形式的通知性动效。</li>
+</ul>
+<h2>自检清单（可爱风家族）</h2>
+<table>
+<thead>
+<tr>
+<th>检查项</th>
+<th>ct-cream</th>
+<th>ct-strawberry</th>
+<th>ct-jelly</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10 节齐全</td>
+<td>✅ 1~10 全部填写</td>
+<td>✅ 1~10 全部填写</td>
+<td>✅ 1~10 全部填写</td>
+</tr>
+<tr>
+<td>HEX 均为有效 6 位</td>
+<td>✅ 表内 14 色全部 #RRGGBB</td>
+<td>✅ 表内 14 色全部 #RRGGBB</td>
+<td>✅ 表内 14 色全部 #RRGGBB</td>
+</tr>
+<tr>
+<td>正文对比度 ≥4.5:1（实算）</td>
+<td>✅ 主 9.9 / 次 5.0</td>
+<td>✅ 主 9.8 / 次 4.5</td>
+<td>✅ 主 10.2 / 次 5.1</td>
+</tr>
+<tr>
+<td>大字号状态色 ≥3:1（实算）</td>
+<td>✅ 3.5</td>
+<td>✅ 3.5</td>
+<td>✅ 4.3</td>
+</tr>
+<tr>
+<td>无压力原则（无闪烁/无催促/无打卡）</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>「减少动态效果」兼容</td>
+<td>✅ 静态整帧</td>
+<td>✅ 静态整帧</td>
+<td>✅ 静态整帧（含微颤 gating）</td>
+</tr>
+<tr>
+<td>字体 macOS 实际可用</td>
+<td>✅ SF Pro Rounded/SF Pro/苹方系统自带；霞鹜文楷免费开源</td>
+<td>✅ 同左（+ 站酷快乐体备选，免费商用）</td>
+<td>✅ 同左</td>
+</tr>
+<tr>
+<td>主题代号格式 ct-小写连字符</td>
+<td>✅ ct-cream</td>
+<td>✅ ct-strawberry</td>
+<td>✅ ct-jelly</td>
+</tr>
+<tr>
+<td>Token 映射到共享骨架</td>
+<td>✅ 未重写骨架</td>
+<td>✅ 未重写骨架</td>
+<td>✅ 未重写骨架</td>
+</tr>
+</tbody>
+</table>
+</section>
+
+<section id="framework">
+<h2><span class="no">04</span>主题落地框架</h2>
+<p class="lead">一份主题 = 一份自包含的 theme 包（meta + token 表 + 资产清单）。本章节对中国风、卡通漫画风、可爱风与现有写实默认主题统一生效。</p>
+<h2>主题落地框架</h2>
+<blockquote>
+<p>本章节为全项目唯一一份，对中国风、卡通漫画风、可爱风三大家族以及现有写实默认主题同样生效。</p>
+</blockquote>
+<h3>a) 主题的数据组织：theme 包</h3>
+<p><strong>一个主题 = 一个自包含的 theme 包</strong>，由三部分构成：</p>
+<pre><code>themes/
+├── reef-realistic/          # 现有写实默认主题，纳入同一体系（见下）
+│   ├── theme.json
+│   └── assets/
+├── cn-shuimo/
+│   ├── theme.json           # 元信息 + token 表 + 资产清单
+│   └── assets/
+│       ├── fish/mo-carp/{swim-1..3.png, idle.png}
+│       ├── fish/mo-shrimp/...
+│       ├── coral/branch-large/{grow-1..3.png}
+│       ├── seaweed/leaf/{sway-1..3.png}
+│       ├── textures/paper-tile.png
+│       ├── menu/icon-template.pdf
+│       └── stamp/done-seal.png
+├── cn-qinghua/…
+└── cn-qinglu/…
+</code></pre>
+<p><strong>theme.json 结构建议</strong>（示意）：</p>
+<pre><code class="language-json">{
+  &quot;meta&quot;: {
+    &quot;themeId&quot;: &quot;cn-shuimo&quot;,
+    &quot;displayName&quot;: &quot;水墨兰亭&quot;,
+    &quot;styleFamily&quot;: &quot;chinese&quot;,
+    &quot;version&quot;: &quot;1.0.0&quot;,
+    &quot;minAppVersion&quot;: &quot;0.5.0&quot;,
+    &quot;supportsDarkAppearance&quot;: false,
+    &quot;reduceMotionFallback&quot;: &quot;static-poses&quot;
+  },
+  &quot;tokens&quot;: {
+    &quot;bgBase&quot;: &quot;#F1ECE1&quot;,
+    &quot;bgGradient&quot;: &quot;#DCD5C4&quot;,
+    &quot;coral&quot;: { &quot;color&quot;: &quot;#3A362F&quot;, &quot;stages&quot;: 3 },
+    &quot;menuIcon&quot;: { &quot;type&quot;: &quot;template&quot;, &quot;frames&quot;: 3 },
+    &quot;bubbleDensity&quot;: 0.2,
+    &quot;driftSpeed&quot;: 0.3,
+    &quot;easing&quot;: &quot;cubic-bezier(0.33,0,0.2,1)&quot;,
+    &quot;ambientAudio&quot;: { &quot;id&quot;: &quot;guqin-drip&quot;, &quot;defaultOn&quot;: false, &quot;maxVolume&quot;: 0.2 }
+  },
+  &quot;assets&quot;: {
+    &quot;fish/mo-carp/swim-1.png&quot;: { &quot;role&quot;: &quot;fish&quot;, &quot;size&quot;: &quot;256x128&quot; },
+    &quot;menu/icon-template.pdf&quot;: { &quot;role&quot;: &quot;menuIcon&quot;, &quot;sizes&quot;: [16, 32] }
+  }
+}
+</code></pre>
+<p><strong>Token 骨架最终版</strong>（在共享骨架上做 4 处修订，其余原样保留）：</p>
+<ol>
+<li><strong>新增 meta 层</strong>：<code>themeId / displayName / styleFamily / version / minAppVersion / supportsDarkAppearance / reduceMotionFallback</code>——主题的自描述信息不散落在代码里。</li>
+<li><strong>生物层 token 支持成长阶段</strong>：<code>coral / seaweed</code> 增加可选 <code>stages</code> 数组字段（如 <code>"coral": ["#幼","#中","#成"]</code> 或贴图 <code>grow-1..3</code>），与珊瑚成长玩法对齐；写实主题同样补齐此字段。</li>
+<li><strong>动效层增加两个守门 token</strong>：<code>bubbleDensity</code> 与 <code>driftSpeed</code> 增加全局上限校验 <strong>≤1.0×默认值</strong>（默认值即写实主题的 1.0×；卡通/可爱风交付的「同屏 N 颗」等绝对值按 1080p 窗口折算），<code>ambientAudio.defaultOn</code> 强制为 false——把「无压力」原则变成 schema 级约束，任何主题包超限直接校验失败。</li>
+<li><strong>UI 几何按家族常量管理</strong>：圆角/尺寸/环宽不进 token（见 d 节），token 只管颜色、材质、密度与缓动。</li>
+</ol>
+<p><strong>兼容现有写实默认主题</strong>：写实主题作为 <code>themeId: "reef-realistic"</code>、<code>styleFamily: "realistic"</code> 纳入同一目录与同一 token 契约——把现在硬编码在 web 前端里的颜色/速度值抽取成它的 theme.json（此为重构动作，不改任何视觉表现）；其余主题<strong>未提供的 token 允许回退继承 <code>reef-realistic</code> 的值</strong>（继承机制），这样新主题可以只写差异项，不必每次填满全部 token。代号命名空间约定：中国风 <code>cn-*</code>、卡通漫画风 <code>cm-*</code>、可爱风 <code>ct-*</code>、写实 <code>reef-*</code>（默认），均为小写连字符。</p>
+<h3>b) 切换入口建议</h3>
+<table>
+<thead>
+<tr>
+<th>候选入口</th>
+<th>结论</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>菜单栏下拉子菜单（推荐主入口）</strong></td>
+<td>✅ 采用</td>
+<td>菜单栏图标是唯一常驻入口，点开即可切、切完即走，<strong>全程不弹窗口、不夺焦点</strong>，最符合「不打断专注」；实现成本最低</td>
+</tr>
+<tr>
+<td>设置面板主题页（推荐辅入口）</td>
+<td>✅ 采用</td>
+<td>承载完整列表：主题名 + 缩略预览 + 一句气质描述；首次探索用户从这里选</td>
+</tr>
+<tr>
+<td>右键水族箱快捷菜单</td>
+<td>❌ 不推荐</td>
+<td>水族箱窗口常在后台，右键路径不稳定；且容易在「看鱼」时误触弹菜单，惊扰感与产品气质相悖</td>
+</tr>
+<tr>
+<td>悬浮快速切换球</td>
+<td>❌ 不推荐</td>
+<td>额外常驻 UI = 违反无压力原则</td>
+</tr>
+</tbody>
+</table>
+<p><strong>推荐方案</strong>：菜单栏下拉菜单加「主题 ▸」二级单选列表（带勾选态），设置面板提供带预览的完整版；两处入口共享同一状态，切换<strong>即时生效、无确认弹窗、无模态</strong>。</p>
+<h3>c) 切换的工程注意事项</h3>
+<ol>
+<li><strong>主题是纯表现层，永不碰数据</strong>：珊瑚成长、到访生物、专注记录全部存于 <code>aquarium.json</code>，与主题无关。切换 = 重绑 CSS 变量 + 替换 sprite 引用，<strong>严禁触发任何存档读写</strong>——这是本功能最重要的一条红线，回归测试必含「切换 100 次后 aquarium.json 字节级不变」。</li>
+<li><strong>资产加载与缓存</strong>：主题包惰性加载，首次切换时旧主题继续显示、新包在后台预载（鱼 sprite 建议合入纹理集减少 IO）；已加载包 LRU 缓存上限 3 个，防止常驻内存随主题数膨胀；webview 静态资源沿用现有缓存机制，<code>theme.json</code> 带版本号做缓存键。</li>
+<li><strong>深色模式/系统外观兼容</strong>：本批九套主题均为浅色（纸绢/奶昔/印刷底）主题，<strong>主题自带外观基准、不随系统深色翻转</strong>（meta 中 <code>supportsDarkAppearance: false</code> 显式声明）；菜单栏图标走 template image 由系统自动适配深浅菜单栏——这也是各主题 menuIcon 都定义为 template 的原因。深色变体留给后续迭代，不做运行时自动反转（纸绢色反转会出现「夜观书画」的怪异负片）。</li>
+<li><strong>切换过渡动效</strong>：600ms 交叉淡入——新主题背景层先入，生物层 sprite 逐个换装（避免「集体闪现」）；<strong>开启「减少动态效果」时直接硬切、无过渡</strong>。切换本身不附带任何庆祝性动效（无水花、无波纹）。</li>
+<li><strong>命名与目录</strong>：见 a 节结构；<code>themeId</code> 全小写连字符、与目录名严格一致；<code>version</code> 用 semver，破坏 token 契约升 major、加资产升 minor、改色值升 patch；<code>theme.json</code> schema 建议用 Go 侧 struct 定义并生成 TypeScript 类型给 <code>bindings.ts</code>，保证两端一致。</li>
+</ol>
+<h3>d) 主题间一致性规则</h3>
+<ol>
+<li><strong>布局与行为不变</strong>：计时逻辑、菜单结构、卡片信息层级、「无压力」文案（不打卡、不催促）对所有主题完全一致；主题只替换 <strong>token + 资产 + 文字字体栈</strong> 三样东西。</li>
+<li><strong>几何基线按风格家族定义，家族内恒定</strong>：控件几何是家族级常量、不进主题包、同一家族内切主题不得改变——本方案三大家族各自交付的基线为：中国风（菜单栏 16×16pt、按钮高 28pt、进度环宽 4pt、卡片圆角 10pt、开关 36×22pt）、卡通漫画风（菜单栏 22pt、按钮高 34~36pt、卡片圆角 14~20pt、开关 44×26pt、进度环 3~12pt）、可爱风（按钮高 32px、卡片圆角 16px、开关 28×16px、计时数字 64px、进度环 6px）。跨家族允许几何不同（它是家族气质的一部分），但各家族内部必须保持常量。</li>
+<li><strong>状态色语义全局统一</strong>：<code>timerActive</code> 恒为「进行中」、<code>timerPause</code> 恒为「暂停/休息」，色相可换、语义不可换；完成反馈统一为「一次性、非循环、≤600ms」的轻动效（印章/波纹/金线/河豚鼓起/墨线收锋等形式不同、重量相同）。</li>
+<li><strong>入版统一检查清单</strong>：每个主题合入前过同一套门禁——文字对比度（正文 ≥4.5:1、大字与图形 ≥3:1，用脚本实测）、「减少动态效果」静态方案完整、<code>bubbleDensity/driftSpeed ≤1×</code>、环境音默认关、菜单栏图标为 template、<code>theme.json</code> schema 校验通过。本文档九套主题的对比度实测值已随附，可直接作为验收基准。</li>
+</ol>
+</section>
+
+<section id="notes">
+<h2><span class="no">05</span>采用说明</h2>
+
+<ul>
+<li><b>可验证性</b>：九套主题全部通过脚本校验——每套 10 章节齐全、全部色值为有效 6 位 #RRGGBB、文字对比度按 WCAG 相对亮度公式实测（正文主色普遍达到 AAA，≥9:1）。</li>
+<li><b>mood 图</b>：中国风与卡通漫画风各附 3 张 AI 生成的氛围参考图，仅传达风格方向，<b>不是最终美术资产</b>；落地以各主题第 5–7 节的文字规格为准。</li>
+<li><b>尺寸基准</b>：像素/点尺寸以 1080p 窗口与 Retina 缩放为参考，落地时需按实际窗口尺寸与缩放校准。</li>
+<li><b>第三方字体</b>：霞鹜文楷（LXGW WenKai）、站酷快乐体（ZCOOL KuaiLe）、思源宋体（Source Han Serif SC）均为开源/免费可商用字体，需确认随包分发或提示安装策略；所有字体栈均带系统字体回退，不安装也不破版。</li>
+<li><b>资产清单</b>：各主题落地备注中的 sprite 数量与帧数为建议值，以实际性能实测为准。</li>
+<li><b>庆祝性动效</b>（印章落下、青花波纹、金线、河豚鼓起等）均为「一次性、非循环、≤600ms」提案，需与「无压力」原则的产品评审确认后排期。</li>
+<li><b>一致性协调</b>：几何基线按风格家族恒定（详见落地框架 d 节）；代号命名统一为 cn-/cm-/ct-/reef-；「减少动态效果」开启时全部主题退化为静态整帧，功能不受影响。</li>
+</ul>
+
+</section>
+
+</main>
+<footer class="wrap">
+小海底 little-reef · reef.echovic.com · 主题设计方案 v1.0（2026-10-24）—— 由三组并行设计合成，九套主题均通过脚本校验。
+</footer>
+</body>
+</html>

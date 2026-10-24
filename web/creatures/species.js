@@ -3,7 +3,6 @@ import { Shrimp } from "./shrimp.js";
 import { Hermit } from "./hermit.js";
 import { Crab } from "./crab.js";
 import { Mantis } from "./mantis.js";
-
 // Every creature's model and habits. Lengths are in centimeters. Fish follow
 // the spec's reference lengths, with the bigger ones sized as young fish:
 // angel and tang are a little smaller so nobody fills the tank. Shrimp and
@@ -37,10 +36,53 @@ export const SPECIES = {
   swimmer: { id: "swimmer", model: "crab", length: 9, speed: .6, range: .25, depths: [.1, .7], sideways: true, idle: 1.4 },
 };
 
+// lighten mixes a "#rrggbb" hex toward white by amt (0…1).
+function lighten(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = (n >> 16) + (255 - (n >> 16)) * amt;
+  const g = ((n >> 8) & 0xff) + (255 - ((n >> 8) & 0xff)) * amt;
+  const b = (n & 0xff) + (255 - (n & 0xff)) * amt;
+  return `rgb(${r | 0},${g | 0},${b | 0})`;
+}
+
+// themedPalette rewrites a fish species' body palette when the active theme
+// ships a creaturePalette. Themes without one (the default reef-realistic)
+// keep every species' own colors, so the classic reef looks unchanged.
+function themedPalette(spec) {
+  if (!spec.colors) return spec.colors;
+  const p = globalThis.THEME?.creaturePalette;
+  if (!p || !p.fish) return spec.colors;
+  return {
+    back: p.fish,
+    flank: lighten(p.fish, 0.18),
+    belly: lighten(p.fish, 0.38),
+    fin: p.fish,
+    iris: spec.colors.iris,
+  };
+}
+
+// themedSpec returns the species record with theme overrides applied.
+function themedSpec(id) {
+  const spec = SPECIES[id];
+  if (!spec) return null;
+  return { ...spec, colors: themedPalette(spec) };
+}
+
+// speciesColors exposes the resolved palette for tests and portrait rendering.
+export function speciesColors(id) {
+  return themedSpec(id)?.colors;
+}
+
+// maxCreatures caps how many species share the tank at once; the visitor
+// book still remembers everyone met. reef-realistic sets no cap.
+export function maxCreatures() {
+  return globalThis.THEME?.behavior?.maxCreatures || 999;
+}
+
 // create returns a new creature, or null for an unknown species or one
 // whose model is missing.
 export function create(id, world, options) {
-  const spec = SPECIES[id], Model = spec && MODELS[spec.model];
+  const spec = themedSpec(id), Model = spec && MODELS[spec.model];
   return Model ? new Model(spec, world, options) : null;
 }
 
@@ -54,7 +96,7 @@ export function drawPortrait(canvas, id) {
   const c = canvas.getContext("2d");
   c.setTransform(ratio, 0, 0, ratio, 0, 0);
   c.clearRect(0, 0, w, h);
-  const spec = SPECIES[id], Model = spec && MODELS[spec.model];
+  const spec = themedSpec(id), Model = spec && MODELS[spec.model];
   if (Model) { Model.portrait(c, spec, w, h); return; }
   c.fillStyle = "rgba(158,189,189,.35)";
   c.beginPath(); c.ellipse(w * .46, h / 2, w * .28, h * .2, 0, 0, Math.PI * 2); c.fill();

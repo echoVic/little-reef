@@ -63,6 +63,22 @@ test('history exists but this week is empty shows the no-pressure line', () => {
   assert.equal(model.weekDaysLine, '本周还没有，不打紧，随时开始。');
 });
 
+test('omitted zero derived fields render as zero, never NaN/undefined', () => {
+  // The backend omits week/month/totalDay fields when zero (omitempty), so
+  // real snapshots may arrive without them. Every line must still render.
+  const state = base();
+  delete state.weekSecs; delete state.weekRounds; delete state.weekDays;
+  delete state.monthSecs; delete state.monthRounds; delete state.totalDays;
+  delete state.nextTierRounds;
+  const model = reviewModel(state);
+  assert.equal(model.weekLine, '');
+  assert.equal(model.weekDaysLine, '本周还没有，不打紧，随时开始。');
+  assert.equal(model.monthLine, '本月 0 分钟 · 0 轮');
+  assert.equal(model.totalDaysLine, '一共 0 天');
+  assert.equal(model.nextGrowthLine, '继续积累专注，认识更多海底朋友');
+  assert.equal(model.togetherLine, '已经一起度过 1 小时 5 分钟，完成 5 轮专注。');
+});
+
 test('collecting all fifteen visitors shows the collected line', () => {
   const state = base();
   state.visitors = Array.from({ length: 15 }, (_, i) => ({ species: `s${i}`, name: `鱼${i}`, visits: 1, date: `2026-10-${i + 1}T09:00:00+08:00` }));

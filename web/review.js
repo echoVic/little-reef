@@ -36,19 +36,29 @@ export function reviewModel(state) {
   const last = latestVisitor(visitors);
   const plants = plantCount(completed);
   const remaining = 15 - visitors.length;
+  // Derived fields are omitted by the backend when zero (omitempty), so treat
+  // undefined as 0 — otherwise a user with history but no activity this
+  // period would see "NaN 分钟 / undefined 天".
+  const weekSecs = state.weekSecs || 0;
+  const weekRounds = state.weekRounds || 0;
+  const weekDays = state.weekDays || 0;
+  const monthSecs = state.monthSecs || 0;
+  const monthRounds = state.monthRounds || 0;
+  const totalDays = state.totalDays || 0;
+  const nextTier = state.nextTierRounds || 0;
   return {
     empty: false,
     // 本周空态：只显示 T14 一句，不渲染 0 值。
-    weekLine: state.weekSecs > 0 ? `本周 ${minutesText(state.weekSecs)} · ${state.weekRounds} 轮` : "",
-    weekDaysLine: state.weekSecs > 0 ? `本周 ${state.weekDays} 天有你的专注` : "本周还没有，不打紧，随时开始。",
-    monthLine: `本月 ${minutesText(state.monthSecs)} · ${state.monthRounds} 轮`,
+    weekLine: weekSecs > 0 ? `本周 ${minutesText(weekSecs)} · ${weekRounds} 轮` : "",
+    weekDaysLine: weekSecs > 0 ? `本周 ${weekDays} 天有你的专注` : "本周还没有，不打紧，随时开始。",
+    monthLine: `本月 ${minutesText(monthSecs)} · ${monthRounds} 轮`,
     togetherLine: `已经一起度过 ${minutesText(state.totalSecs)}，完成 ${completed} 轮专注。`,
-    totalDaysLine: `一共 ${state.totalDays} 天`,
+    totalDaysLine: `一共 ${totalDays} 天`,
     bookLine: `图鉴 ${visitors.length} / 15`,
     bookNote: remaining <= 0 ? "15 位朋友都来过了" : `还有 ${remaining} 位朋友没来过，慢慢来`,
     lastVisitorLine: last ? `最近到访：${last.name} · 来过 ${last.visits} 次` : "",
     growthLine: `当前：${tierName(completed)}`,
-    nextGrowthLine: state.nextTierRounds === 0 ? "继续积累专注，认识更多海底朋友" : `再 ${state.nextTierRounds} 轮就是${nextTierName(completed)}`,
+    nextGrowthLine: nextTier === 0 ? "继续积累专注，认识更多海底朋友" : `再 ${nextTier} 轮就是${nextTierName(completed)}`,
     plantsLine: plants > 0 ? `海底已有 ${plants} 株植物，长满后不再拥挤` : "",
     footnote: "这些数字只保存在你的电脑上。",
   };

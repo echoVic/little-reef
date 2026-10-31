@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "themeId": "cm-pop",
+    "displayName": "波普",
+    "styleFamily": "cartoon",
+    "version": "1.0.0",
+    "minAppVersion": "0.5.0",
+    "supportsDarkAppearance": false,
+    "reduceMotionFallback": "static idle frame"
+  },
+  "tokens": {
+    "accent": "#F4703E",
+    "accentInk": "#142C4A",
+    "activeBg": "#fde6d9",
+    "activeBorder": "#f8a17f",
+    "bgBase": "#8FDDE0",
+    "bgGlow": "#88d3d8",
+    "bgGradient": "#C6F2EF",
+    "bubble": "#FFFFFF",
+    "controlBg": "#FFFDF7",
+    "controlBorder": "#1D3557",
+    "coral": {
+      "color": "#F4703E",
+      "stages": 3
+    },
+    "fieldBg": "#e4e5e4",
+    "fish": "#F27EA9",
+    "hoverBg": "#eeefec",
+    "menuIcon": "#F27EA9",
+    "panelDeep": "#e8e9e7",
+    "panelRaised": "#f6f6f1",
+    "popBg": "#fffefb",
+    "ringTrack": "#778597",
+    "sand": "#F6E7C6",
+    "seaweed": {
+      "color": "#67C58F",
+      "stages": 3
+    },
+    "textFaint": "#668192",
+    "textPrimary": "#1D3557",
+    "textSecondary": "#517084",
+    "timerActive": "#F4703E",
+    "timerPause": "#7C93A6",
+    "waterLight": "#FFFFFF"
+  },
+  "motion": {
+    "bubbleDensity": 0.33,
+    "driftSpeed": 0.33,
+    "easing": "cubic-bezier(0.33,0,0.15,1)"
+  },
+  "ambientAudio": {
+    "defaultOn": false,
+    "maxVolume": 0.2
+  },
+  "controls": {
+    "radius": "16px",
+    "borderWidth": "1px"
+  },
+  "fonts": {
+    "title": "ZCOOL KuaiLe, PingFang SC",
+    "body": "inherit",
+    "digits": "SF Pro Rounded, SF Pro Text"
+  },
+  "behavior": {
+    "maxCreatures": 5
+  },
+  "creaturePalette": {
+    "fish": "#F27EA9"
+  }
+}

@@ -12,8 +12,11 @@ import (
 
 // Themes live inside the frontend bundle so the desktop never needs network
 // access to offer a palette; each folder is one self-contained contract.
+// Vite copies public/themes/* verbatim into web/dist/themes at build time, but
+// the Go backend reads the source-of-truth theme metadata straight from the
+// embedded public/ tree, independent of which HTTP root the page uses.
 //
-//go:embed web/themes
+//go:embed web/public/themes
 var themesFS embed.FS
 
 const defaultTheme = "reef-realistic"
@@ -32,7 +35,7 @@ type themeRecord struct {
 
 // installedThemes lists every bundled theme in load order.
 func installedThemes() ([]themeRecord, error) {
-	entries, err := fs.ReadDir(themesFS, "web/themes")
+	entries, err := fs.ReadDir(themesFS, "web/public/themes")
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +44,7 @@ func installedThemes() ([]themeRecord, error) {
 		if !e.IsDir() {
 			continue
 		}
-		data, err := fs.ReadFile(themesFS, filepath.Join("web/themes", e.Name(), "theme.json"))
+		data, err := fs.ReadFile(themesFS, filepath.Join("web/public/themes", e.Name(), "theme.json"))
 		if err != nil {
 			return nil, err
 		}
@@ -63,9 +66,9 @@ func installedThemes() ([]themeRecord, error) {
 // deliberately a separate file: the aquarium archive must stay byte-for-byte
 // identical no matter how often the user switches palettes.
 type themeStore struct {
-	dir   string
-	ids   []string
-	names map[string]string
+	dir      string
+	ids      []string
+	names    map[string]string
 	families map[string]string
 }
 

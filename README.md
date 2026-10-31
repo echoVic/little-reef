@@ -20,6 +20,8 @@ Windows 和 Linux 暂时没有安装包，可以[从源码构建](#从源码构�
 - 完成提示音可以单独开关。静音时，完成后仍有文字提示和系统通知。
 - 支持桌面挂件模式、收起到菜单栏，以及全局快捷键 `CmdOrCtrl+Shift+A`；挂件与展开后的窗口留在当前显示器。
 - 专注时，菜单栏的小鱼会轻轻游动；暂停或休息时停住不动。系统开启「减少动态效果」时，海底与菜单栏都保持静态，计时和背景音继续正常工作。
+- 10 套海底皮肤，覆盖海底、生物与完整界面；在设置的「海底皮肤」中切换，配色会保存，计时与存档不受影响。
+- 点击菜单栏小鱼打开快捷面板，直接开始或暂停计时、开关声音和调整音量；右键菜单可退出并保存。关闭主窗口后计时与声音继续。
 - 「这段时间」折叠面板：展开可看本周、本月和累计的专注时长与轮数、一起度过的天数、图鉴进度和当前成长阶段；只做正向记录，不显示连续打卡，也没有目标和提醒。挂件模式不显示它。
 
 ## 背景音
@@ -47,24 +49,36 @@ Windows 和 Linux 暂时没有安装包，可以[从源码构建](#从源码构�
 
 ## 从源码构建
 
-需要 Go 1.27.1 或更高版本。在项目根目录执行：
+需要 Go 1.27.3 或更高版本，以及 Node.js 22+。前端是 Vite + React，先在 `web/` 安装依赖并构建，产物落到 `web/dist`，Go 再把它嵌入二进制。
 
 ```sh
-# 运行桌面版
+# 1) 前端依赖与生产构建（npm 全程走公共源，不读内部镜像）
+cd web
+npm ci --registry=https://registry.npmjs.org/
+npm run typecheck   # 类型检查
+npm test            # 前端单元测试
+npm run build       # 产出 web/dist
+# 开发模式（热更新，独立预览，不嵌入 Go）
+# npm run dev
+# npm run preview
+cd ..
+
+# 2) Go 侧测试
+CGO_ENABLED=0 go test ./...
+
+# 3) 运行桌面版（需要 web/dist 已构建；缺失会明确报错退出）
 CGO_ENABLED=0 go run .
 
 # 在浏览器中运行（只监听本机回环地址）
 CGO_ENABLED=0 go run . -web 127.0.0.1:4173
 
-# 构建 macOS 应用和 dmg，输出到 build/darwin-arm64
+# 构建 macOS 应用和 dmg，输出到 build/darwin-arm64（会自动重新构建前端）
 CGO_ENABLED=0 go tool mygo build -sign=- -skip-notarize .
-
-# 运行测试
-CGO_ENABLED=0 go test ./...
-node --test --test-concurrency=1 tests/*.test.mjs
 ```
 
-自动更新由 `mygo.json` 的 `updates` 配置（公钥和发布仓库）。签名更新包的私钥不在仓库和配置里，正式发布时通过环境变量传入：`MYGO_UPDATER_PRIVATE_KEY="$(cat <私钥文件>)" CGO_ENABLED=0 go tool mygo build .`。没有私钥时照常构建，只是不生成更新包，已安装的小海底就收不到这一版。
+Go 二进制通过 `//go:embed` 直接打包 `web/dist`、`web/public/themes`、`web/public/sounds` 与物种表 `web/src/reef/species.ts`；不嵌入 `web/node_modules`。未构建 `web/dist` 时 Go 会在启动时明确报错退出，不会回退到不完整的旧页面。
+
+自动更新由 `mygo.json` 的 `updates` 配置（公钥和发布仓库）。签名更新包的私钥不在仓库和配置里，正式发布时通过环境变量传入：`MYGO_UPDATER_PRIVATE_KEY="$(cat <私钥文件>)" CGO_ENABLED=0 go tool mygo build .`。没有私钥时照常构建，只是不生成更新包，已安装的小海底就收不到这一版。正式发布步骤与安装包命名见 [发布流程](docs/releasing.md)。
 
 构建其他平台时加上 `-platform`，例如 `-platform windows/amd64,linux/amd64`。Windows 和 Linux 版还没有经过实际测试。
 
@@ -76,13 +90,13 @@ node --test --test-concurrency=1 tests/*.test.mjs
 
 ### 更换背景音
 
-录音由 `build-sounds.sh` 生成并放在 `web/sounds`，平时构建不需要运行它。要换录音，修改脚本开头的表格，再运行 `./build-sounds.sh`。运行需要 curl、ffmpeg 5 或更高版本（含 libmp3lame）和网络。
+录音由 `build-sounds.sh` 生成并放在 `web/public/sounds`，平时构建不需要运行它。要换录音，修改脚本开头的表格，再运行 `./build-sounds.sh`。运行需要 curl、ffmpeg 5 或更高版本（含 libmp3lame）和网络。
 
-脚本会截取片段、调整响度、编码成 MP3，所有录音合计不超过 30 MB。时钟、木鱼和卡农的循环位置写在 `web/audio.js` 里，换这三种的录音时要一并修改。
+脚本会截取片段、调整响度、编码成 MP3，所有录音合计不超过 30 MB。时钟、木鱼和卡农的循环位置写在 `web/src/audio/soundscape.ts` 里，换这三种的录音时要一并修改。
 
 ### 图标
 
-计时圆环里的小鱼图标在 `icon.go` 里绘制。修改后运行 `go run . -export-icons`，重新生成 `assets/icon.png`、`web/favicon.png` 和 `web/mark.png`。
+计时圆环里的小鱼图标在 `icon.go` 里绘制。修改后运行 `go run . -export-icons`，重新生成 `assets/icon.png`、`web/public/favicon.png` 和 `web/public/mark.png`。
 
 ### 测试
 
@@ -97,4 +111,4 @@ node --test --test-concurrency=1 tests/*.test.mjs
 
 基于 [MyGo](https://github.com/egoist/mygo) 桌面框架构建，MyGo 的 MIT 许可声明见 [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt)。
 
-源代码以 [MIT 许可证](LICENSE) 开源。`web/sounds` 里的录音不是本项目的作品，它们属于公共领域，出处同样见 [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt)。
+源代码以 [MIT 许可证](LICENSE) 开源。`web/public/sounds` 里的录音不是本项目的作品，它们属于公共领域，出处同样见 [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt)。

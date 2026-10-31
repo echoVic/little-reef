@@ -1,0 +1,49 @@
+{
+  "lucide-static": {
+    "version": "1.65.0",
+    "url": "https://registry.npmjs.org/lucide-static/-/lucide-static-1.65.0.tgz",
+    "integrity": "sha512-Mbahsp1MHXzBK2qQ+j+OpdwvPwOFYFBOe2pD1O5eI+XLRpbqPY2euz6vemAddXGevRvJ5n8D83ilUCrtxP07RQ==",
+    "files": {
+      "LICENSE": "b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57",
+      "panels-top-left.mjs": "70b8856ada3c56f8cf1e1c4c3ac9155bef535bd2d37d23a3747d2576632fac73",
+      "minus.mjs": "4dcc79422fe93101d14e1cf663ea8f5a2e2a16f764e1afc2417f9089615c269e",
+      "x.mjs": "e66962b0d2b91e7fa6ebc105201f2d0b76b83d8613b7813ad5a7b4a2261a9da6",
+      "play.mjs": "c988dec7bc033e18e7f1e327b43644b2695b2c542b34cead6a735c2461bf0d27",
+      "pause.mjs": "464512a1f1dcbb9f83edcd14e594cc1bc84c7ce2a7dfb2b1963ed2d19859b9f3",
+      "coffee.mjs": "2729622dce703c326e13ea64342ff383f31638cb28466ba576bc00f401c65efb",
+      "maximize-2.mjs": "296d3365b9be7dc455f25096895ff7158d529bcc890afa91e6f2fac138ba20c2",
+      "volume-2.mjs": "39136e184543d8c8ba1ca7f4800817d9857f751e1b942f3d0463f06ca120562e",
+      "volume-x.mjs": "558c2db5705972cd30f9cfa3bdc9de11af8b58172cb5da2faaf424cce80e66e7",
+      "waves-horizontal.mjs": "fcc9ddbca3d3a8c71c6cafe15a377cb1ae46732c2238b53d4c446ac5aaf1098c",
+      "cloud-rain.mjs": "63e9c1a975d243239b21b3d411545a0340b9c2671d4e4e2e6c274f7818a71dbc",
+      "cloud-lightning.mjs": "4c1a55c116520f8fc71b50ab002920e95fa2521c7256ee512eb4e5ec0162929a",
+      "droplets.mjs": "49658e4db28fc55b351ec1dfa6a097a5c315b8ca186b79b6e1d4aba7d2f0c300",
+      "bubbles.mjs": "702bf3e48672a52a78f3c6b0c45228b5f0f9b4bb4a79f1727ac5cce3deff2e04",
+      "soup.mjs": "18165f6e4c10c33dd0b50d403afbf9db44a15947644d18348c5915277916822f",
+      "anchor.mjs": "4d2facaf89046b75ac5c0914e76d3035f7c234936f6a12fef937e40de560856d",
+      "wind.mjs": "5c12f51636e8b9ab6c05000f43a71535a091ec74b48d8ac6709890abcaa01517",
+      "flame.mjs": "dea2703484949e147e805ebb312949c021707d8476450e66cb4212430ef08666",
+      "trees.mjs": "8cd0afe9c2f4f70468d8e894eb2e2dc7e317b42b0ba24ffcb39177debaafb3f3",
+      "sun.mjs": "255165d4ce6551c1dcb37b4c55e5a5adf32deba913570abcd544f37a598a7144",
+      "moon.mjs": "e5a9f89f1b291c912ef3f7928ea34a040516867ca564cc4a9b9a35a00b5b0e17",
+      "mountain.mjs": "99d5a2db5d856f6160d8be4163f2360fb6d823059c1c88b5184a79e4163e39ae",
+      "sunrise.mjs": "3c63d7e11ff3c8c0d0cbf84bc959416087145fcc6650edc43ccb6127cd9ed5e0",
+      "clock.mjs": "23672ca588591e7d034449377dd3f19f2565a66974441a1425959eee5603718e",
+      "circle-dot.mjs": "f97c28d34e67a5e6eb33d63b04f645827ef255db07f91a39f88ba3e41b53d05a",
+      "list-music.mjs": "7aca75dc9adcaff993e867803159d63a187f16abb6d5b0451545a67f8886e13b",
+      "car.mjs": "150cfa361a84448d165e66f6864154a45d7a983e700c55546e0ac264ce74c8b0",
+      "audio-lines.mjs": "149ccf42a6ebb72b6fbfaaaf5f0a0034876c0cedca02c36dbae5c7c7517ff85e",
+      "fish.mjs": "233fd6f5aefe9c7a80f84e102332dd4b90213c6869f781ac2cd5349307f5331a",
+      "check.mjs": "a09b9616a16189a67f78b6547c0cf4a8b4b9fb661103ad9d4c1ad9f7bc117ec8"
+    }
+  },
+  "mygo-runtime": {
+    "version": "0.7.3",
+    "url": "https://registry.npmjs.org/mygo-runtime/-/mygo-runtime-0.7.3.tgz",
+    "integrity": "sha512-ggttUf9WmBIDMjazN8hBB2/n/ezoqOKx9Uc0tjK3G6ekFg5mqrS+GLIEjwnStfXMGFS6+tmdd0uCGPrsYvgMdQ==",
+    "files": {
+      "LICENSE": "f0b56f4ab53beb6e18c5e155219c2e2b6000b5475c0ae3ddb3af3894fd9349b4",
+      "index.js": "88a06214af9a4f1bb2382d827077c67c30aa13c9fddfc3a2fedcab69b1ac75bd"
+    }
+  }
+}

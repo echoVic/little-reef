@@ -10,3 +10,9 @@
 *.key
 .env
 .env.*
+
+# Frontend (Vite/TS in web/) — build output and deps only; vendor/public/source stay tracked
+web/node_modules/
+web/dist/
+*.tsbuildinfo
+.vite/

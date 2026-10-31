@@ -4,6 +4,27 @@ import { call, event } from "mygo-runtime";
 
 // ---- Types ----
 
+/**
+ * AudioRequestEvent is broadcast to the page when the native panel asks it to
+ * toggle actual WebAudio playback (Go cannot call JS directly).
+ */
+export interface AudioRequestEvent {
+  requestId: string;
+  /** "toggle" | "enable" | "disable" | "set-volume" */
+  command: string;
+  volume?: number;
+}
+
+/** AudioState is what the frontend reports after handling a desktop:audio-request. */
+export interface AudioState {
+  running: boolean;
+  requested: boolean;
+  sound: string;
+  volume: number;
+  needGesture: boolean;
+  error: string;
+}
+
 /** Preferences controls the next session and its optional soundscape. */
 export interface Preferences {
   focusMinutes: number;
@@ -57,6 +78,29 @@ export interface Snapshot {
   monthRounds?: number;
   totalDays?: number;
   nextTierRounds?: number;
+  /**
+   * Theme is presentation only: the view rebinds CSS variables from it,
+   * but the file archive strips it (see archiveSnapshot).
+   */
+  theme?: string;
+}
+
+/** ThemeOption is one selectable entry for the settings picker. */
+export interface ThemeOption {
+  id: string;
+  displayName: string;
+  styleFamily: string;
+}
+
+/**
+ * UIRequestEvent is broadcast to the page when the native panel asks it to
+ * perform a UI action it owns (open settings, apply compact CSS).
+ */
+export interface UIRequestEvent {
+  requestId: string;
+  /** "set-compact" | "open-settings" */
+  command: string;
+  compact?: boolean;
 }
 
 /** Visitor is an encounter kept even if the aquarium window was hidden. */
@@ -88,6 +132,13 @@ export const Aquarium = {
     return call("Aquarium.Get");
   },
   /**
+   * GetThemes lists every bundled theme for the settings picker; the active id
+   * arrives on the Snapshot (theme field), so the UI never stores the list twice.
+   */
+  getThemes(): Promise<ThemeOption[]> {
+    return call("Aquarium.GetThemes");
+  },
+  /**
    * ImportArchive accepts either the versioned shell or a bare aquarium.json.
    * The current archive is replaced only after every check passes, so a failed
    * import leaves everything untouched.
@@ -114,25 +165,17 @@ export const Aquarium = {
   setTheme(id: string): Promise<Snapshot> {
     return call("Aquarium.SetTheme", id);
   },
-  /** GetThemes lists every bundled theme for the settings picker. */
-  getThemes(): Promise<ThemeOption[]> {
-    return call("Aquarium.GetThemes");
-  },
   /** Start begins a fresh focus session or the break after a completed focus. */
   start(kind: string, task: string): Promise<Snapshot> {
     return call("Aquarium.Start", kind, task);
   },
 } as const;
 
-/** One selectable theme in the settings picker. */
-export interface ThemeOption {
-  id: string;
-  displayName: string;
-  styleFamily: string;
-}
-
-/** Desktop controls the current aquarium window. */
 export const Desktop = {
+  /** AckUIRequest: frontend ACKs a desktop:ui-request. */
+  ackUIRequest(requestID: string, ok: boolean, errMsg: string): Promise<void> {
+    return call("Desktop.AckUIRequest", requestID, ok, errMsg);
+  },
   /**
    * CheckForUpdates opens the update window, which says when the app is up to
    * date or offers the new version.
@@ -141,19 +184,23 @@ export const Desktop = {
     return call("Desktop.CheckForUpdates");
   },
   /**
-   * ExportArchive asks the user where to save the backup, then writes it.
+   * ExportArchive asks the calling window where to save the backup, then writes it.
    * An empty path means the user canceled; callers must stay silent then.
    */
   exportArchive(): Promise<string> {
     return call("Desktop.ExportArchive");
   },
-  /** Hide keeps the page and sound alive in the tray, or minimizes without a tray. */
+  /**
+   * Hide keeps the page and sound alive. Restored via tray click, Dock icon
+   * click (OnActivate), or Cmd+Shift+A. No Minimize fallback: Hide is always
+   * reversible because the app keeps a Dock icon (regular activation policy).
+   */
   hide(): Promise<void> {
     return call("Desktop.Hide");
   },
   /**
-   * ImportArchive asks the user which backup to restore, then validates and
-   * replaces the aquarium. A canceled pick means "已取消" and stays quiet.
+   * ImportArchive asks the calling window which backup to restore, then validates it.
+   * A canceled pick means "已取消" and stays quiet; failed validation preserves the archive.
    */
   importArchive(): Promise<Snapshot> {
     return call("Desktop.ImportArchive");
@@ -161,6 +208,19 @@ export const Desktop = {
   /** Quit closes the desktop app and saves the current session. */
   quit(): Promise<void> {
     return call("Desktop.Quit");
+  },
+  /**
+   * ReportAudioState: frontend reports actual WebAudio playback state.
+   * running means context.running && requested && started (not context.state alone).
+   * Rules:
+   *   - empty requestID: push observed state only, do NOT touch pending.
+   *   - non-empty: only the current matching pending ACK mutates req/flush.
+   *   - on success: coalesce latest draft if it differs from reported volume.
+   *   - on error/needGesture: surface error, clear draft, NO flush/retry.
+   *   - stale ACK (requestID mismatch): ignored, no state overwrite.
+   */
+  reportAudioState(requestID: string, st: AudioState): Promise<void> {
+    return call("Desktop.ReportAudioState", requestID, st);
   },
   /** SetCompact turns the window into a small always-on-top desktop aquarium. */
   setCompact(compact: boolean): Promise<void> {
@@ -172,5 +232,7 @@ export const Desktop = {
 
 /** Events sent by the Go side. Subscribe with `events.name.on(listener)`. */
 export const events = {
+  desktopAudioRequest: event<AudioRequestEvent>("desktop:audio-request"),
+  desktopUiRequest: event<UIRequestEvent>("desktop:ui-request"),
   aquariumChanged: event<Snapshot>("aquarium:changed"),
 } as const;

@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "themeId": "cn-qinghua",
+    "displayName": "青花瓷韵",
+    "styleFamily": "chinese",
+    "version": "1.0.0",
+    "minAppVersion": "0.5.0",
+    "supportsDarkAppearance": false,
+    "reduceMotionFallback": "fish docked, plants still"
+  },
+  "tokens": {
+    "accent": "#235E8C",
+    "accentInk": "#FFFFFF",
+    "activeBg": "#d6e2eb",
+    "activeBorder": "#6e95b4",
+    "bgBase": "#EFF4F7",
+    "bgGlow": "#e3e9ed",
+    "bgGradient": "#C9DAE5",
+    "bubble": "#FFFFFF",
+    "controlBg": "#F8FBFD",
+    "controlBorder": "#9DB8CA",
+    "coral": {
+      "color": "#24567F",
+      "stages": 3
+    },
+    "fieldBg": "#dee4e8",
+    "fish": "#2E6BA0",
+    "hoverBg": "#e8edf1",
+    "menuIcon": "#1F3A4D",
+    "panelDeep": "#e2e8eb",
+    "panelRaised": "#f0f4f7",
+    "popBg": "#fcfdfe",
+    "ringTrack": "#c1d3de",
+    "sand": "#D8C2A4",
+    "seaweed": {
+      "color": "#7FA3B8",
+      "stages": 3
+    },
+    "textFaint": "#698091",
+    "textPrimary": "#1F3A4D",
+    "textSecondary": "#566F82",
+    "timerActive": "#3D7EA6",
+    "timerPause": "#97744B",
+    "waterLight": "#FBFDFE"
+  },
+  "motion": {
+    "bubbleDensity": 0.5,
+    "driftSpeed": 0.5,
+    "easing": "cubic-bezier(0.4,0,0.25,1)"
+  },
+  "ambientAudio": {
+    "defaultOn": false,
+    "maxVolume": 0.2
+  },
+  "controls": {
+    "radius": "10px",
+    "borderWidth": "1px"
+  },
+  "fonts": {
+    "title": "Songti SC, Source Han Serif SC, serif",
+    "body": "inherit",
+    "digits": "SF Mono, Menlo"
+  },
+  "behavior": {
+    "maxCreatures": 3
+  },
+  "creaturePalette": {
+    "fish": "#2E6BA0"
+  }
+}

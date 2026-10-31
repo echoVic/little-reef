@@ -33,15 +33,18 @@ func TestSpeciesRosterIsComplete(t *testing.T) {
 	}
 }
 
-// The page must know how to draw every species the backend can send.
+// The page must know how to draw every species the backend can send. The
+// authoritative species registry is the TypeScript source (not the built JS
+// bundle): every backend visitor id must exist in SPECIES so the canvas
+// engine can instantiate it.
 func TestFrontendKnowsEverySpecies(t *testing.T) {
-	data, err := fs.ReadFile(frontend, "web/creatures/species.js")
+	data, err := fs.ReadFile(frontend, "web/src/reef/species.ts")
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, s := range species {
 		if !strings.Contains(string(data), `id: "`+s.Species+`"`) {
-			t.Errorf("species.js has no %q", s.Species)
+			t.Errorf("species.ts SPECIES has no %q", s.Species)
 		}
 	}
 }

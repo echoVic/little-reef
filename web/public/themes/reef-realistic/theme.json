@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "themeId": "reef-realistic",
+    "displayName": "深海写实",
+    "styleFamily": "realistic",
+    "version": "1.0.0",
+    "minAppVersion": "0.5.0",
+    "supportsDarkAppearance": true,
+    "reduceMotionFallback": "static-poses"
+  },
+  "tokens": {
+    "accent": "#a8deba",
+    "accentInk": "#173c31",
+    "activeBg": "#213c40",
+    "activeBorder": "#46777a",
+    "bgBase": "#0c1820",
+    "bgGlow": "#12303b",
+    "bgGradient": "#102e3a",
+    "bubble": "#b4cfb1",
+    "controlBg": "#12232b",
+    "controlBorder": "#254047",
+    "coral": {
+      "color": "#bd918c",
+      "stages": 3
+    },
+    "fieldBg": "#0e1d24",
+    "fish": "#a8deba",
+    "hoverBg": "#172c32",
+    "menuIcon": "#a8deba",
+    "panelDeep": "#10242a",
+    "panelRaised": "#1b3035",
+    "popBg": "#31444a",
+    "ringTrack": "#2b4549",
+    "sand": "#718371",
+    "seaweed": {
+      "color": "#529a86",
+      "stages": 3
+    },
+    "textFaint": "#678487",
+    "textPrimary": "#e3ede9",
+    "textSecondary": "#8ca7a7",
+    "timerActive": "#a8deba",
+    "timerPause": "#e6b48b",
+    "waterLight": "#194250"
+  },
+  "motion": {
+    "bubbleDensity": 1,
+    "driftSpeed": 1,
+    "easing": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  "ambientAudio": {
+    "defaultOn": false,
+    "maxVolume": 0.2
+  },
+  "controls": {
+    "radius": "20px",
+    "borderWidth": "1px"
+  },
+  "fonts": {
+    "title": "\"PingFang SC\",\"Microsoft YaHei\",system-ui,sans-serif",
+    "body": "inherit",
+    "digits": "inherit"
+  },
+  "behavior": {
+    "maxCreatures": 999
+  }
+}

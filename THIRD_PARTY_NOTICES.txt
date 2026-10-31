@@ -27,7 +27,7 @@ Ambient recordings — Freesound (https://freesound.org)
 Each recording below was dedicated to the public domain by its author
 under CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/).
 Attribution is not required; the sources are listed for reference.
-web/sounds holds trimmed, loudness-matched, re-encoded excerpts made by
+web/public/sounds holds trimmed, loudness-matched, re-encoded excerpts made by
 build-sounds.sh; the wooden fish track arranges one recorded strike into
 a steady rhythm.
 
@@ -72,6 +72,33 @@ Canon (the musicbox sound) — Wikimedia Commons
 
 "Canon (2004)" by the Strolling Strings of the United States Air Force
 Band; composition by Johann Pachelbel, arrangement by Frank Hudson. A work
-of the U.S. federal government, in the public domain. web/sounds/musicbox.mp3
+of the U.S. federal government, in the public domain. web/public/sounds/musicbox.mp3
 is the full performance, loudness-matched and re-encoded by build-sounds.sh.
 https://commons.wikimedia.org/wiki/File:Canon_(2004)_-_Strolling_Strings_-_United_States_Air_Force_Band.mp3
+
+================================================================================
+FRONTEND (React + TypeScript + Vite) — bundled into web/dist
+================================================================================
+
+Runtime dependencies shipped to the browser (built from web/package.json; exact
+resolved versions pinned in web/package-lock.json and installed reproducibly via
+`npm ci`):
+
+- react / react-dom (MIT) — Facebook/Meta Open Source.
+  https://github.com/facebook/react
+- Radix UI primitives (MIT) — @radix-ui/react-dialog, -alert-dialog, -tabs,
+  -slider, -toast, -checkbox, -collapsible, -radio-group.
+  https://github.com/radix-ui/primitives
+- lucide-react (ISC) — open-source icon set.
+  https://github.com/lucide-icons/lucide
+- mygo-runtime (vendored, Apache-2.0, version 0.7.3 matching the Go mygo
+  runtime in go.mod) — web/vendor/mygo-runtime/index.js, integrity pinned by
+  build-vendor.py; bundled by Vite (no CDN at runtime).
+  https://github.com/mygo-examples
+
+Dev-only tooling (not shipped in web/dist): Vite, TypeScript, Vitest, jsdom,
+@testing-library/*, @types/*. These are build/test-time only.
+
+All frontend assets are served self-hosted from web/dist (no runtime CDN). The
+built output uses relative base paths and no inline scripts/eval, consistent
+with the embedded CSP (script-src 'self'; style-src 'self' 'unsafe-inline').

@@ -160,11 +160,11 @@ func TestWeeklyMonthlyAndDayAggregation(t *testing.T) {
 	a.now = func() time.Time { return now }
 	a.state.Completed = 4
 	a.state.Records = []Record{
-		{ID: 1, Task: "a", Seconds: 600, Completed: true, Date: "2026-10-26T09:00:00+08:00"},  // today (Monday), this week, this month
+		{ID: 1, Task: "a", Seconds: 600, Completed: true, Date: "2026-10-26T09:00:00+08:00"},   // today (Monday), this week, this month
 		{ID: 2, Task: "b", Seconds: 1200, Completed: false, Date: "2026-10-25T21:00:00+08:00"}, // Sunday last week, this month
-		{ID: 3, Task: "c", Seconds: 1800, Completed: true, Date: "2026-10-20T09:00:00+08:00"}, // Tuesday last week, this month
-		{ID: 4, Task: "d", Seconds: 2400, Completed: true, Date: "2026-09-26T09:00:00+08:00"}, // last month, same day-of-month
-		{ID: 5, Task: "e", Seconds: 300, Completed: true, Date: "2026-10-26T20:00:00+08:00"}, // another record the same day
+		{ID: 3, Task: "c", Seconds: 1800, Completed: true, Date: "2026-10-20T09:00:00+08:00"},  // Tuesday last week, this month
+		{ID: 4, Task: "d", Seconds: 2400, Completed: true, Date: "2026-09-26T09:00:00+08:00"},  // last month, same day-of-month
+		{ID: 5, Task: "e", Seconds: 300, Completed: true, Date: "2026-10-26T20:00:00+08:00"},   // another record the same day
 	}
 	s := a.Get()
 	// Today: both records on 10-26; the early-end record on 10-25 does not count.

@@ -239,14 +239,15 @@ func trayFrames() [][]byte {
 }
 
 // exportIconAssets rewrites the icon files the web page and packaging use.
+// favicon/mark live under web/public so Vite copies them verbatim into dist.
 func exportIconAssets() error {
 	files := []struct {
 		path string
 		data []byte
 	}{
 		{filepath.Join("assets", "icon.png"), markBadgePNG(1024)},
-		{filepath.Join("web", "favicon.png"), markBadgePNG(128)},
-		{filepath.Join("web", "mark.png"), markPNG(128, markInk)},
+		{filepath.Join("web", "public", "favicon.png"), markBadgePNG(128)},
+		{filepath.Join("web", "public", "mark.png"), markPNG(128, markInk)},
 	}
 	for _, file := range files {
 		if err := os.MkdirAll(filepath.Dir(file.path), 0o755); err != nil {

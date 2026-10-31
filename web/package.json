@@ -1,0 +1,41 @@
+{
+  "name": "little-reef-web",
+  "private": true,
+  "version": "0.4.2",
+  "type": "module",
+  "description": "小海底 · 桌面水族馆 — React + TypeScript + Vite frontend",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@radix-ui/react-alert-dialog": "^1.2.1",
+    "@radix-ui/react-checkbox": "^1.4.1",
+    "@radix-ui/react-collapsible": "^1.2.1",
+    "@radix-ui/react-dialog": "^1.1.2",
+    "@radix-ui/react-radio-group": "^1.5.1",
+    "@radix-ui/react-slider": "^1.6.1",
+    "@radix-ui/react-tabs": "^1.2.1",
+    "@radix-ui/react-toast": "^1.3.1",
+    "lucide-react": "^0.460.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.0.1",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/node": "^22.9.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "jsdom": "^25.0.1",
+    "typescript": "~5.6.3",
+    "vite": "^5.4.10",
+    "vitest": "^2.1.4"
+  }
+}

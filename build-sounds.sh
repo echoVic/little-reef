@@ -1,11 +1,11 @@
 #!/bin/bash
-# Rebuild web/sounds from public-domain recordings: CC0 Freesound previews,
+# Rebuild web/public/sounds from public-domain recordings: CC0 Freesound previews,
 # plus one U.S. government recording from Wikimedia Commons. Needs curl,
 # ffmpeg 5 or later with libmp3lame, and network access; normal builds never
 # run it. Rerun after changing a row in the table below.
 set -euo pipefail
 
-sounds_dir=$(cd "$(dirname "$0")" && pwd)/web/sounds
+sounds_dir=$(cd "$(dirname "$0")" && pwd)/web/public/sounds
 sounds_cache=${TMPDIR:-/tmp}/little-reef-sounds
 mkdir -p "$sounds_dir" "$sounds_cache"
 
@@ -15,7 +15,7 @@ mkdir -p "$sounds_dir" "$sounds_cache"
 # which sounded harsh at that level), the most limiting allowed to reach it
 # (dB), the source file, and an optional LAME VBR quality (default 2).
 # "#" rows are alternatives. clock, knock and musicbox loop on beats or where
-# the piece ends, as set in web/audio.js; a new recording for them needs
+# the piece ends, as set in web/src/audio/soundscape.ts; a new recording for them needs
 # those values measured again.
 sounds_table='
 waves    412308 148    90    -15.6 3 https://cdn.freesound.org/previews/412/412308_7707368-hq.ogg

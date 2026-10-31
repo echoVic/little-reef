@@ -67,13 +67,13 @@ type Snapshot struct {
 	FedSession  int64       `json:"fedSession"`
 	NowMS       int64       `json:"nowMs"`
 	// Everything below is derived in snapshotLocked and never persisted.
-	WeekSecs      int64 `json:"weekSecs,omitempty"`
-	WeekRounds    int   `json:"weekRounds,omitempty"`
-	WeekDays      int   `json:"weekDays,omitempty"`
-	MonthSecs     int64 `json:"monthSecs,omitempty"`
-	MonthRounds   int   `json:"monthRounds,omitempty"`
-	TotalDays     int   `json:"totalDays,omitempty"`
-	NextTier      int   `json:"nextTierRounds,omitempty"`
+	WeekSecs    int64 `json:"weekSecs,omitempty"`
+	WeekRounds  int   `json:"weekRounds,omitempty"`
+	WeekDays    int   `json:"weekDays,omitempty"`
+	MonthSecs   int64 `json:"monthSecs,omitempty"`
+	MonthRounds int   `json:"monthRounds,omitempty"`
+	TotalDays   int   `json:"totalDays,omitempty"`
+	NextTier    int   `json:"nextTierRounds,omitempty"`
 	// Theme is presentation only: the view rebinds CSS variables from it,
 	// but the file archive strips it (see archiveSnapshot).
 	Theme string `json:"theme,omitempty"`

@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"time"
 )
 
 // Themes live inside the frontend bundle so the desktop never needs network
@@ -20,6 +21,29 @@ import (
 var themesFS embed.FS
 
 const defaultTheme = "reef-realistic"
+
+const themeShuffleInterval = 30 * time.Minute
+
+// automaticTheme follows the computer's local clock.
+func automaticTheme(now time.Time) string {
+	switch hour := now.Hour(); {
+	case hour >= 6 && hour < 10:
+		return "ct-cream"
+	case hour >= 10 && hour < 17:
+		return "cm-cel"
+	case hour >= 17 && hour < 20:
+		return "cn-qinglu"
+	default:
+		return defaultTheme
+	}
+}
+
+type themeConfig struct {
+	Theme         string `json:"theme"`
+	Auto          bool   `json:"auto,omitempty"`
+	Shuffle       bool   `json:"shuffle,omitempty"`
+	NextShuffleMS int64  `json:"nextShuffleMs,omitempty"`
+}
 
 type themeMeta struct {
 	ThemeID     string `json:"themeId"`
@@ -62,7 +86,7 @@ func installedThemes() ([]themeRecord, error) {
 	return out, nil
 }
 
-// themeStore persists only the chosen theme id in the data directory. It is
+// themeStore persists the theme choice and automatic mode in the data directory. It is
 // deliberately a separate file: the aquarium archive must stay byte-for-byte
 // identical no matter how often the user switches palettes.
 type themeStore struct {
@@ -91,6 +115,19 @@ func newThemeStore(dir string) (*themeStore, error) {
 
 func (s *themeStore) valid(id string) bool { return slices.Contains(s.ids, id) }
 
+func (s *themeStore) shuffledTheme(current string, roll func(int) int) string {
+	choices := make([]string, 0, len(s.ids))
+	for _, id := range s.ids {
+		if id != current {
+			choices = append(choices, id)
+		}
+	}
+	if len(choices) == 0 {
+		return current
+	}
+	return choices[roll(len(choices))]
+}
+
 // ThemeOption is one selectable entry for the settings picker.
 type ThemeOption struct {
 	ID     string `json:"id"`
@@ -110,31 +147,41 @@ func (s *themeStore) list() []ThemeOption {
 // load reads the saved choice; a missing or unreadable file falls back to the
 // default theme, and an unknown id (e.g. uninstalled build) does the same.
 func (s *themeStore) load() string {
+	return s.loadConfig().Theme
+}
+
+func (s *themeStore) loadConfig() themeConfig {
+	fallback := themeConfig{Theme: defaultTheme}
 	data, err := os.ReadFile(filepath.Join(s.dir, "theme.json"))
 	if err != nil {
-		return defaultTheme
+		return fallback
 	}
-	var cfg struct {
-		Theme string `json:"theme"`
-	}
+	var cfg themeConfig
 	if json.Unmarshal(data, &cfg) != nil || !s.valid(cfg.Theme) {
-		return defaultTheme
+		return fallback
 	}
-	return cfg.Theme
+	if cfg.Shuffle {
+		cfg.Auto = false
+	} else {
+		cfg.NextShuffleMS = 0
+	}
+	return cfg
 }
 
 // set writes the choice atomically, mirroring saveLocked so a crash never
 // leaves a half-written preferences file.
 func (s *themeStore) set(id string) error {
-	if !s.valid(id) {
+	return s.save(themeConfig{Theme: id})
+}
+
+func (s *themeStore) save(cfg themeConfig) error {
+	if !s.valid(cfg.Theme) {
 		return errors.New("未知的主题")
 	}
 	if err := os.MkdirAll(s.dir, 0o700); err != nil {
 		return err
 	}
-	data, err := json.MarshalIndent(struct {
-		Theme string `json:"theme"`
-	}{id}, "", "  ")
+	data, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
 		return err
 	}

@@ -8,20 +8,19 @@ import (
 	"time"
 
 	"github.com/egoist/mygo"
-	"github.com/egoist/mygo/plugins/updater"
 )
 
 // Build the native menu once. Left-click on the tray opens the mini popover;
 // right-click (or control-click) opens this slim menu. The 10-theme picker
 // lives in the main window's Settings, not here.
 func (d *Desktop) createTray() {
-	d.menu = mygo.NewMenu([]*mygo.MenuItem{
-		{Label: "打开主窗", Click: func(*mygo.MenuItem, *mygo.Window) { d.show() }},
-		{Label: "挂件模式", Click: func(*mygo.MenuItem, *mygo.Window) {
-			d.toggleCompactFromTray()
-		}},
+	items := append(d.timerMenuItems(), mygo.Separator())
+	items = append(items, []*mygo.MenuItem{
+		{Label: "显示水族馆", Click: func(*mygo.MenuItem, *mygo.Window) { d.openAquarium() }},
+		{Label: "设置…", Click: func(*mygo.MenuItem, *mygo.Window) { d.OpenSettings() }},
+		d.compactMenuItem(""),
 		mygo.Separator(),
-		updater.MenuItem(),
+		{Label: "检查更新…", Click: func(*mygo.MenuItem, *mygo.Window) { d.CheckForUpdates() }},
 		{Label: "问题反馈…", Click: func(*mygo.MenuItem, *mygo.Window) {
 			go func() {
 				if err := mygo.Shell.OpenExternal(feedbackURL); err != nil {
@@ -31,7 +30,8 @@ func (d *Desktop) createTray() {
 		}},
 		mygo.Separator(),
 		{Label: "退出并保存", Role: mygo.RoleQuit},
-	})
+	}...)
+	d.menu = mygo.NewMenu(items)
 	tray, err := mygo.NewTray(mygo.TrayOptions{
 		Icon: trayIcon(), IconIsTemplate: runtime.GOOS == "darwin",
 		ToolTip: "小海底 · 专注养出一片海",
@@ -45,6 +45,10 @@ func (d *Desktop) createTray() {
 	d.tray = tray
 	tray.OnClick(d.toggleFlyout)
 	tray.OnRightClick(func() {
+		d.refreshNativeMenus()
+		if d.flyout != nil && !d.flyout.IsDestroyed() {
+			d.flyout.Close()
+		}
 		// Official pattern: temporarily attach the menu, pop it, then detach
 		// so left-click stays on OnClick (popover).
 		tray.SetMenu(d.menu)
@@ -56,13 +60,7 @@ func (d *Desktop) createTray() {
 
 // toggleCompactFromTray flips compact mode without a caller window context.
 func (d *Desktop) toggleCompactFromTray() {
-	mygo.RunOnMain(func() {
-		if d.win == nil || d.win.IsDestroyed() {
-			return
-		}
-		_, h := d.win.Size()
-		d.applyCompactOn(d.win, h > 500)
-	})
+	d.requestCompact(!d.compact.Load())
 }
 
 // Frames use Window.Update, MyGo's asynchronous UI dispatcher. Stop never

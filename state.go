@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"math"
@@ -76,31 +77,39 @@ type Snapshot struct {
 	NextTier    int   `json:"nextTierRounds,omitempty"`
 	// Theme is presentation only: the view rebinds CSS variables from it,
 	// but the file archive strips it (see archiveSnapshot).
-	Theme string `json:"theme,omitempty"`
+	Theme        string `json:"theme,omitempty"`
+	ThemeAuto    bool   `json:"themeAuto,omitempty"`
+	ThemeShuffle bool   `json:"themeShuffle,omitempty"`
 }
 
 // archiveSnapshot is what actually lands in aquarium.json: the live Snapshot
-// minus the theme choice, which belongs in dataDir/theme.json alone.
+// minus the theme settings, which belong in dataDir/theme.json alone.
+// Empty outer fields shadow the embedded fields and omit them from JSON.
 type archiveSnapshot struct {
 	Snapshot
-	Theme string `json:"-"`
+	Theme        string `json:"theme,omitempty"`
+	ThemeAuto    bool   `json:"themeAuto,omitempty"`
+	ThemeShuffle bool   `json:"themeShuffle,omitempty"`
 }
 
 // Aquarium owns timer and persistence. No page or animation owns the clock.
 type Aquarium struct {
-	mu       sync.Mutex
-	state    Snapshot
-	path     string
-	theme    string
-	themes   *themeStore
-	segment  time.Time
-	lastTick time.Time
-	now      func() time.Time
-	roll     func(n int) int // random number in [0, n); tests replace it
-	onChange func(Snapshot)
-	onDone   func(Snapshot)
-	stop     chan struct{}
-	done     chan struct{}
+	mu                 sync.Mutex
+	state              Snapshot
+	path               string
+	theme              string
+	themeAuto          bool
+	themeShuffle       bool
+	nextThemeShuffleMS int64
+	themes             *themeStore
+	segment            time.Time
+	lastTick           time.Time
+	now                func() time.Time
+	roll               func(n int) int // random number in [0, n); tests replace it
+	onChange           func(Snapshot)
+	onDone             func(Snapshot)
+	stop               chan struct{}
+	done               chan struct{}
 }
 
 func newAquarium(path string) (*Aquarium, error) {
@@ -196,6 +205,10 @@ func mustMarshal(v any) json.RawMessage {
 // The current archive is replaced only after every check passes, so a failed
 // import leaves everything untouched.
 func (a *Aquarium) ImportArchive(text string) (Snapshot, error) {
+	return a.importArchive(context.Background(), text)
+}
+
+func (a *Aquarium) importArchive(ctx context.Context, text string) (Snapshot, error) {
 	var shell archiveShell
 	if err := json.Unmarshal([]byte(text), &shell); err != nil {
 		return Snapshot{}, errors.New("这个文件不是小海底的存档，什么都没有改动。")
@@ -218,6 +231,9 @@ func (a *Aquarium) ImportArchive(text string) (Snapshot, error) {
 	// Transient fields are never trusted; the next snapshot recomputes them.
 	next.TodaySecs, next.TodayRounds, next.NowMS = 0, 0, 0
 	return a.change(func() error {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		a.state = next
 		if a.state.Session.Status == "running" {
 			a.state.Session.Status = "paused"
@@ -236,6 +252,8 @@ func (a *Aquarium) snapshotLocked() Snapshot {
 	s.Records = slices.Clone(s.Records)
 	s.Visitors = slices.Clone(s.Visitors)
 	s.Theme = a.theme
+	s.ThemeAuto = a.themeAuto
+	s.ThemeShuffle = a.themeShuffle
 	if s.Records == nil {
 		s.Records = []Record{}
 	}
@@ -244,6 +262,9 @@ func (a *Aquarium) snapshotLocked() Snapshot {
 	}
 	now := a.now()
 	s.NowMS = now.UnixMilli()
+	if a.themeAuto {
+		s.Theme = automaticTheme(now)
+	}
 	if s.Session.Status == "running" {
 		s.Session.ElapsedMS = min(s.Session.DurationMS, s.Session.ElapsedMS+max(0, now.Sub(a.segment).Milliseconds()))
 	}
@@ -371,14 +392,46 @@ func (a *Aquarium) change(fn func() error) (Snapshot, error) {
 // SetTheme swaps the palette. It never touches the saved archive: theme
 // choice lives in dataDir/theme.json, so switching cannot rewrite aquarium.json.
 func (a *Aquarium) SetTheme(id string) (Snapshot, error) {
-	if a.themes == nil || !a.themes.valid(id) {
+	if id == "" {
 		return Snapshot{}, errors.New("未知的主题")
 	}
-	if err := a.themes.set(id); err != nil {
+	return a.setThemeSelection(id, false, false)
+}
+
+// SetThemeAuto enables local-time rotation, or freezes the currently visible theme.
+func (a *Aquarium) SetThemeAuto(enabled bool) (Snapshot, error) {
+	return a.setThemeSelection("", enabled, false)
+}
+
+// SetThemeShuffle rotates through all installed skins without consecutive repeats.
+func (a *Aquarium) SetThemeShuffle(enabled bool) (Snapshot, error) {
+	return a.setThemeSelection("", false, enabled)
+}
+
+func (a *Aquarium) setThemeSelection(id string, auto, shuffle bool) (Snapshot, error) {
+	a.mu.Lock()
+	if a.themes == nil {
+		a.mu.Unlock()
+		return Snapshot{}, errors.New("主题暂时不可用")
+	}
+	if id == "" {
+		id = a.snapshotLocked().Theme
+	}
+	if auto {
+		id = automaticTheme(a.now())
+	}
+	cfg := themeConfig{Theme: id, Auto: auto, Shuffle: shuffle}
+	if shuffle {
+		cfg.Theme = a.themes.shuffledTheme(id, a.roll)
+		cfg.NextShuffleMS = a.now().Add(themeShuffleInterval).UnixMilli()
+	}
+	if err := a.themes.save(cfg); err != nil {
+		a.mu.Unlock()
 		return Snapshot{}, err
 	}
-	a.mu.Lock()
-	a.theme = id
+	a.theme, a.themeAuto, a.themeShuffle = cfg.Theme, cfg.Auto, cfg.Shuffle
+	a.nextThemeShuffleMS = cfg.NextShuffleMS
+	a.state.Revision++
 	s := a.snapshotLocked()
 	a.mu.Unlock()
 	if a.onChange != nil {
@@ -471,7 +524,14 @@ func (a *Aquarium) recordLocked(completed bool) {
 
 // End keeps actual focus time but does not award a completed-round growth.
 func (a *Aquarium) End() (Snapshot, error) {
+	return a.endSession(0)
+}
+
+func (a *Aquarium) endSession(expectedID int64) (Snapshot, error) {
 	return a.change(func() error {
+		if expectedID != 0 && a.state.Session.ID != expectedID {
+			return errors.New("这一轮已变化，请重新确认。")
+		}
 		if a.state.Session.Status != "running" && a.state.Session.Status != "paused" {
 			return errors.New("当前没有可以结束的计时")
 		}
@@ -492,16 +552,33 @@ func (a *Aquarium) SetPreferences(p Preferences) (Snapshot, error) {
 		return Snapshot{}, err
 	}
 	return a.change(func() error {
-		a.state.Preferences = p
-		if a.state.Session.Status == "idle" {
-			minutes := p.FocusMinutes
-			if a.state.Session.Kind == "break" {
-				minutes = p.BreakMinutes
-			}
-			a.state.Session.DurationMS = int64(minutes) * 60 * 1000
-		}
+		a.setPreferencesLocked(p)
 		return nil
 	})
+}
+
+// setTimerPreferences merges a window's timer draft under the same lock as sound changes.
+func (a *Aquarium) setTimerPreferences(focus, rest int, chime bool) (Snapshot, error) {
+	return a.change(func() error {
+		p := a.state.Preferences
+		p.FocusMinutes, p.BreakMinutes, p.ChimeEnabled = focus, rest, chime
+		if err := validatePreferences(p); err != nil {
+			return err
+		}
+		a.setPreferencesLocked(p)
+		return nil
+	})
+}
+
+func (a *Aquarium) setPreferencesLocked(p Preferences) {
+	a.state.Preferences = p
+	if a.state.Session.Status == "idle" {
+		minutes := p.FocusMinutes
+		if a.state.Session.Kind == "break" {
+			minutes = p.BreakMinutes
+		}
+		a.state.Session.DurationMS = int64(minutes) * 60 * 1000
+	}
 }
 
 // Feed is a single optional interaction during each break.
@@ -587,11 +664,31 @@ func (a *Aquarium) completeLocked() {
 
 func (a *Aquarium) tick() {
 	a.mu.Lock()
+	now := a.now()
+	themeChanged := a.themeAuto && a.theme != automaticTheme(now)
+	if themeChanged {
+		a.theme = automaticTheme(now)
+	}
+	if a.themeShuffle && now.UnixMilli() >= a.nextThemeShuffleMS {
+		cfg := themeConfig{Theme: a.themes.shuffledTheme(a.theme, a.roll), Shuffle: true, NextShuffleMS: now.Add(themeShuffleInterval).UnixMilli()}
+		if err := a.themes.save(cfg); err == nil {
+			themeChanged = cfg.Theme != a.theme
+			a.theme, a.nextThemeShuffleMS = cfg.Theme, cfg.NextShuffleMS
+		}
+	}
 	if a.state.Session.Status != "running" {
+		if themeChanged {
+			a.state.Revision++
+			s := a.snapshotLocked()
+			a.mu.Unlock()
+			if a.onChange != nil {
+				a.onChange(s)
+			}
+			return
+		}
 		a.mu.Unlock()
 		return
 	}
-	now := a.now()
 	// A long scheduling gap is treated as sleep: never award offline focus.
 	if now.Sub(a.lastTick) > 5*time.Second {
 		a.state.Session.ElapsedMS += max(0, a.lastTick.Sub(a.segment).Milliseconds())

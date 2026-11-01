@@ -5,6 +5,7 @@ import userEvent from "@testing-library/user-event";
 const hide = vi.fn();
 const quit = vi.fn();
 const setCompact = vi.fn();
+const openSettings = vi.fn();
 
 vi.mock("../src/state/useAquarium", () => ({
   useAquarium: () => ({
@@ -20,8 +21,8 @@ vi.mock("../src/state/useAquarium", () => ({
     busy: false, healthy: true, soundPlaying: false, soundStatus: "", themes: [], selectedKind: "focus",
     setSelectedKind: vi.fn(), primary: vi.fn(), endSession: vi.fn(), feed: vi.fn(), pickSound: vi.fn(), setVolume: vi.fn(),
     toggleSound: vi.fn(), setTheme: vi.fn(), saveSettings: vi.fn(), exportArchive: vi.fn(), importArchive: vi.fn(),
-    importFile: vi.fn(), checkUpdate: vi.fn(), setCompact, hide, quit, toast: vi.fn(), toastMessage: "",
-    soundRef: { current: null }, reefRef: { current: null }, notifyThemeChanged: vi.fn(), onOpenSettings: vi.fn(),
+    importFile: vi.fn(), checkUpdate: vi.fn(), setCompact, openSettings, hide, quit, toast: vi.fn(), toastMessage: "",
+    soundRef: { current: null }, reefRef: { current: null }, notifyThemeChanged: vi.fn(),
   }),
 }));
 vi.mock("../src/state/bridge", () => ({ desktop: true, call: vi.fn(), subscribe: vi.fn().mockResolvedValue(() => {}), onAudioRequest: () => () => {}, onUiRequest: () => () => {} }));
@@ -29,13 +30,11 @@ vi.mock("../src/reef/ReefCanvas", () => ({ ReefCanvas: () => null }));
 
 import { App } from "../src/App";
 
-test("titlebar has no separate minimize/minus button; X hides (not quits)", async () => {
+test("desktop titlebar leaves close and minimize controls to the native window", () => {
   render(<App />);
   expect(screen.queryByRole("button", { name: /收起到托盘/ })).toBeNull();
-  const close = screen.getByRole("button", { name: /关闭窗口/ });
-  expect(close).toHaveAttribute("title", expect.stringContaining("后台"));
-  await userEvent.click(close);
-  expect(hide).toHaveBeenCalledTimes(1);
+  expect(screen.queryByRole("button", { name: /关闭窗口/ })).toBeNull();
+  expect(hide).not.toHaveBeenCalled();
   expect(quit).not.toHaveBeenCalled();
 });
 
@@ -43,4 +42,11 @@ test("compact toggle still routes to setCompact", async () => {
   render(<App />);
   await userEvent.click(screen.getByRole("button", { name: /切换桌面挂件/ }));
   expect(setCompact).toHaveBeenCalled();
+});
+
+test("desktop settings opens the native window without mounting the web dialog", async () => {
+  render(<App />);
+  await userEvent.click(screen.getByRole("button", { name: "计时设置" }));
+  expect(openSettings).toHaveBeenCalledOnce();
+  expect(screen.queryByRole("dialog", { name: "按自己的节奏来" })).toBeNull();
 });

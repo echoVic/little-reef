@@ -15,27 +15,38 @@ import (
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/plugins/updater"
 )
+
 const feedbackURL = "https://github.com/echoVic/little-reef/issues/new"
 
+var errArchiveCanceled = errors.New("已取消")
+
 type Desktop struct {
-	a        *Aquarium
-	win      *mygo.Window
-	tray     *mygo.Tray
-	quitting atomic.Bool
-	stopSwim func()
-	menu     *mygo.Menu
-	themeIDs []string
+	a                   *Aquarium
+	win                 *mygo.Window
+	tray                *mygo.Tray
+	quitting            atomic.Bool
+	stopSwim            func()
+	menu                *mygo.Menu
+	appMenu             *mygo.Menu
+	compact             atomic.Bool
+	fullBounds          mygo.Rectangle
+	settings            *nativeSettings
+	shortcuts           *shortcutController
+	pausedMenuShortcuts []pausedMenuShortcut
 
 	// Mini native panel anchored to the tray icon.
 	flyout *mygo.Window
 	// Ephemeral audio state reported by the frontend's WebAudio bridge.
 	audio atomicAudioState
 	// In-flight command tracking + volume drag draft + theme cache.
-	req       requestState
-	vol       volumeDraft
-	theme     themeCache
-	confirmEnd bool
-	bc        broadcaster
+	req               requestState
+	timerReq          requestState
+	uiReq             requestState
+	vol               volumeDraft
+	theme             themeCache
+	confirmEnd        bool
+	confirmEndSession int64
+	bc                broadcaster
 }
 
 // AudioState is what the frontend reports after handling a desktop:audio-request.
@@ -72,9 +83,9 @@ var AudioRequested = mygo.NewEvent[AudioRequestEvent]("desktop:audio-request")
 // UIRequestEvent is broadcast to the page when the native panel asks it to
 // perform a UI action it owns (open settings, apply compact CSS).
 type UIRequestEvent struct {
-	RequestID string  `json:"requestId"`
-	Command   string  `json:"command"` // "set-compact" | "open-settings"
-	Compact   *bool   `json:"compact,omitempty"`
+	RequestID string `json:"requestId"`
+	Command   string `json:"command"` // "set-compact"
+	Compact   *bool  `json:"compact,omitempty"`
 }
 
 var UIRequested = mygo.NewEvent[UIRequestEvent]("desktop:ui-request")
@@ -82,13 +93,17 @@ var UIRequested = mygo.NewEvent[UIRequestEvent]("desktop:ui-request")
 // ExportArchive asks the calling window where to save the backup, then writes it.
 // An empty path means the user canceled; callers must stay silent then.
 func (d *Desktop) ExportArchive(ctx context.Context) (string, error) {
+	return d.exportArchive(ctx, mygo.CallerWindow(ctx))
+}
+
+func (d *Desktop) exportArchive(ctx context.Context, parent *mygo.Window) (string, error) {
 	text, err := d.a.ExportArchive()
 	if err != nil {
 		return "", err
 	}
 	home, _ := os.UserHomeDir()
 	path, err := mygo.Dialog.Save(mygo.SaveDialogOptions{
-		Parent:      mygo.CallerWindow(ctx),
+		Parent:      parent,
 		Title:       "导出存档",
 		ButtonLabel: "导出",
 		DefaultPath: filepath.Join(home, "little-reef-archive.json"),
@@ -109,8 +124,12 @@ func (d *Desktop) ExportArchive(ctx context.Context) (string, error) {
 // ImportArchive asks the calling window which backup to restore, then validates it.
 // A canceled pick means "已取消" and stays quiet; failed validation preserves the archive.
 func (d *Desktop) ImportArchive(ctx context.Context) (Snapshot, error) {
+	return d.importArchive(ctx, mygo.CallerWindow(ctx))
+}
+
+func (d *Desktop) importArchive(ctx context.Context, parent *mygo.Window) (Snapshot, error) {
 	paths, err := mygo.Dialog.Open(mygo.OpenDialogOptions{
-		Parent:      mygo.CallerWindow(ctx),
+		Parent:      parent,
 		Title:       "导入存档",
 		ButtonLabel: "导入",
 		Filters:     []mygo.FileFilter{{Name: "小海底存档", Extensions: []string{"json"}}},
@@ -119,7 +138,7 @@ func (d *Desktop) ImportArchive(ctx context.Context) (Snapshot, error) {
 		return Snapshot{}, err
 	}
 	if len(paths) == 0 {
-		return Snapshot{}, errors.New("已取消")
+		return Snapshot{}, errArchiveCanceled
 	}
 	if err := ctx.Err(); err != nil {
 		return Snapshot{}, err
@@ -131,7 +150,7 @@ func (d *Desktop) ImportArchive(ctx context.Context) (Snapshot, error) {
 	if err := ctx.Err(); err != nil {
 		return Snapshot{}, err
 	}
-	return d.a.ImportArchive(string(data))
+	return d.a.importArchive(ctx, string(data))
 }
 
 // Hide keeps the page and sound alive. Restored via tray click, Dock icon
@@ -162,6 +181,9 @@ func needsStartupFullReset(w, h int) bool {
 	return w < fullMinWidth || h < fullMinHeight
 }
 
+// GetCompact restores the page's layout after loading or reloading its web view.
+func (d *Desktop) GetCompact() bool { return d.compact.Load() }
+
 // SetCompact turns the window into a small always-on-top desktop aquarium.
 func (d *Desktop) SetCompact(ctx context.Context, compact bool) {
 	mygo.RunOnMain(func() {
@@ -175,6 +197,10 @@ func (d *Desktop) SetCompact(ctx context.Context, compact bool) {
 // startup clamp can reuse the exact same placement sequence.
 func (d *Desktop) applyCompactOn(win *mygo.Window, compact bool) {
 	area := mygo.Screen.DisplayMatching(win.Bounds()).WorkArea
+	wasCompact := d.compact.Swap(compact)
+	if compact && !wasCompact {
+		d.fullBounds = win.Bounds()
+	}
 	win.SetAlwaysOnTop(compact)
 	if compact {
 		win.SetMinimumSize(360, 260)
@@ -182,9 +208,32 @@ func (d *Desktop) applyCompactOn(win *mygo.Window, compact bool) {
 		win.SetPosition(area.X+max(0, area.Width-420), area.Y+max(0, area.Height-370))
 	} else {
 		win.SetMinimumSize(fullMinWidth, fullMinHeight)
+		if wasCompact && d.fullBounds.Width >= fullMinWidth && d.fullBounds.Height >= fullMinHeight {
+			bounds := restoredFullBounds(d.fullBounds, area)
+			win.SetBounds(bounds)
+			d.refreshNativeMenus()
+			return
+		}
 		win.SetSize(fullWidth, fullHeight)
 		width, height := win.Size()
 		win.SetPosition(area.X+max(0, (area.Width-width)/2), area.Y+max(0, (area.Height-height)/2))
+	}
+	d.refreshNativeMenus()
+}
+
+func restoredFullBounds(saved, area mygo.Rectangle) mygo.Rectangle {
+	saved.Width = min(max(saved.Width, fullMinWidth), area.Width)
+	saved.Height = min(max(saved.Height, fullMinHeight), area.Height)
+	saved.X = max(area.X, min(saved.X, area.X+area.Width-saved.Width))
+	saved.Y = max(area.Y, min(saved.Y, area.Y+area.Height-saved.Height))
+	return saved
+}
+
+func (d *Desktop) openAquarium() {
+	if d.compact.Load() {
+		d.requestCompact(false)
+	} else {
+		d.show()
 	}
 }
 
@@ -215,13 +264,9 @@ func (d *Desktop) changed(s Snapshot) {
 		if d.quitting.Load() || d.win.IsDestroyed() {
 			return
 		}
-		// Read the newest snapshot here, not a stale queued theme selection.
-		current := d.a.Get().Theme
-		for _, id := range d.themeIDs {
-			item := d.menu.ItemByID("theme:" + id)
-			if item != nil && item.IsChecked() != (id == current) {
-				item.SetChecked(id == current)
-			}
+		d.refreshNativeMenus()
+		if s := d.settings; s != nil && !s.win.IsDestroyed() {
+			s.win.Invalidate()
 		}
 	})
 	d.invalidateFlyout()
@@ -262,9 +307,12 @@ func (d *Desktop) run(web fs.FS) error {
 	mygo.Use(updater.New(updater.Options{Interval: 4 * time.Hour}))
 	mygo.SetFrontend(web)
 	mygo.App.WhenReady(func() {
+		d.appMenu = mygo.NewMenu(d.applicationMenu())
+		mygo.App.SetMenu(d.appMenu)
 		d.win = mygo.NewWindow(mygo.WindowOptions{
 			Title: "小海底 · 桌面水族馆", URL: "/", Width: 1100, Height: 800, MinWidth: 760, MinHeight: 680,
-			Frameless: true, Transparent: true, BackgroundColor: "#0c1820", StateKey: "aquarium-main",
+			TitleBarStyle: mygo.TitleBarHiddenInset, TitleBarHeight: 58,
+			BackgroundColor: "#0c1820", StateKey: "aquarium-main",
 		})
 		// mygo restores the StateKey rect verbatim without clamping to
 		// MinWidth/MinHeight; if the previous run quit in compact (400x350),
@@ -274,7 +322,6 @@ func (d *Desktop) run(web fs.FS) error {
 		if w, h := d.win.Size(); needsStartupFullReset(w, h) {
 			d.applyCompactOn(d.win, false)
 		}
-		d.win.SetMenu(mygo.NewMenu(nil))
 		d.win.OnClose(func(e *mygo.CloseEvent) {
 			allow, intercept := handleWindowClose(d.quitting.Load())
 			if allow {
@@ -289,7 +336,7 @@ func (d *Desktop) run(web fs.FS) error {
 		d.createTray()
 		d.a.onChange = d.changed
 		d.a.onDone = d.completed
-		if err := mygo.GlobalShortcut.Register("CmdOrCtrl+Shift+A", d.show); err != nil {
+		if err := d.shortcuts.start(); err != nil {
 			log.Print("全局快捷键不可用：", err)
 		}
 		go func() { _ = mygo.App.Dock.SetIcon(markBadgePNG(512)) }()
@@ -298,6 +345,9 @@ func (d *Desktop) run(web fs.FS) error {
 	})
 	mygo.App.OnBeforeQuit(func(*mygo.QuitEvent) { d.quitting.Store(true) })
 	mygo.App.OnWillQuit(func(*mygo.QuitEvent) {
+		if d.shortcuts != nil {
+			d.shortcuts.stop()
+		}
 		if d.stopSwim != nil {
 			d.stopSwim()
 		}

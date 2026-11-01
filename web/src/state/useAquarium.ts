@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { call, desktop, subscribe, onAudioRequest, onUiRequest } from "./bridge";
+import { call, desktop, subscribe, onAudioRequest, onUiRequest, onShortcutSettings } from "./bridge";
 import { applyTheme } from "../theme/theme";
 import { Soundscape } from "../audio/soundscape";
 import { exportToast, importConfirm, importSuccess, downloadArchive } from "../backup/backup";
-import type { Preferences, Snapshot, ThemeInfo } from "./types";
+import type { Preferences, Snapshot, ThemeInfo, ShortcutSnapshot } from "./types";
 
 export type SessionKind = "focus" | "break";
 
@@ -96,13 +96,15 @@ export interface AquariumApi {
   setVolume: (v: number) => void;
   toggleSound: () => void;
   setTheme: (id: string) => void;
+  setThemeAuto: (enabled: boolean) => void;
+  setThemeShuffle: (enabled: boolean) => void;
   saveSettings: (focusMinutes: number, breakMinutes: number, chimeEnabled: number, onDone: () => void) => void;
   exportArchive: () => void;
   importArchive: () => void;
   importFile: (text: string) => void;
   checkUpdate: () => void;
   setCompact: (v: boolean) => void;
-  onOpenSettings: (cb: () => void) => void;
+  openSettings: () => void;
   hide: () => void;
   quit: () => void;
   toast: (msg: string) => void;
@@ -132,10 +134,11 @@ export function useAquarium(): AquariumApi {
   const adjustingVolumeRef = useRef(false);
   const soundRef = useRef<Soundscape | null>(null);
   const reefRef = useRef<import("../reef/Reef").Reef | null>(null);
+  const layoutGeneration = useRef(0);
+  const spaceShortcutEnabled = useRef(true);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [, forceToast] = useState(0);
   const toastMsg = useRef("");
-  const openSettingsCb = useRef<(() => void) | null>(null);
 
   if (!soundRef.current && typeof window !== "undefined") {
     soundRef.current = new Soundscape((message: string, error?: boolean) => {
@@ -163,6 +166,33 @@ export function useAquarium(): AquariumApi {
       lastAudioKeyRef.current = key;
       void soundRef.current?.set(playing, p.sound, p.volume);
       reportAudio("");
+    }
+  }
+
+  function applySoundChoice(before: Snapshot, next: Snapshot, wanted: boolean): Snapshot {
+    apply(next);
+    const latest = stateRef.current!;
+    // A native timer action can supersede the session while preferences are in flight.
+    if (latest.session.id === before.session.id && latest.session.status === before.session.status) {
+      soundPlayingRef.current = wanted && latest.preferences.soundEnabled && healthyRef.current;
+    }
+    lastAudioKeyRef.current = "";
+    setSoundPlaying(soundPlayingRef.current);
+    updateAudio(latest);
+    return latest;
+  }
+
+  async function settleSound(start: Promise<void>): Promise<void> {
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await Promise.race([
+        start,
+        new Promise<void>((resolve) => {
+          timeout = setTimeout(() => { soundRef.current?.cancel(); resolve(); }, 10000);
+        }),
+      ]);
+    } finally {
+      clearTimeout(timeout);
     }
   }
 
@@ -275,12 +305,8 @@ export function useAquarium(): AquariumApi {
     }
     void action(async () => {
       const next = await call<Snapshot>("Aquarium.SetPreferences", { ...state.preferences, soundEnabled: wanted });
-      apply(next);
       // Preview while idle or on break is an explicit choice.
-      soundPlayingRef.current = wanted;
-      lastAudioKeyRef.current = "";
-      setSoundPlaying(wanted);
-      updateAudio(next);
+      applySoundChoice(state, next, wanted);
       reportAudio("");
       return null;
     });
@@ -321,28 +347,22 @@ export function useAquarium(): AquariumApi {
       if (busyRef.current) { noOp("busy"); return; }
       if (req.command !== "toggle" && req.command !== "enable" && req.command !== "disable" && req.command !== "set-volume") { noOp("unknown command"); return; }
       busyRef.current = true; setBusy(true);
-      let settled = false;
       try {
         if (req.command === "set-volume") {
           const v = typeof req.volume === "number" ? Math.min(1, Math.max(0, req.volume)) : state.preferences.volume;
           const next = await call<Snapshot>("Aquarium.SetPreferences", { ...state.preferences, volume: v });
-          apply(next); lastAudioKeyRef.current = ""; updateAudio(next);
+          apply(next);
+          const latest = stateRef.current!;
+          lastAudioKeyRef.current = ""; updateAudio(latest);
           if (soundPlayingRef.current) {
-            await Promise.race([
-              soundRef.current!.set(true, next.preferences.sound, v),
-              new Promise((r) => setTimeout(r, 10000)).then(() => { settled = true; soundRef.current?.cancel(); }),
-            ]);
+            await settleSound(soundRef.current!.set(true, latest.preferences.sound, latest.preferences.volume));
           }
         } else {
           const wanted = req.command === "enable" ? true : req.command === "disable" ? false : !soundPlayingRef.current;
           const next = await call<Snapshot>("Aquarium.SetPreferences", { ...state.preferences, soundEnabled: wanted });
-          apply(next);
-          soundPlayingRef.current = wanted; lastAudioKeyRef.current = ""; setSoundPlaying(wanted); updateAudio(next);
-          if (wanted) {
-            await Promise.race([
-              soundRef.current!.set(true, next.preferences.sound, next.preferences.volume),
-              new Promise((r) => setTimeout(r, 10000)).then(() => { settled = true; soundRef.current?.cancel(); }),
-            ]);
+          const latest = applySoundChoice(state, next, wanted);
+          if (soundPlayingRef.current) {
+            await settleSound(soundRef.current!.set(true, latest.preferences.sound, latest.preferences.volume));
           }
         }
       } catch (e) {
@@ -352,38 +372,54 @@ export function useAquarium(): AquariumApi {
         // Report the observed terminal state; a timeout leaves context not
         // running and requested → needGesture, never a fake "on".
         reportAudio(req.requestId);
-        void settled;
       }
     });
     return off;
   }, [reportAudio]);
 
-  // Native window/geometry bridge. open-settings opens the real Radix dialog in
-  // the page; set-compact syncs Desktop state AND the body class.
+  function applyCompactLayout(compact: boolean): void {
+    layoutGeneration.current++;
+    document.body.classList.toggle("compact", compact);
+    reefRef.current?.resize();
+  }
+
+  // Subscribe before reading so a delayed initial reply cannot overwrite a new mode.
   useEffect(() => {
     if (!desktop) return;
+    let stopped = false;
+    const generation = layoutGeneration.current;
     const off = onUiRequest((req) => {
+      if (stopped) return;
       const ack = (ok: boolean, error = "") => void call("Desktop.AckUIRequest", req.requestId, ok, error).catch(() => {});
       if (req.command === "set-compact") {
         // Go already applied the window geometry; the page only syncs its own
         // layout class and ACKs (no duplicate SetCompact round-trip).
-        document.body.classList.toggle("compact", req.compact ?? false);
-        reefRef.current?.resize();
-        ack(true);
-      } else if (req.command === "open-settings") {
-        if (!openSettingsCb.current) { ack(false, "no handler"); return; }
-        openSettingsCb.current();
+        applyCompactLayout(req.compact ?? false);
         ack(true);
       }
     });
-    return off;
+    void call<boolean>("Desktop.GetCompact").then((compact) => {
+      if (!stopped && generation === layoutGeneration.current && typeof compact === "boolean") applyCompactLayout(compact);
+    }).catch((error: Error) => { if (!stopped) toast(error.message); });
+    return () => { stopped = true; off(); };
   }, []);
 
-  // App registers this to open the Radix settings dialog.
-  const onOpenSettings = useCallback((cb: () => void) => { openSettingsCb.current = cb; }, []);
+  const openSettings = useCallback(() => {
+    if (desktop) void call("Desktop.OpenSettings").catch((error: Error) => toast(error.message));
+  }, []);
 
   const setTheme = useCallback((id: string) => {
     void action(() => call("Aquarium.SetTheme", id));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const setThemeAuto = useCallback((enabled: boolean) => {
+    void action(() => call("Aquarium.SetThemeAuto", enabled));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const setThemeShuffle = useCallback((enabled: boolean) => {
+    void action(() => call("Aquarium.SetThemeShuffle", enabled));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -446,13 +482,19 @@ export function useAquarium(): AquariumApi {
   }, []);
 
   const setCompact = useCallback((v: boolean) => {
+    const generation = ++layoutGeneration.current;
     (async () => {
       try {
         if (desktop) await call("Desktop.SetCompact", v);
-        document.body.classList.toggle("compact", v);
-        reefRef.current?.resize();
+        if (generation === layoutGeneration.current) applyCompactLayout(v);
       } catch (error) {
         toast((error as Error).message);
+        if (desktop && generation === layoutGeneration.current) {
+          try {
+            const compact = await call<boolean>("Desktop.GetCompact");
+            if (generation === layoutGeneration.current && typeof compact === "boolean") applyCompactLayout(compact);
+          } catch { /* Preserve the error from the original operation. */ }
+        }
       }
     })();
   }, []);
@@ -495,11 +537,25 @@ export function useAquarium(): AquariumApi {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (!desktop) return;
+    let stopped = false;
+    let receivedUpdate = false;
+    const accept = (settings: ShortcutSnapshot) => {
+      if (!stopped && typeof settings.spaceEnabled === "boolean") spaceShortcutEnabled.current = settings.spaceEnabled;
+    };
+    const off = onShortcutSettings((settings) => { receivedUpdate = true; accept(settings); });
+    void call<ShortcutSnapshot>("Desktop.GetShortcutSettings").then((settings) => {
+      if (!receivedUpdate) accept(settings);
+    }).catch(() => {});
+    return () => { stopped = true; off(); };
+  }, []);
+
   // Spacebar starts/pauses unless focus is in an interactive control or a modal
   // (Radix renders role=dialog, not a native <dialog>, so match by role/state).
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.code !== "Space" || event.repeat) return;
+      if (!spaceShortcutEnabled.current || event.code !== "Space" || event.repeat || event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
       const target = event.target as HTMLElement | null;
       if (!target || target.closest("input, textarea, button, select, summary, [contenteditable='true'], [role='slider'], [role='checkbox'], [role='radio'], [role='switch'], [role='textbox']")) return;
       if (document.querySelector("[role='dialog'][data-state='open'], [role='alertdialog'][data-state='open'], [role='menu'][data-state='open']")) return;
@@ -527,8 +583,8 @@ export function useAquarium(): AquariumApi {
   return {
     snapshot, busy, selectedKind, healthy, soundPlaying, soundStatus, themes,
     setSelectedKind, timer, primary, endSession, feed, pickSound, setVolume, toggleSound,
-    setTheme, saveSettings, exportArchive, importArchive, importFile, checkUpdate,
+    setTheme, setThemeAuto, setThemeShuffle, saveSettings, exportArchive, importArchive, importFile, checkUpdate,
     setCompact, hide, quit, toast, toastMessage: toastMsg.current, soundRef, reefRef, notifyThemeChanged,
-    onOpenSettings,
+    openSettings,
   };
 }

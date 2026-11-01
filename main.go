@@ -96,8 +96,11 @@ func main() {
 		log.Fatal(err)
 	}
 	a.themes = themeStore
-	a.theme = themeStore.load()
+	themeCfg := themeStore.loadConfig()
+	a.theme, a.themeAuto = themeCfg.Theme, themeCfg.Auto
+	a.themeShuffle, a.nextThemeShuffleMS = themeCfg.Shuffle, themeCfg.NextShuffleMS
 	desktop.a = a
+	desktop.shortcuts = newShortcutController(dir, mygo.GlobalShortcut, desktop.show)
 	mygo.Bind(a)
 	mygo.Bind(desktop)
 	if *webAddr != "" {

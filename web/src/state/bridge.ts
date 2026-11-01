@@ -3,7 +3,7 @@ import {
   isMyGo,
   on,
 } from "../../vendor/mygo-runtime/index.js";
-import type { Snapshot } from "./types";
+import type { Snapshot, ShortcutSnapshot } from "./types";
 
 // MyGo's official runtime owns desktop IPC. Only the optional browser demo
 // needs HTTP/SSE; both surfaces share these calls and the same Snapshot.
@@ -30,7 +30,7 @@ export interface Subscriber {
 // Native command channels (Go→web). Routed through the MyGo runtime event bus,
 // not DOM events, so Go.Broadcast actually reaches the page.
 export interface AudioRequest { requestId: string; command: "toggle" | "enable" | "disable" | "set-volume"; volume?: number }
-export interface UiRequest { requestId: string; command: "open-settings" | "set-compact"; compact?: boolean }
+export interface UiRequest { requestId: string; command: "set-compact"; compact?: boolean }
 
 export function onAudioRequest(cb: (e: AudioRequest) => void): () => void {
   if (!desktop) return () => {};
@@ -39,6 +39,11 @@ export function onAudioRequest(cb: (e: AudioRequest) => void): () => void {
 export function onUiRequest(cb: (e: UiRequest) => void): () => void {
   if (!desktop) return () => {};
   return on("desktop:ui-request", cb);
+}
+
+export function onShortcutSettings(cb: (settings: ShortcutSnapshot) => void): () => void {
+  if (!desktop) return () => {};
+  return on("desktop:shortcuts-changed", cb);
 }
 
 // The creator of the subscription owns its disposer. Listener registration

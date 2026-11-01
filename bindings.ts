@@ -55,6 +55,16 @@ export interface Session {
   startedAt: string;
 }
 
+export interface ShortcutBinding {
+  action: string;
+  accelerator: string;
+}
+
+export interface ShortcutSnapshot {
+  bindings: ShortcutBinding[];
+  spaceEnabled: boolean;
+}
+
 /** Snapshot is shared by the desktop IPC, browser view, and saved state. */
 export interface Snapshot {
   revision: number;
@@ -83,6 +93,8 @@ export interface Snapshot {
    * but the file archive strips it (see archiveSnapshot).
    */
   theme?: string;
+  themeAuto?: boolean;
+  themeShuffle?: boolean;
 }
 
 /** ThemeOption is one selectable entry for the settings picker. */
@@ -98,7 +110,7 @@ export interface ThemeOption {
  */
 export interface UIRequestEvent {
   requestId: string;
-  /** "set-compact" | "open-settings" */
+  /** "set-compact" */
   command: string;
   compact?: boolean;
 }
@@ -165,6 +177,14 @@ export const Aquarium = {
   setTheme(id: string): Promise<Snapshot> {
     return call("Aquarium.SetTheme", id);
   },
+  /** SetThemeAuto enables local-time rotation, or freezes the currently visible theme. */
+  setThemeAuto(enabled: boolean): Promise<Snapshot> {
+    return call("Aquarium.SetThemeAuto", enabled);
+  },
+  /** SetThemeShuffle rotates through all installed skins without consecutive repeats. */
+  setThemeShuffle(enabled: boolean): Promise<Snapshot> {
+    return call("Aquarium.SetThemeShuffle", enabled);
+  },
   /** Start begins a fresh focus session or the break after a completed focus. */
   start(kind: string, task: string): Promise<Snapshot> {
     return call("Aquarium.Start", kind, task);
@@ -190,6 +210,14 @@ export const Desktop = {
   exportArchive(): Promise<string> {
     return call("Desktop.ExportArchive");
   },
+  /** GetCompact restores the page's layout after loading or reloading its web view. */
+  getCompact(): Promise<boolean> {
+    return call("Desktop.GetCompact");
+  },
+  /** GetShortcutSettings returns a copy of the current presentation preferences. */
+  getShortcutSettings(): Promise<ShortcutSnapshot> {
+    return call("Desktop.GetShortcutSettings");
+  },
   /**
    * Hide keeps the page and sound alive. Restored via tray click, Dock icon
    * click (OnActivate), or Cmd+Shift+A. No Minimize fallback: Hide is always
@@ -204,6 +232,10 @@ export const Desktop = {
    */
   importArchive(): Promise<Snapshot> {
     return call("Desktop.ImportArchive");
+  },
+  /** OpenSettings opens or focuses the shared native settings window. */
+  openSettings(): Promise<void> {
+    return call("Desktop.OpenSettings");
   },
   /** Quit closes the desktop app and saves the current session. */
   quit(): Promise<void> {
@@ -234,5 +266,6 @@ export const Desktop = {
 export const events = {
   desktopAudioRequest: event<AudioRequestEvent>("desktop:audio-request"),
   desktopUiRequest: event<UIRequestEvent>("desktop:ui-request"),
+  desktopShortcutsChanged: event<ShortcutSnapshot>("desktop:shortcuts-changed"),
   aquariumChanged: event<Snapshot>("aquarium:changed"),
 } as const;

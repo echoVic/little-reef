@@ -25,7 +25,7 @@ vi.mock("../src/state/useAquarium", () => ({
     saveSettings: vi.fn(), exportArchive: vi.fn(), importArchive: vi.fn(), importFile: vi.fn(),
     checkUpdate: vi.fn(), setCompact: vi.fn(), hide: vi.fn(), quit: vi.fn(), toast: vi.fn(),
     toastMessage: "", soundRef: { current: null }, reefRef: { current: null }, notifyThemeChanged: vi.fn(),
-    onOpenSettings: vi.fn(),
+    openSettings: vi.fn(),
   }),
 }));
 vi.mock("../src/state/bridge", () => ({ desktop: false, call: vi.fn(), subscribe: vi.fn(() => Promise.resolve(() => {})) }));
@@ -36,6 +36,12 @@ vi.mock("../src/theme/theme", () => ({
 }));
 
 import { App } from "../src/App";
+
+test("browser settings retains the web dialog", async () => {
+  render(<App />);
+  await userEvent.click(screen.getByRole("button", { name: "计时设置" }));
+  expect(screen.getByRole("dialog", { name: "按自己的节奏来" })).toBeInTheDocument();
+});
 
 beforeAll(() => {
   HTMLCanvasElement.prototype.getContext = () => new Proxy({}, { get: () => () => undefined }) as unknown as CanvasRenderingContext2D;

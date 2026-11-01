@@ -131,6 +131,18 @@ test("Space on body starts the timer; Space on an interactive control does not",
   expect(callMock.mock.calls.filter((c) => c[0] === "Aquarium.Start")).toHaveLength(1);
 });
 
+test("modified Space does not trigger a second timer shortcut", async () => {
+  renderHook(() => useAquarium());
+  await act(async () => { await Promise.resolve(); });
+  act(() => subscriber!.apply(snap(1)));
+  callMock.mockClear();
+  callMock.mockResolvedValue(snap(2));
+  for (const modifier of ["metaKey", "ctrlKey", "altKey", "shiftKey"]) {
+    await act(async () => { document.body.dispatchEvent(new KeyboardEvent("keydown", { code: "Space", bubbles: true, cancelable: true, [modifier]: true })); });
+  }
+  expect(callMock.mock.calls.some((call) => call[0] === "Aquarium.Start")).toBe(false);
+});
+
 test("Space while a Radix dialog (role=dialog data-state=open) is open does not trigger timer", async () => {
   renderHook(() => useAquarium());
   await act(async () => { await Promise.resolve(); });

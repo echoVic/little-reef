@@ -108,6 +108,17 @@ func serveBrowser(addr string, web fs.FS, a *Aquarium) error {
 			} else {
 				result, callErr = a.SetTheme(id)
 			}
+		case "Aquarium.SetThemeAuto", "Aquarium.SetThemeShuffle":
+			var enabled bool
+			if len(req.Args) != 1 || json.Unmarshal(req.Args[0], &enabled) != nil {
+				callErr = errors.New("无效的主题设置")
+			} else {
+				if req.Method == "Aquarium.SetThemeShuffle" {
+					result, callErr = a.SetThemeShuffle(enabled)
+				} else {
+					result, callErr = a.SetThemeAuto(enabled)
+				}
+			}
 		case "Aquarium.GetThemes":
 			result, callErr = a.GetThemes()
 		default:

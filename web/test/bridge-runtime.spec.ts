@@ -26,7 +26,7 @@ test("onAudioRequest subscribes to the real runtime event name", async () => {
   expect(offCount).toBe(1);
 });
 
-test("onUiRequest routes set-compact/open-settings through runtime", async () => {
+test("onUiRequest routes set-compact through runtime", async () => {
   const { onUiRequest } = await import("../src/state/bridge");
   const cb = vi.fn();
   onUiRequest(cb);

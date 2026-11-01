@@ -60,11 +60,18 @@ export interface Snapshot {
   totalDays?: number;
   nextTierRounds?: number;
   theme?: string;
+  themeAuto?: boolean;
+  themeShuffle?: boolean;
 }
 
 export interface ThemeInfo {
   id: string;
   displayName: string;
+}
+
+export interface ShortcutSnapshot {
+  bindings: { action: string; accelerator: string }[];
+  spaceEnabled: boolean;
 }
 
 // A subset of the mygo-runtime global surface the app relies on.

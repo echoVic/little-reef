@@ -119,10 +119,10 @@ func TestEndRequestRecordsError(t *testing.T) {
 		t.Fatal("beginRequest should succeed")
 	}
 	d.endRequest(id, errors.New("disk full"))
-	if d.req.isPending() {
+	if d.timerReq.isPending() {
 		t.Fatal("should not be pending after endRequest")
 	}
-	if d.req.lastErr() != "disk full" {
-		t.Fatalf("expected disk full, got %q", d.req.lastErr())
+	if d.timerReq.lastErr() != "disk full" {
+		t.Fatalf("expected disk full, got %q", d.timerReq.lastErr())
 	}
 }

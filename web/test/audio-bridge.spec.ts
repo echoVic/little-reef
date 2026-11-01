@@ -4,6 +4,7 @@ import { renderHook, act } from "@testing-library/react";
 const callMock = vi.fn();
 const audioHandlers: ((e: unknown) => void)[] = [];
 const uiHandlers: ((e: unknown) => void)[] = [];
+const shortcutHandlers: ((e: { spaceEnabled: boolean }) => void)[] = [];
 const soundApi = {
   set: vi.fn().mockResolvedValue(undefined),
   unlock: vi.fn().mockResolvedValue(undefined),
@@ -18,6 +19,7 @@ vi.mock("../src/state/bridge", () => ({
   desktop: true,
   onAudioRequest: (cb: (e: unknown) => void) => { audioHandlers.push(cb); return () => {}; },
   onUiRequest: (cb: (e: unknown) => void) => { uiHandlers.push(cb); return () => {}; },
+  onShortcutSettings: (cb: (e: { spaceEnabled: boolean }) => void) => { shortcutHandlers.push(cb); return () => {}; },
 }));
 vi.mock("../src/theme/theme", () => ({ applyTheme: vi.fn().mockResolvedValue(undefined) }));
 vi.mock("../src/audio/soundscape", () => ({
@@ -40,12 +42,17 @@ function snap(rev: number, over: Partial<Snapshot> = {}): Snapshot {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  soundApi.set.mockResolvedValue(undefined);
   audioHandlers.length = 0; uiHandlers.length = 0;
+  shortcutHandlers.length = 0;
   subscriber = null;
   document.body.classList.remove("compact");
   soundApi.audioState.mockReturnValue({ contextRunning: false, requested: false, sound: "waves", volume: 0.35, started: false, error: "" });
-  callMock.mockImplementation((method: string) => {
+  callMock.mockImplementation((method: string, ...args: unknown[]) => {
     if (method === "Aquarium.GetThemes") return Promise.resolve([] as never);
+    if (method === "Desktop.GetCompact") return Promise.resolve(false);
+    if (method === "Desktop.GetShortcutSettings") return Promise.resolve({ bindings: [], spaceEnabled: true });
+    if (method === "Aquarium.SetPreferences") return Promise.resolve(snap(2, { preferences: args[0] as Snapshot["preferences"] }));
     return Promise.resolve(snap(1));
   });
   (subscribe as unknown as ReturnType<typeof vi.fn>).mockImplementation((sub: typeof subscriber) => {
@@ -55,6 +62,87 @@ beforeEach(() => {
 });
 
 const flush = async () => { for (let i = 0; i < 8; i++) await Promise.resolve(); };
+
+test("plain Space obeys saved and live native shortcut settings", async () => {
+  callMock.mockImplementation((method: string) => Promise.resolve(method === "Desktop.GetShortcutSettings" ? { bindings: [], spaceEnabled: false } : method === "Desktop.GetCompact" ? false : method === "Aquarium.GetThemes" ? [] : snap(1)));
+  renderHook(() => useAquarium());
+  await act(async () => { await flush(); });
+  await act(async () => { document.body.dispatchEvent(new KeyboardEvent("keydown", { code: "Space", bubbles: true, cancelable: true })); await flush(); });
+  expect(callMock.mock.calls.some((call) => call[0] === "Aquarium.Start")).toBe(false);
+  await act(async () => { shortcutHandlers[0]({ spaceEnabled: true }); await flush(); });
+  await act(async () => { document.body.dispatchEvent(new KeyboardEvent("keydown", { code: "Space", bubbles: true, cancelable: true })); await flush(); });
+  expect(callMock).toHaveBeenCalledWith("Aquarium.Start", "focus", "");
+});
+
+test("native compact layout is restored on startup without a new layout event", async () => {
+  callMock.mockImplementation((method: string) => Promise.resolve(method === "Desktop.GetCompact" ? true : method === "Aquarium.GetThemes" ? [] : snap(1)));
+  renderHook(() => useAquarium());
+  await act(async () => { await flush(); });
+  expect(document.body).toHaveClass("compact");
+});
+
+test("a live compact event wins over a stale initial layout read", async () => {
+  let resolveMode!: (compact: boolean) => void;
+  callMock.mockImplementation((method: string) => method === "Desktop.GetCompact"
+    ? new Promise<boolean>((resolve) => { resolveMode = resolve; })
+    : Promise.resolve(method === "Aquarium.GetThemes" ? [] : snap(1)));
+  renderHook(() => useAquarium());
+  await act(async () => { await flush(); });
+  await act(async () => { uiHandlers[0]({ requestId: "new-mode", command: "set-compact", compact: true }); await flush(); });
+  await act(async () => { resolveMode(false); await flush(); });
+  expect(document.body).toHaveClass("compact");
+});
+
+test("a newer native mode wins over a delayed local compact reply", async () => {
+  let finishLocal!: () => void;
+  callMock.mockImplementation((method: string) => method === "Desktop.SetCompact"
+    ? new Promise<void>((resolve) => { finishLocal = resolve; })
+    : Promise.resolve(method === "Desktop.GetCompact" ? false : method === "Aquarium.GetThemes" ? [] : snap(1)));
+  const { result } = renderHook(() => useAquarium());
+  await act(async () => { await flush(); });
+  await act(async () => { result.current.setCompact(true); await flush(); });
+  await act(async () => { uiHandlers[0]({ requestId: "newer-mode", command: "set-compact", compact: false }); await flush(); });
+  await act(async () => { finishLocal(); await flush(); });
+  expect(document.body).not.toHaveClass("compact");
+});
+
+test.each(["native", "main"])("pausing a round wins over a delayed %s sound-enable reply", async (origin) => {
+  let finishPreferences!: (next: Snapshot) => void;
+  callMock.mockImplementation((method: string) => method === "Aquarium.SetPreferences"
+    ? new Promise<Snapshot>((resolve) => { finishPreferences = resolve; })
+    : Promise.resolve(method === "Desktop.GetCompact" ? false : method === "Aquarium.GetThemes" ? [] : snap(1)));
+  const { result } = renderHook(() => useAquarium());
+  await act(async () => { await flush(); });
+  const running = snap(2, { session: { id: 1, kind: "focus", status: "running", task: "", durationMs: 60000, elapsedMs: 0, startedAt: "" } });
+  await act(async () => { subscriber!.apply(running); await flush(); });
+  await act(async () => {
+    if (origin === "native") audioHandlers[0]({ requestId: "delayed-enable", command: "enable" });
+    else result.current.toggleSound();
+    await flush();
+  });
+  const enabled = { ...running.preferences, soundEnabled: true };
+  await act(async () => { subscriber!.apply(snap(4, { session: { ...running.session, status: "paused" }, preferences: enabled })); await flush(); });
+  await act(async () => { finishPreferences(snap(3, { session: running.session, preferences: enabled })); await flush(); });
+  expect(result.current.snapshot?.session.status).toBe("paused");
+  expect(result.current.soundPlaying).toBe(false);
+  expect(soundApi.set).toHaveBeenLastCalledWith(false, "waves", 0.35);
+});
+
+test.each(["enable", "set-volume"])("a settled %s request cannot cancel playback ten seconds later", async (command) => {
+  vi.useFakeTimers();
+  try {
+    renderHook(() => useAquarium());
+    await act(async () => { await flush(); });
+    await act(async () => { audioHandlers[0]({ requestId: "ready", command: "enable" }); await flush(); });
+    if (command === "set-volume") {
+      await act(async () => { audioHandlers[0]({ requestId: "volume", command, volume: 0.5 }); await flush(); });
+    }
+    await act(async () => { await vi.advanceTimersByTimeAsync(10000); });
+    expect(soundApi.cancel).not.toHaveBeenCalled();
+  } finally {
+    vi.useRealTimers();
+  }
+});
 
 test("enable via runtime event awaits the actual source start, not a fixed timer", async () => {
   let resolveSet!: () => void;
@@ -157,12 +245,10 @@ test("set-compact syncs body class only (no duplicate SetCompact) and ACKs", asy
   expect(callMock).toHaveBeenCalledWith("Desktop.AckUIRequest", "c1", true, "");
 });
 
-test("open-settings invokes the App-registered callback and ACKs", async () => {
-  let opened = false;
+test("openSettings calls the native window directly without a UI ACK", async () => {
   const { result } = renderHook(() => useAquarium());
   await act(async () => { await Promise.resolve(); });
-  result.current.onOpenSettings(() => { opened = true; });
-  await act(async () => { uiHandlers[0]({ requestId: "s1", command: "open-settings" }); await flush(); });
-  expect(opened).toBe(true);
-  expect(callMock).toHaveBeenCalledWith("Desktop.AckUIRequest", "s1", true, "");
+  await act(async () => { result.current.openSettings(); await flush(); });
+  expect(callMock).toHaveBeenCalledWith("Desktop.OpenSettings");
+  expect(callMock.mock.calls.some((call) => call[0] === "Desktop.AckUIRequest")).toBe(false);
 });

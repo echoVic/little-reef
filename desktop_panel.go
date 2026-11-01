@@ -17,11 +17,17 @@ import (
 // --- request tracker ---
 
 type requestState struct {
-	mu      sync.Mutex
-	current string // requestId of in-flight command, "" if idle
-	err     string
-	timer   *time.Timer
+	mu        sync.Mutex
+	current   string // requestId of in-flight command, "" if idle
+	err       string
+	timer     *time.Timer
 	onTimeout func() // called when the timer fires (e.g. clear draft + redraw)
+}
+
+func (r *requestState) setOnTimeout(fn func()) {
+	r.mu.Lock()
+	r.onTimeout = fn
+	r.mu.Unlock()
 }
 
 func (r *requestState) begin(id string, timeout time.Duration) bool {
@@ -107,34 +113,50 @@ func (d *Desktop) toggleFlyout() {
 			d.flyout = nil
 			return
 		}
-		f := mygo.NewFlyout(mygo.FlyoutOptions{
-			Tray:      d.tray,
-			Placement: mygo.PlacementBottom,
-			Focusable: true,
-			Popover:   true,
-			Width:     280,
-			Height:    400,
-			Content:   ui.View(d.panelView),
-		})
-		d.flyout = f
-		f.OnClose(func(*mygo.CloseEvent) {
-			// OnClose fires on outside-press/ESC/programmatic Close; clear
-			// the field before anything else so subsequent toggles don't
-			// race against a still-visible window.
-			if d.flyout == f {
-				d.flyout = nil
-			}
+		d.openFlyout()
+	})
+}
+
+// openFlyout is called on the UI thread and never toggles an existing panel closed.
+func (d *Desktop) openFlyout() {
+	if d.quitting.Load() || d.tray == nil {
+		return
+	}
+	if d.flyout != nil && !d.flyout.IsDestroyed() {
+		d.flyout.Show()
+		d.flyout.Focus()
+		d.flyout.Invalidate()
+		return
+	}
+	f := mygo.NewFlyout(mygo.FlyoutOptions{
+		Tray:      d.tray,
+		Placement: mygo.PlacementBottom,
+		Focusable: true,
+		Popover:   true,
+		Width:     320,
+		Height:    420,
+		Content:   ui.View(d.panelView),
+	})
+	d.flyout = f
+	f.SetTitle("小海底快捷面板")
+	f.OnClose(func(*mygo.CloseEvent) {
+		// OnClose fires on outside-press/ESC/programmatic Close; clear
+		// the field before anything else so subsequent toggles don't
+		// race against a still-visible window.
+		if d.flyout == f {
+			d.flyout = nil
 			d.confirmEnd = false
-		})
+			d.invalidateNativeMenus()
+		}
 	})
 }
 
 func (d *Desktop) invalidateFlyout() {
-	if d.flyout == nil {
+	if d.win == nil {
 		return
 	}
-	mygo.RunOnMain(func() {
-		if d.flyout != nil && !d.flyout.IsDestroyed() {
+	d.win.Update(func() {
+		if !d.quitting.Load() && d.flyout != nil && !d.flyout.IsDestroyed() {
 			d.flyout.Invalidate()
 		}
 	})
@@ -143,9 +165,9 @@ func (d *Desktop) invalidateFlyout() {
 // themeCache holds the parsed ui.Theme so we don't re-read theme.json on
 // every paint; invalidated when the theme ID changes.
 type themeCache struct {
-	mu       sync.Mutex
-	themeID  string
-	uiTheme  *ui.Theme
+	mu      sync.Mutex
+	themeID string
+	uiTheme *ui.Theme
 }
 
 func (c *themeCache) get(themeID string, read func() (*ui.Theme, error)) *ui.Theme {
@@ -161,148 +183,6 @@ func (c *themeCache) get(themeID string, read func() (*ui.Theme, error)) *ui.The
 	c.themeID = themeID
 	c.uiTheme = t
 	return t
-}
-
-func (d *Desktop) panelView(c *ui.Context) {
-	snap := d.a.Get()
-	aud := d.audio.get()
-
-	// Theme: cached mapping from current theme.json.
-	if t := d.theme.get(snap.Theme, d.parseTheme); t != nil {
-		c.SetTheme(t)
-	}
-
-	// Task line (truncate by rune, not byte, to avoid splitting UTF-8).
-	task := snap.Session.Task
-	if task == "" {
-		task = map[bool]string{true: "专注", false: "休息"}[snap.Session.Kind == "focus"]
-	}
-	if rs := []rune(task); len(rs) > 24 {
-		task = string(rs[:24]) + "…"
-	}
-	ui.Text(c, task).Label("当前任务").FontSize(12).Opacity(0.7)
-
-	// Big countdown.
-	remaining := time.Duration(snap.Session.DurationMS-snap.Session.ElapsedMS) * time.Millisecond
-	if remaining < 0 {
-		remaining = 0
-	}
-	if snap.Session.Status == "idle" {
-		// Show configured focus duration as a preview, not 00:00.
-		remaining = time.Duration(snap.Preferences.FocusMinutes) * time.Minute
-	}
-	mm, ss := int(remaining.Minutes()), int(remaining.Seconds())%60
-	ui.Text(c, fmt.Sprintf("%02d:%02d", mm, ss)).Label("剩余时间").FontSize(40).Bold()
-
-	// Status line.
-	status := d.statusLine(snap)
-	ui.Text(c, status).Label("状态").FontSize(12).Opacity(0.7)
-
-	// Primary action row.
-	busy := d.req.isPending()
-	ui.Row(c).Gap(8).Children(func() {
-		switch snap.Session.Status {
-		case "running":
-			if ui.Button(c, "暂停").Label("暂停").Clicked() {
-				if id, ok := d.beginRequest(); ok {
-					go func() {
-						_, err := d.a.Pause()
-						d.endRequest(id, err)
-					}()
-				}
-			}
-		case "paused":
-			if ui.PrimaryButton(c, "继续").Label("继续").Clicked() {
-				if id, ok := d.beginRequest(); ok {
-					go func() {
-						_, err := d.a.Resume()
-						d.endRequest(id, err)
-					}()
-				}
-			}
-		default:
-			if ui.PrimaryButton(c, "开始专注").Label("开始专注").Clicked() {
-				if id, ok := d.beginRequest(); ok {
-					go func() {
-						_, err := d.a.Start("focus", "")
-						d.endRequest(id, err)
-					}()
-				}
-			}
-			if ui.Button(c, "休息").Label("开始休息").Clicked() {
-				if id, ok := d.beginRequest(); ok {
-					go func() {
-						_, err := d.a.Start("break", "")
-						d.endRequest(id, err)
-					}()
-				}
-			}
-		}
-
-		// Sound toggle.
-		icon := "🔇"
-		if aud.Running && aud.Requested {
-			icon = "🔊"
-		} else if aud.NeedGesture {
-			icon = "🔓"
-		}
-		if ui.Button(c, icon).Label("切换声音").Clicked() && !busy {
-			d.requestAudio("toggle", 0)
-		}
-	})
-
-	// Volume slider: use draft while dragging.
-	d.vol.mu.Lock()
-	vol := snap.Preferences.Volume
-	if d.vol.active {
-		vol = d.vol.val
-	}
-	d.vol.mu.Unlock()
-	if ui.Slider(c, &vol, 0, 1).Label("音量").Changed() {
-		d.vol.mu.Lock()
-		d.vol.val = vol
-		d.vol.active = true
-		d.vol.mu.Unlock()
-		d.requestAudio("set-volume", vol)
-	}
-
-	// Quick links.
-	ui.Row(c).Gap(6).Children(func() {
-		if ui.Button(c, "主窗").Label("打开主窗").Clicked() {
-			d.show()
-		}
-		if ui.Button(c, "挂件").Label("切换挂件模式").Clicked() && !busy {
-			d.requestCompact(true)
-		}
-		if ui.Button(c, "设置").Label("打开设置").Clicked() && !busy {
-			d.requestOpenSettings()
-		}
-	})
-
-	// Error / need-gesture.
-	if e := d.req.lastErr(); e != "" {
-		ui.Text(c, e).Label("错误").FontSize(11).Opacity(0.7)
-	} else if aud.NeedGesture {
-		ui.Text(c, "打开主窗解锁音频").FontSize(11).Opacity(0.6)
-	}
-
-	// End session with confirmation (persisted on Desktop, not local).
-	if snap.Session.Status == "running" || snap.Session.Status == "paused" {
-		if ui.Button(c, "结束").Label("结束本次计时").Clicked() {
-			d.confirmEnd = true
-		}
-	}
-	if d.confirmEnd {
-		switch ui.AlertDialog(c, &d.confirmEnd, "结束本次计时？", "未完成的专注会被记为中断。", "取消", "结束") {
-		case 1:
-			if id, ok := d.beginRequest(); ok {
-				go func() {
-					_, err := d.a.End()
-					d.endRequest(id, err)
-				}()
-			}
-		}
-	}
 }
 
 // statusLine derives a human-readable status from the snapshot.
@@ -383,29 +263,6 @@ func parseThemeJSON(themeID string) (*ui.Theme, error) {
 	return &th, nil
 }
 
-// beginRequest allocates a fresh request id and marks it in-flight.
-// Returns ("", false) if another request is already pending.
-// Go-internal actions (Pause/Resume/Start/End) are fast, 3s is enough.
-func (d *Desktop) beginRequest() (string, bool) {
-	id := fmt.Sprintf("go-%d", time.Now().UnixNano())
-	if !d.req.begin(id, 3*time.Second) {
-		return "", false
-	}
-	return id, true
-}
-
-func (d *Desktop) endRequest(id string, err error) {
-	ok := err == nil
-	msg := ""
-	if err != nil {
-		msg = err.Error()
-	}
-	d.req.done(id, ok, msg)
-	if d.flyout != nil {
-		d.invalidateFlyout()
-	}
-}
-
 // --- command senders ---
 
 func (d *Desktop) broadcaster() broadcaster {
@@ -417,13 +274,13 @@ func (d *Desktop) broadcaster() broadcaster {
 
 func (d *Desktop) requestAudio(command string, volume float64) {
 	id := fmt.Sprintf("audio-%d", time.Now().UnixNano())
-	// Wire timeout callback once: clear draft + redraw on timeout.
-	d.req.onTimeout = func() {
+	// Clear the slider preview if the frontend never acknowledges the request.
+	d.req.setOnTimeout(func() {
 		d.vol.mu.Lock()
 		d.vol.active = false
 		d.vol.mu.Unlock()
 		d.invalidateFlyout()
-	}
+	})
 	if !d.req.begin(id, 12*time.Second) { // frontend uses 10s settle; buffer 2s
 		if command == "set-volume" {
 			d.vol.mu.Lock()
@@ -443,26 +300,24 @@ func (d *Desktop) requestAudio(command string, volume float64) {
 
 func (d *Desktop) requestCompact(compact bool) {
 	id := fmt.Sprintf("ui-%d", time.Now().UnixNano())
-	if !d.req.begin(id, 3*time.Second) {
+	d.uiReq.setOnTimeout(d.invalidateNativeMenus)
+	if !d.uiReq.begin(id, 3*time.Second) {
 		return
 	}
-	ev := UIRequestEvent{RequestID: id, Command: "set-compact", Compact: &compact}
-	d.broadcaster().broadcastUI(ev)
-	mygo.RunOnMain(func() {
-		if d.win != nil && !d.win.IsDestroyed() {
+	d.invalidateNativeMenus()
+	apply := func() {
+		if d.win != nil && !d.win.IsDestroyed() && !d.quitting.Load() {
 			d.applyCompactOn(d.win, compact)
+			d.show()
 		}
-	})
-}
-
-func (d *Desktop) requestOpenSettings() {
-	id := fmt.Sprintf("ui-%d", time.Now().UnixNano())
-	if !d.req.begin(id, 3*time.Second) {
-		return
+		ev := UIRequestEvent{RequestID: id, Command: "set-compact", Compact: &compact}
+		d.broadcaster().broadcastUI(ev)
 	}
-	ev := UIRequestEvent{RequestID: id, Command: "open-settings"}
-	_ = UIRequested.Broadcast(ev)
-	d.show()
+	if d.win != nil {
+		d.win.Update(apply)
+	} else {
+		apply()
+	}
 }
 
 // broadcaster abstracts event broadcast so tests can capture events.
@@ -524,6 +379,6 @@ func (d *Desktop) ReportAudioState(ctx context.Context, requestID string, st Aud
 
 // AckUIRequest: frontend ACKs a desktop:ui-request.
 func (d *Desktop) AckUIRequest(ctx context.Context, requestID string, ok bool, errMsg string) {
-	d.req.done(requestID, ok, errMsg)
-	d.invalidateFlyout()
+	d.uiReq.done(requestID, ok, errMsg)
+	d.invalidateNativeMenus()
 }

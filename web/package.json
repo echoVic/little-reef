@@ -1,7 +1,7 @@
 {
   "name": "little-reef-web",
   "private": true,
-  "version": "0.4.2",
+  "version": "0.4.3",
   "type": "module",
   "description": "小海底 · 桌面水族馆 — React + TypeScript + Vite frontend",
   "scripts": {

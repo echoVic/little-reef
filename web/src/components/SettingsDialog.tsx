@@ -78,9 +78,23 @@ export function SettingsDialog({ open, onClose, aq }: SettingsDialogProps) {
               <div className="dialog-themes">
                 <p className="dialog-backup-title">海底皮肤</p>
                 <Dialog.Description className="dialog-description">换一种配色，也是换一种心情。切换立刻生效，不会影响你的存档。</Dialog.Description>
+                <div className="theme-auto-row">
+                  <span id="theme-auto-label">随时间自动切换主题</span>
+                  <button id="theme-auto" className="theme-auto-switch" type="button" role="switch" aria-labelledby="theme-auto-label" aria-describedby="theme-auto-description" aria-checked={!!aq.snapshot?.themeAuto} disabled={!aq.snapshot || aq.busy} onClick={() => aq.setThemeAuto(!aq.snapshot?.themeAuto)}>
+                    <span className="theme-auto-thumb" />
+                  </button>
+                </div>
+                <Dialog.Description id="theme-auto-description" className="dialog-description">按本地时间轮换：06:00 马卡龙 · 10:00 赛璐璐 · 17:00 青绿江山 · 20:00 深海写实。手动选皮肤会关闭自动切换。</Dialog.Description>
+                <div className="theme-auto-row">
+                  <span id="theme-shuffle-label">全部主题随机轮换</span>
+                  <button id="theme-shuffle" className="theme-auto-switch" type="button" role="switch" aria-labelledby="theme-shuffle-label" aria-describedby="theme-shuffle-description" aria-checked={!!aq.snapshot?.themeShuffle} disabled={!aq.snapshot || aq.busy} onClick={() => aq.setThemeShuffle(!aq.snapshot?.themeShuffle)}>
+                    <span className="theme-auto-thumb" />
+                  </button>
+                </div>
+                <Dialog.Description id="theme-shuffle-description" className="dialog-description">开启时随机换一套，此后每 30 分钟从全部皮肤中随机切换，不连续重复。两种自动模式只能开启一种；手动选皮肤会关闭自动模式。</Dialog.Description>
                 <RadioGroup.Root id="theme-list" className="theme-list" role="radiogroup" aria-label="主题" value={currentTheme} onValueChange={(id) => aq.setTheme(id)}>
                   {aq.themes.map((t) => (
-                    <RadioGroup.Item key={t.id} data-theme-id={t.id} value={t.id} className="theme-option">
+                    <RadioGroup.Item key={t.id} data-theme-id={t.id} value={t.id} className="theme-option" onClick={() => { if ((aq.snapshot?.themeAuto || aq.snapshot?.themeShuffle) && t.id === currentTheme) aq.setTheme(t.id); }}>
                       <RadioGroup.Indicator className="theme-option-check" forceMount>
                         <Icon name="check" size={11} />
                       </RadioGroup.Indicator>

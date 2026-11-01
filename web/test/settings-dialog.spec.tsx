@@ -21,6 +21,8 @@ function makeAq(overrides: Partial<AquariumApi> = {}): AquariumApi {
       { id: "ct-cream", displayName: "奶油软糖" },
     ],
     setTheme: vi.fn(),
+    setThemeAuto: vi.fn(),
+    setThemeShuffle: vi.fn(),
     saveSettings: vi.fn(),
     exportArchive: vi.fn(),
     importArchive: vi.fn(),
@@ -30,6 +32,49 @@ function makeAq(overrides: Partial<AquariumApi> = {}): AquariumApi {
     ...overrides,
   } as unknown as AquariumApi;
 }
+
+test("automatic theme switch uses live snapshot state and changes immediately", async () => {
+  const setThemeAuto = vi.fn();
+  const aq = makeAq({ setThemeAuto });
+  const { rerender } = render(<SettingsDialog open={true} onClose={vi.fn()} aq={aq} />);
+  const toggle = screen.getByRole("switch", { name: "随时间自动切换主题" });
+  expect(toggle).not.toBeChecked();
+  await userEvent.click(toggle);
+  expect(setThemeAuto).toHaveBeenCalledWith(true);
+  expect(aq.saveSettings).not.toHaveBeenCalled();
+  rerender(<SettingsDialog open={true} onClose={vi.fn()} aq={{ ...aq, snapshot: { ...aq.snapshot!, themeAuto: true } }} />);
+  expect(toggle).toBeChecked();
+  toggle.focus();
+  await userEvent.keyboard(" ");
+  expect(setThemeAuto).toHaveBeenLastCalledWith(false);
+  expect(screen.getByText(/06:00.*10:00.*17:00.*20:00/)).toBeInTheDocument();
+});
+
+test("choosing the active skin exits automatic mode", async () => {
+  const aq = makeAq();
+  aq.snapshot = { ...aq.snapshot!, themeAuto: true };
+  render(<SettingsDialog open={true} onClose={vi.fn()} aq={aq} />);
+  await userEvent.click(screen.getByRole("radio", { name: /深海写实/ }));
+  expect(aq.setTheme).toHaveBeenCalledOnce();
+  expect(aq.setTheme).toHaveBeenCalledWith("reef-realistic");
+});
+
+test("all themes shuffle switch follows backend state and supports keyboard toggling", async () => {
+  const aq = makeAq();
+  const { rerender } = render(<SettingsDialog open={true} onClose={vi.fn()} aq={aq} />);
+  const toggle = screen.getByRole("switch", { name: "全部主题随机轮换" });
+  expect(toggle).not.toBeChecked();
+  await userEvent.click(toggle);
+  expect(aq.setThemeShuffle).toHaveBeenCalledWith(true);
+  rerender(<SettingsDialog open={true} onClose={vi.fn()} aq={{ ...aq, snapshot: { ...aq.snapshot!, themeShuffle: true } }} />);
+  expect(toggle).toBeChecked();
+  expect(screen.getByRole("switch", { name: "随时间自动切换主题" })).not.toBeChecked();
+  toggle.focus();
+  await userEvent.keyboard(" ");
+  expect(aq.setThemeShuffle).toHaveBeenLastCalledWith(false);
+  await userEvent.click(screen.getByRole("radio", { name: /深海写实/ }));
+  expect(aq.setTheme).toHaveBeenCalledWith("reef-realistic");
+});
 
 test("theme picker renders backend list as a radiogroup and switches via SetTheme", () => {
   const setTheme = vi.fn();

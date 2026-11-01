@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import * as Tabs from "@radix-ui/react-tabs";
 import * as Slider from "@radix-ui/react-slider";
 import * as Collapsible from "@radix-ui/react-collapsible";
@@ -47,7 +47,6 @@ export function App() {
   const aq = useAquarium();
   const { snapshot: s, timer: t } = aq;
   const [settingsOpen, setSettingsOpen] = useState(false);
-  useEffect(() => { aq.onOpenSettings(() => setSettingsOpen(true)); }, [aq]);
   const [endOpen, setEndOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [journalOpen, setJournalOpen] = useState(false);
@@ -56,7 +55,7 @@ export function App() {
 
   if (!s || !t) {
     return (
-      <div className="app-shell">
+      <div className={desktop ? "app-shell native-window" : "app-shell"}>
         <main>
           <span className="online-state"><i /><span>正在连接</span></span>
         </main>
@@ -71,14 +70,12 @@ export function App() {
   const timerActive = s.session.status === "running" || s.session.status === "paused";
 
   return (
-    <div className="app-shell">
+    <div className={desktop ? "app-shell native-window" : "app-shell"}>
       <header className="titlebar">
         <div className="brand"><img className="brand-icon" src="./mark.png" alt="" aria-hidden="true" /><span>小海底 <small>专注，让一片海慢慢长大</small></span></div>
         <div className="window-actions">
           <button id="compact" className="icon-button" title="切换桌面挂件" aria-label="切换桌面挂件" onClick={() => aq.setCompact(!document.body.classList.contains("compact"))}><Icon name="compact" /></button>
-          {desktop
-            ? <button id="hide" className="icon-button" title="关闭窗口（应用仍在后台运行）" aria-label="关闭窗口" onClick={aq.hide}><Icon name="close" /></button>
-            : <button id="hide" className="icon-button" title="桌面端可用" aria-label="关闭窗口" disabled><Icon name="close" /></button>}
+          {!desktop && <button id="hide" className="icon-button" title="桌面端可用" aria-label="关闭窗口" disabled><Icon name="close" /></button>}
         </div>
       </header>
 
@@ -215,7 +212,7 @@ export function App() {
 
         <footer>
           <span>让专注留下一片海，也记得抬头看看窗外。</span>
-          <button id="settings-open" className="text-button" onClick={() => setSettingsOpen(true)}>计时设置</button>
+          <button id="settings-open" className="text-button" onClick={() => { if (desktop) aq.openSettings(); else setSettingsOpen(true); }}>计时设置</button>
         </footer>
       </main>
 
@@ -226,7 +223,7 @@ export function App() {
         <button id="expand" aria-label="展开水族馆" onClick={() => aq.setCompact(false)}><Icon name="expand" /></button>
       </div>
 
-      <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} aq={aq} />
+      {!desktop && <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} aq={aq} />}
       <EndDialog open={endOpen} onClose={() => setEndOpen(false)} onConfirm={() => { setEndOpen(false); aq.endSession(); }} />
 
       <ToastHost message={aq.toastMessage} />

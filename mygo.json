@@ -2,6 +2,7 @@
   "name": "小海底",
   "identifier": "dev.mygo.examples.aquarium",
   "version": "0.4.3",
+  "license": "MIT",
   "icon": "assets/icon.png",
   "frontendDist": "web/dist",
   "out": "build",

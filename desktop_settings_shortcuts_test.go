@@ -64,6 +64,29 @@ func TestShortcutRecordingKeepsBindingsSuspendedUntilKeyUp(t *testing.T) {
 	}
 }
 
+// MyGo v0.8 sends every key to HandleInput, a modifier on its own included: its
+// Key and PhysicalKey are unknown and only Code names it. The recorder must not
+// take one for a shortcut, and the chord that follows still records.
+func TestShortcutRecordingIgnoresModifierPressedAlone(t *testing.T) {
+	s, _, _, _ := shortcutSettingsFixture(t)
+	s.beginShortcutRecording(shortcutPrimary)
+	before := s.shortcutDraft.Bindings[shortcutPrimary]
+	lone := ui.InputEvent{Kind: ui.InputKeyDown, Key: ui.KeyUnknown, PhysicalKey: ui.KeyUnknown, Code: ui.CodeShiftLeft, Mods: ui.Shift}
+	if !s.shortcutInput(shortcutPrimary, lone) {
+		t.Fatal("a modifier pressed alone went past the recorder")
+	}
+	if s.recording != shortcutPrimary {
+		t.Fatal("a modifier pressed alone ended the recording")
+	}
+	if got := s.shortcutDraft.Bindings[shortcutPrimary]; got != before {
+		t.Fatalf("a modifier pressed alone changed the binding to %q", got)
+	}
+	s.shortcutInput(shortcutPrimary, ui.InputEvent{Kind: ui.InputKeyDown, Key: ui.KeyN, PhysicalKey: ui.KeyN, Code: ui.CodeKeyN, Mods: ui.Cmd | ui.Shift})
+	if s.capturedKey != ui.KeyN || s.shortcutDraft.Bindings[shortcutPrimary] != "CmdOrCtrl+Shift+N" {
+		t.Fatalf("the chord after a lone modifier did not record: %q", s.shortcutDraft.Bindings[shortcutPrimary])
+	}
+}
+
 func TestShortcutRecordingFinishesOnModifierReleaseWithoutKeyUp(t *testing.T) {
 	if runtime.GOOS != "darwin" {
 		t.Skip("Command-keyup fallback is macOS-specific")

@@ -25,6 +25,15 @@ export interface AudioState {
   error: string;
 }
 
+/** Record preserves time spent even when a focus session ends early. */
+export interface MainRecord {
+  id: number;
+  task: string;
+  seconds: number;
+  completed: boolean;
+  date: string;
+}
+
 /** Preferences controls the next session and its optional soundscape. */
 export interface Preferences {
   focusMinutes: number;
@@ -33,15 +42,6 @@ export interface Preferences {
   volume: number;
   soundEnabled: boolean;
   chimeEnabled: boolean;
-}
-
-/** Record preserves time spent even when a focus session ends early. */
-export interface Record {
-  id: number;
-  task: string;
-  seconds: number;
-  completed: boolean;
-  date: string;
 }
 
 /** Session is one focus or break timer, measured by the backend. */
@@ -74,7 +74,7 @@ export interface Snapshot {
   totalSecs: number;
   todaySecs: number;
   todayRounds: number;
-  records: Record[];
+  records: MainRecord[];
   visitors: Visitor[];
   lastVisitor: string;
   notice: string;

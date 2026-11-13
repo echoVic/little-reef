@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  web:
+    name: Frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install frontend dependencies
+        run: npm --prefix web ci --registry=https://registry.npmjs.org/
+      - name: Typecheck
+        run: npm --prefix web run typecheck
+      - name: Test
+        run: npm --prefix web test
+      - name: Build
+        run: npm --prefix web run build
+
+  go:
+    name: Go (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    env:
+      CGO_ENABLED: '0'
+    steps:
+      - name: Preserve repository line endings
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install frontend dependencies
+        run: npm --prefix web ci --registry=https://registry.npmjs.org/
+      # Go embeds web/dist; a clean checkout must build it before any Go command.
+      - name: Build embedded frontend
+        run: npm --prefix web run build
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Check formatting
+        run: test -z "$(git ls-files -z '*.go' | xargs -0 gofmt -l)"
+      - name: Vet
+        run: go vet ./...
+      - name: Test (macOS, race)
+        if: runner.os == 'macOS'
+        env:
+          CGO_ENABLED: '1'
+        run: go test -race -count=1 -timeout=10m ./...
+      - name: Test (Windows)
+        if: runner.os == 'Windows'
+        run: go test -count=1 -timeout=10m ./...
+      - name: MyGo vet
+        if: runner.os == 'macOS'
+        run: go tool mygo vet .
+      - name: Build desktop (macOS)
+        if: runner.os == 'macOS'
+        run: go build -o "$RUNNER_TEMP/little-reef" .
+      - name: Build desktop (Windows amd64 and arm64)
+        if: runner.os == 'Windows'
+        run: |
+          for arch in amd64 arm64; do
+            GOARCH="$arch" go build -o "$RUNNER_TEMP/little-reef-$arch.exe" .
+          done

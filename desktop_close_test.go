@@ -4,9 +4,9 @@ import "testing"
 
 func TestHandleWindowClose(t *testing.T) {
 	cases := []struct {
-		name     string
-		quitting bool
-		allow    bool
+		name      string
+		quitting  bool
+		allow     bool
 		intercept bool
 	}{
 		{"quitting true -> allow real quit", true, true, false},

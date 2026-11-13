@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"slices"
 	"time"
@@ -68,7 +69,7 @@ func installedThemes() ([]themeRecord, error) {
 		if !e.IsDir() {
 			continue
 		}
-		data, err := fs.ReadFile(themesFS, filepath.Join("web/public/themes", e.Name(), "theme.json"))
+		data, err := fs.ReadFile(themesFS, path.Join("web/public/themes", e.Name(), "theme.json"))
 		if err != nil {
 			return nil, err
 		}

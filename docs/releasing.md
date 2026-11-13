@@ -13,7 +13,7 @@ CGO_ENABLED=0 go test ./...
 CGO_ENABLED=0 go vet ./...
 ```
 
-正式构建通过环境变量 `MYGO_UPDATER_PRIVATE_KEY` 提供已有更新签名私钥，不能重新生成密钥或提交私钥。使用配置中的 Developer ID 与钥匙串公证凭据 `notary`（可先运行 `xcrun notarytool history --keychain-profile notary` 确认可用）：
+正式构建通过环境变量 `MYGO_UPDATER_PRIVATE_KEY` 提供已有更新签名私钥，不能重新生成密钥或提交私钥。使用配置中的 Developer ID 与钥匙串公证凭据 `clipnest-notary`（可先运行 `xcrun notarytool history --keychain-profile clipnest-notary` 确认可用）：
 
 ```sh
 CGO_ENABLED=0 go tool mygo build -o build/release-<版本> .

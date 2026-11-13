@@ -36,14 +36,5 @@
       "fish.mjs": "233fd6f5aefe9c7a80f84e102332dd4b90213c6869f781ac2cd5349307f5331a",
       "check.mjs": "a09b9616a16189a67f78b6547c0cf4a8b4b9fb661103ad9d4c1ad9f7bc117ec8"
     }
-  },
-  "mygo-runtime": {
-    "version": "0.7.3",
-    "url": "https://registry.npmjs.org/mygo-runtime/-/mygo-runtime-0.7.3.tgz",
-    "integrity": "sha512-ggttUf9WmBIDMjazN8hBB2/n/ezoqOKx9Uc0tjK3G6ekFg5mqrS+GLIEjwnStfXMGFS6+tmdd0uCGPrsYvgMdQ==",
-    "files": {
-      "LICENSE": "f0b56f4ab53beb6e18c5e155219c2e2b6000b5475c0ae3ddb3af3894fd9349b4",
-      "index.js": "88a06214af9a4f1bb2382d827077c67c30aa13c9fddfc3a2fedcab69b1ac75bd"
-    }
   }
 }

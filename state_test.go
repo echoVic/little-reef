@@ -4,9 +4,38 @@ import (
 	"encoding/json"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
+
+func TestShutdownConcurrentCallsPreserveFinalSession(t *testing.T) {
+	a, now := testAquarium(t)
+	if _, err := a.Start("focus", "保存最后一段时间"); err != nil {
+		t.Fatal(err)
+	}
+	*now = now.Add(7 * time.Second)
+	// Model a worker that has already finished; shutdown must still wait on
+	// done and capture the final segment once, regardless of its callers.
+	close(a.done)
+	var wg sync.WaitGroup
+	for range 8 {
+		wg.Go(func() {
+			if err := a.shutdown(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+	wg.Wait()
+	restored, err := newAquarium(a.path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := restored.Get().Session
+	if s.Status != "paused" || s.ElapsedMS != 7000 {
+		t.Fatalf("final session was not preserved: %+v", s)
+	}
+}
 
 func testAquarium(t *testing.T) (*Aquarium, *time.Time) {
 	t.Helper()

@@ -2,7 +2,7 @@ import {
   call as nativeCall,
   isMyGo,
   on,
-} from "../../vendor/mygo-runtime/index.js";
+} from "mygo-runtime";
 import type { Snapshot, ShortcutSnapshot } from "./types";
 
 // MyGo's official runtime owns desktop IPC. Only the optional browser demo

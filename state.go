@@ -110,6 +110,8 @@ type Aquarium struct {
 	onDone             func(Snapshot)
 	stop               chan struct{}
 	done               chan struct{}
+	shutdownOnce       sync.Once
+	shutdownErr        error
 }
 
 func newAquarium(path string) (*Aquarium, error) {
@@ -734,13 +736,16 @@ func (a *Aquarium) run() {
 }
 
 func (a *Aquarium) shutdown() error {
-	close(a.stop)
-	<-a.done
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	a.captureLocked()
-	if a.state.Session.Status == "running" {
-		a.state.Session.Status = "paused"
-	}
-	return a.saveLocked()
+	a.shutdownOnce.Do(func() {
+		close(a.stop)
+		<-a.done
+		a.mu.Lock()
+		defer a.mu.Unlock()
+		a.captureLocked()
+		if a.state.Session.Status == "running" {
+			a.state.Session.Status = "paused"
+		}
+		a.shutdownErr = a.saveLocked()
+	})
+	return a.shutdownErr
 }
